@@ -1,7 +1,7 @@
 # Nidalee - 英雄联盟游戏助手
 
 <div align="center">
-  <img src="assets/logo.png" alt="Nidalee Logo" width="200">
+  <img src="src/assets/logo.svg" alt="Nidalee Logo" width="200">
   
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
   ![Tauri](https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg)
