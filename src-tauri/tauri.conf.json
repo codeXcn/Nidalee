@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "nidalee",
-  "version": "0.1.0",
-  "identifier": "com.nidalee.app",
+  "productName": "Nidalee",
+  "version": "1.0.0",
+  "identifier": "com.nidalee.lol-assistant",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "nidalee",
-        "width": 800,
-        "height": 600
+        "title": "Nidalee - 英雄联盟游戏助手",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true
       }
     ],
     "security": {
@@ -30,6 +34,12 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": [],
+    "externalBin": [],
+    "copyright": "Copyright © 2024 Nidalee Team. All rights reserved.",
+    "category": "Game",
+    "shortDescription": "英雄联盟游戏助手",
+    "longDescription": "Nidalee 是一个功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。"
   }
 }
