@@ -8,11 +8,12 @@
   >
     <!-- 侧边栏头部 -->
     <div class="p-4 border-b border-border flex items-center justify-between">
-      <div v-if="!isCollapsed" class="flex items-center space-x-2">
-        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <span class="text-primary-foreground font-bold text-sm">N</span>
-        </div>
-        <span class="font-semibold text-foreground">Nidalee</span>
+      <div v-if="!isCollapsed" class="flex items-center space-x-3">
+        <img src="/src/assets/logo-simple.svg" alt="Nidalee Logo" class="size-8" />
+        <span class="font-semibold text-foreground text-lg">Nidalee</span>
+      </div>
+      <div v-else class="flex items-center justify-center">
+        <img src="/src/assets/logo-simple.svg" alt="Nidalee Logo" class="size-8" />
       </div>
       <button 
         @click="toggleCollapse"
@@ -20,7 +21,7 @@
       >
         <ChevronLeft
           :class="[
-            'w-4 h-4 transition-transform duration-300',
+            'size-4 transition-transform duration-300',
             isCollapsed ? 'rotate-180' : ''
           ]"
         />

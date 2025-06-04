@@ -413,9 +413,7 @@
         
         <div class="space-y-6">
           <div class="flex items-center space-x-4">
-            <div class="size-16 bg-primary rounded-lg flex items-center justify-center">
-              <span class="text-primary-foreground font-bold text-2xl">N</span>
-            </div>
+            <img src="/src/assets/logo.svg" alt="Nidalee Logo" class="size-16" />
             <div>
               <h4 class="text-xl font-bold">Nidalee</h4>
               <p class="text-muted-foreground">英雄联盟游戏助手</p>
