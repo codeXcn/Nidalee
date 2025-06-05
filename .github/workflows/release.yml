@@ -51,14 +51,10 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Sync pnpm cache
-        run: pnpm config set store-dir ~/.pnpm-store
+        # pnpm version will be automatically detected from package.json packageManager field
 
       - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
