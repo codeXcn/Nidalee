@@ -19,7 +19,15 @@ export interface Summoner {
 }
 
 export interface GameflowPhase {
-  phase: 'None' | 'Lobby' | 'Matchmaking' | 'ReadyCheck' | 'ChampSelect' | 'InProgress' | 'PreEndOfGame' | 'EndOfGame'
+  phase:
+    | 'None'
+    | 'Lobby'
+    | 'Matchmaking'
+    | 'ReadyCheck'
+    | 'ChampSelect'
+    | 'InProgress'
+    | 'PreEndOfGame'
+    | 'EndOfGame'
 }
 
 export interface ChampSelectSession {
@@ -221,7 +229,9 @@ export class LCPClient {
 
   // 战绩查询
   getMatchHistory(puuid: string, begIndex = 0, endIndex = 20) {
-    return this.get(`/lol-match-history/v1/products/lol/${puuid}/matches?begIndex=${begIndex}&endIndex=${endIndex}`)
+    return this.get(
+      `/lol-match-history/v1/products/lol/${puuid}/matches?begIndex=${begIndex}&endIndex=${endIndex}`
+    )
   }
 
   // 获取召唤师信息

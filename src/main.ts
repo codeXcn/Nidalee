@@ -1,5 +1,5 @@
-import { createApp } from "vue";
-import App from "./App.vue";
+import { createApp } from 'vue'
+import App from './App.vue'
 import './index.css'
 
 // 导入 Pinia
@@ -12,7 +12,7 @@ const app = createApp(App)
 // 注册 Pinia
 app.use(pinia)
 
-app.mount("#app");
+app.mount('#app')
 
 // 应用挂载后初始化主题
 import { useThemeStore } from '@/stores/useThemeStore'

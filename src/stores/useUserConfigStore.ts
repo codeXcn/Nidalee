@@ -4,11 +4,11 @@ import { ref, watch } from 'vue'
 export interface UserConfig {
   // 应用设置
   app: {
-    enableConfigCache: boolean  // 是否启用配置缓存
-    enableThemeCache: boolean   // 是否启用主题缓存
+    enableConfigCache: boolean // 是否启用配置缓存
+    enableThemeCache: boolean // 是否启用主题缓存
     enableGameDataCache: boolean // 是否启用游戏数据缓存
   }
-  
+
   // 通用设置
   general: {
     language: string
@@ -18,7 +18,7 @@ export interface UserConfig {
     analytics: boolean
     hardwareAcceleration: boolean
   }
-  
+
   // 连接设置
   connection: {
     autoReconnect: boolean
@@ -27,7 +27,7 @@ export interface UserConfig {
     maxRetries: number
     notifications: boolean
   }
-  
+
   // 通知设置
   notifications: {
     desktop: boolean
@@ -36,7 +36,7 @@ export interface UserConfig {
     autoOperations: boolean
     errors: boolean
   }
-  
+
   // 高级设置
   advanced: {
     developerMode: boolean
@@ -44,7 +44,7 @@ export interface UserConfig {
     logRetentionDays: number
     apiRateLimit: number
   }
-  
+
   // 自动功能配置
   autoFunctions: {
     autoAccept: {
@@ -75,7 +75,7 @@ export interface UserConfig {
       enabled: boolean
     }
   }
-  
+
   // 安全设置
   safety: {
     enableRateLimit: boolean
@@ -172,152 +172,156 @@ const DEFAULT_CONFIG: UserConfig = {
   }
 }
 
-export const useUserConfigStore = defineStore('userConfig', () => {
-  const config = ref<UserConfig>({ ...DEFAULT_CONFIG })
-  
-  // 更新配置的方法
-  function updateConfig(path: string, value: any) {
-    const keys = path.split('.')
-    let current: any = config.value
-    
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (!(keys[i] in current)) {
-        current[keys[i]] = {}
+export const useUserConfigStore = defineStore(
+  'userConfig',
+  () => {
+    const config = ref<UserConfig>({ ...DEFAULT_CONFIG })
+
+    // 更新配置的方法
+    function updateConfig(path: string, value: any) {
+      const keys = path.split('.')
+      let current: any = config.value
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!(keys[i] in current)) {
+          current[keys[i]] = {}
+        }
+        current = current[keys[i]]
       }
-      current = current[keys[i]]
-    }
-    
-    current[keys[keys.length - 1]] = value
-    
-    // 如果更改了缓存设置，立即处理
-    if (path.startsWith('app.enable') && path.includes('Cache')) {
-      handleCacheSettingChange(path, value)
-    }
-  }
-  
-  // 获取配置值
-  function getConfig(path: string): any {
-    const keys = path.split('.')
-    let current: any = config.value
-    
-    for (const key of keys) {
-      if (current && typeof current === 'object' && key in current) {
-        current = current[key]
-      } else {
-        return undefined
+
+      current[keys[keys.length - 1]] = value
+
+      // 如果更改了缓存设置，立即处理
+      if (path.startsWith('app.enable') && path.includes('Cache')) {
+        handleCacheSettingChange(path, value)
       }
     }
-    
-    return current
-  }
-  
-  // 重置配置
-  function resetConfig() {
-    const resetData = { ...DEFAULT_CONFIG }
-    config.value = resetData
-    
-    // 清除所有 localStorage 数据
-    clearAllCache()
-    
-    return resetData
-  }
-  
-  // 重置特定分类的配置
-  function resetConfigSection(section: keyof UserConfig) {
-    if (DEFAULT_CONFIG[section]) {
-      config.value[section] = { ...DEFAULT_CONFIG[section] } as any
-    }
-  }
-  
-  // 导出配置
-  function exportConfig(): string {
-    return JSON.stringify(config.value, null, 2)
-  }
-  
-  // 导入配置
-  function importConfig(configJson: string): boolean {
-    try {
-      const importedConfig = JSON.parse(configJson)
-      // 验证配置结构的基本检查
-      if (importedConfig && typeof importedConfig === 'object') {
-        config.value = { ...DEFAULT_CONFIG, ...importedConfig }
-        return true
+
+    // 获取配置值
+    function getConfig(path: string): any {
+      const keys = path.split('.')
+      let current: any = config.value
+
+      for (const key of keys) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key]
+        } else {
+          return undefined
+        }
       }
-      return false
-    } catch (error) {
-      console.error('Failed to import config:', error)
-      return false
+
+      return current
     }
-  }
-  
-  // 处理缓存设置变化
-  function handleCacheSettingChange(path: string, enabled: boolean) {
-    if (!enabled) {
-      // 如果禁用了缓存，清除对应的本地存储
-      if (path === 'app.enableConfigCache') {
-        localStorage.removeItem('userConfig')
-      } else if (path === 'app.enableThemeCache') {
-        localStorage.removeItem('theme')
-      } else if (path === 'app.enableGameDataCache') {
-        localStorage.removeItem('gameStore')
+
+    // 重置配置
+    function resetConfig() {
+      const resetData = { ...DEFAULT_CONFIG }
+      config.value = resetData
+
+      // 清除所有 localStorage 数据
+      clearAllCache()
+
+      return resetData
+    }
+
+    // 重置特定分类的配置
+    function resetConfigSection(section: keyof UserConfig) {
+      if (DEFAULT_CONFIG[section]) {
+        config.value[section] = { ...DEFAULT_CONFIG[section] } as any
       }
     }
-  }
-  
-  // 清除所有缓存
-  function clearAllCache() {
-    const storageKeys = ['userConfig', 'theme', 'gameStore']
-    storageKeys.forEach(key => {
-      localStorage.removeItem(key)
-    })
-  }
-  
-  // 清除特定缓存
-  function clearCache(type: 'config' | 'theme' | 'gameData') {
-    const keyMap = {
-      config: 'userConfig',
-      theme: 'theme', 
-      gameData: 'gameStore'
+
+    // 导出配置
+    function exportConfig(): string {
+      return JSON.stringify(config.value, null, 2)
     }
-    
-    localStorage.removeItem(keyMap[type])
-  }
-  
-  // 获取缓存状态
-  function getCacheStatus() {
-    return {
-      configCacheEnabled: config.value.app.enableConfigCache,
-      themeCacheEnabled: config.value.app.enableThemeCache,
-      gameDataCacheEnabled: config.value.app.enableGameDataCache,
-      configCacheExists: !!localStorage.getItem('userConfig'),
-      themeCacheExists: !!localStorage.getItem('theme'),
-      gameDataCacheExists: !!localStorage.getItem('gameStore')
+
+    // 导入配置
+    function importConfig(configJson: string): boolean {
+      try {
+        const importedConfig = JSON.parse(configJson)
+        // 验证配置结构的基本检查
+        if (importedConfig && typeof importedConfig === 'object') {
+          config.value = { ...DEFAULT_CONFIG, ...importedConfig }
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to import config:', error)
+        return false
+      }
     }
-  }
-  
-  // 监听缓存设置变化
-  watch(
-    () => config.value.app.enableConfigCache,
-    (enabled) => {
+
+    // 处理缓存设置变化
+    function handleCacheSettingChange(path: string, enabled: boolean) {
       if (!enabled) {
-        localStorage.removeItem('userConfig')
+        // 如果禁用了缓存，清除对应的本地存储
+        if (path === 'app.enableConfigCache') {
+          localStorage.removeItem('userConfig')
+        } else if (path === 'app.enableThemeCache') {
+          localStorage.removeItem('theme')
+        } else if (path === 'app.enableGameDataCache') {
+          localStorage.removeItem('gameStore')
+        }
       }
     }
-  )
-  
-  return {
-    config,
-    updateConfig,
-    getConfig,
-    resetConfig,
-    resetConfigSection,
-    exportConfig,
-    importConfig,
-    clearAllCache,
-    clearCache,
-    getCacheStatus,
-    DEFAULT_CONFIG
+
+    // 清除所有缓存
+    function clearAllCache() {
+      const storageKeys = ['userConfig', 'theme', 'gameStore']
+      storageKeys.forEach(key => {
+        localStorage.removeItem(key)
+      })
+    }
+
+    // 清除特定缓存
+    function clearCache(type: 'config' | 'theme' | 'gameData') {
+      const keyMap = {
+        config: 'userConfig',
+        theme: 'theme',
+        gameData: 'gameStore'
+      }
+
+      localStorage.removeItem(keyMap[type])
+    }
+
+    // 获取缓存状态
+    function getCacheStatus() {
+      return {
+        configCacheEnabled: config.value.app.enableConfigCache,
+        themeCacheEnabled: config.value.app.enableThemeCache,
+        gameDataCacheEnabled: config.value.app.enableGameDataCache,
+        configCacheExists: !!localStorage.getItem('userConfig'),
+        themeCacheExists: !!localStorage.getItem('theme'),
+        gameDataCacheExists: !!localStorage.getItem('gameStore')
+      }
+    }
+
+    // 监听缓存设置变化
+    watch(
+      () => config.value.app.enableConfigCache,
+      enabled => {
+        if (!enabled) {
+          localStorage.removeItem('userConfig')
+        }
+      }
+    )
+
+    return {
+      config,
+      updateConfig,
+      getConfig,
+      resetConfig,
+      resetConfigSection,
+      exportConfig,
+      importConfig,
+      clearAllCache,
+      clearCache,
+      getCacheStatus,
+      DEFAULT_CONFIG
+    }
+  },
+  {
+    persist: true
   }
-}, {
-  persist: true
-}) 
+)

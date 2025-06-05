@@ -6,15 +6,15 @@ import {
   type DropdownMenuContentEmits,
   type DropdownMenuContentProps,
   DropdownMenuPortal,
-  useForwardPropsEmits,
+  useForwardPropsEmits
 } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = withDefaults(
   defineProps<DropdownMenuContentProps & { class?: HTMLAttributes['class'] }>(),
   {
-    sideOffset: 4,
-  },
+    sideOffset: 4
+  }
 )
 const emits = defineEmits<DropdownMenuContentEmits>()
 
@@ -28,7 +28,9 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <DropdownMenuContent
       data-slot="dropdown-menu-content"
       v-bind="forwarded"
-      :class="cn(`
+      :class="
+        cn(
+          `
         bg-popover/95 text-popover-foreground border-border 
         backdrop-blur-xl backdrop-saturate-150
         data-[state=open]:animate-in data-[state=closed]:animate-out 
@@ -42,7 +44,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
         p-1 shadow-xl 
         dark:shadow-2xl dark:shadow-black/20
         dark:border-border/30 dark:bg-popover/90
-      `, props.class)"
+      `,
+          props.class
+        )
+      "
     >
       <slot />
     </DropdownMenuContent>

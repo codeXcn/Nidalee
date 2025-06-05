@@ -1,12 +1,8 @@
 <template>
   <div class="app h-screen bg-background text-foreground flex">
     <!-- 侧边栏 -->
-    <Sidebar 
-      :active-item="activeView" 
-      @navigate="setActiveView" 
-      @open-settings="openSettings" 
-    />
-    
+    <Sidebar :active-item="activeView" @navigate="setActiveView" @open-settings="openSettings" />
+
     <!-- 主内容区域 -->
     <main class="flex-1 flex flex-col overflow-hidden">
       <!-- 顶部导航栏 -->
@@ -14,7 +10,7 @@
         <div class="flex items-center space-x-4">
           <h1 class="text-xl font-semibold">{{ pageTitle }}</h1>
           <div v-if="gameStore.gameStatus" class="flex items-center space-x-2">
-            <div 
+            <div
               :class="[
                 'w-2 h-2 rounded-full',
                 gameStore.isConnected ? 'bg-green-500' : 'bg-red-500'
@@ -25,26 +21,29 @@
             </span>
           </div>
         </div>
-        
+
         <div class="flex items-center space-x-3">
           <!-- 通知按钮 -->
           <Button variant="outline" size="icon" class="h-9 w-9 relative">
             <Bell class="h-4 w-4" />
-            <span v-if="gameStore.unreadNotifications > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span
+              v-if="gameStore.unreadNotifications > 0"
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+            >
               {{ gameStore.unreadNotifications }}
             </span>
           </Button>
-          
+
           <!-- 主题切换 -->
           <ThemeToggle />
-          
+
           <!-- 设置按钮 -->
           <Button variant="outline" size="icon" class="h-9 w-9" @click="openSettings">
             <Settings class="h-4 w-4" />
           </Button>
         </div>
       </header>
-      
+
       <!-- 页面内容 -->
       <div class="flex-1 overflow-auto p-6">
         <Transition name="page" mode="out-in">
@@ -52,15 +51,13 @@
         </Transition>
       </div>
     </main>
-    
+
     <!-- 设置对话框 -->
     <Dialog v-model:open="showSettings">
       <DialogContent class="max-w-2xl">
         <DialogHeader>
           <DialogTitle>设置</DialogTitle>
-          <DialogDescription>
-            配置 Nidalee 的各项设置
-          </DialogDescription>
+          <DialogDescription> 配置 Nidalee 的各项设置 </DialogDescription>
         </DialogHeader>
         <SettingsPanel />
       </DialogContent>
@@ -71,7 +68,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog'
 import { Bell, Settings } from 'lucide-vue-next'
 
 import Sidebar from '@/components/ui/sidebar/Sidebar.vue'
@@ -112,7 +115,9 @@ const pageTitles = {
   safety: '安全设置'
 }
 
-const currentComponent = computed(() => viewComponents[activeView.value as keyof typeof viewComponents])
+const currentComponent = computed(
+  () => viewComponents[activeView.value as keyof typeof viewComponents]
+)
 const pageTitle = computed(() => pageTitles[activeView.value as keyof typeof pageTitles])
 
 function setActiveView(view: string) {
@@ -127,13 +132,13 @@ function openSettings() {
 onMounted(() => {
   // 初始化主题
   themeStore.initializeTheme()
-  
+
   // 添加一些示例通知
   gameStore.addNotification({
     message: '欢迎使用 Nidalee 游戏助手',
     type: 'info'
   })
-  
+
   // TODO: 初始化游戏连接状态检查
 })
 </script>
@@ -156,7 +161,8 @@ onMounted(() => {
 }
 
 /* 全局样式重置 */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -164,7 +170,12 @@ html, body {
 }
 
 .app {
-  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 /* 自定义滚动条 */

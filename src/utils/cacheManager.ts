@@ -14,10 +14,10 @@ export interface CacheInfo {
 export class CacheManager {
   private static readonly CACHE_KEYS = {
     userConfig: 'userConfig',
-    theme: 'theme', 
+    theme: 'theme',
     gameStore: 'gameStore'
   }
-  
+
   /**
    * 获取所有缓存信息
    */
@@ -33,16 +33,16 @@ export class CacheManager {
       }
     })
   }
-  
+
   /**
    * 获取特定缓存的信息
    */
   static getCacheInfo(cacheType: keyof typeof CacheManager.CACHE_KEYS): CacheInfo | null {
     const key = this.CACHE_KEYS[cacheType]
     const data = localStorage.getItem(key)
-    
+
     if (!data) return null
-    
+
     return {
       key,
       name: cacheType,
@@ -51,7 +51,7 @@ export class CacheManager {
       enabled: true
     }
   }
-  
+
   /**
    * 清除特定缓存
    */
@@ -65,7 +65,7 @@ export class CacheManager {
       return false
     }
   }
-  
+
   /**
    * 清除所有缓存
    */
@@ -80,7 +80,7 @@ export class CacheManager {
       return false
     }
   }
-  
+
   /**
    * 获取缓存总大小
    */
@@ -90,20 +90,20 @@ export class CacheManager {
       return total + (data ? new Blob([data]).size : 0)
     }, 0)
   }
-  
+
   /**
    * 格式化字节大小
    */
   static formatSize(bytes: number): string {
     if (bytes === 0) return '0 B'
-    
+
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
-  
+
   /**
    * 检查缓存是否启用
    */
@@ -111,20 +111,20 @@ export class CacheManager {
     try {
       const configData = localStorage.getItem('userConfig')
       if (!configData) return true
-      
+
       const config = JSON.parse(configData)
       const cacheKeyMap = {
         userConfig: 'enableConfigCache',
         theme: 'enableThemeCache',
         gameStore: 'enableGameDataCache'
       }
-      
+
       return config.app?.[cacheKeyMap[cacheType]] !== false
     } catch {
       return true
     }
   }
-  
+
   /**
    * 获取最后修改时间
    */
@@ -132,15 +132,15 @@ export class CacheManager {
     // 由于 localStorage 没有内置的时间戳，我们使用一个约定的方式
     const timestampKey = `${key}_timestamp`
     const timestamp = localStorage.getItem(timestampKey)
-    
+
     if (timestamp) {
       return new Date(parseInt(timestamp)).toLocaleString()
     }
-    
+
     // 如果没有时间戳，返回当前时间
     return new Date().toLocaleString()
   }
-  
+
   /**
    * 设置时间戳（在保存数据时调用）
    */
@@ -148,13 +148,13 @@ export class CacheManager {
     const timestampKey = `${key}_timestamp`
     localStorage.setItem(timestampKey, Date.now().toString())
   }
-  
+
   /**
    * 导出所有缓存数据
    */
   static exportAllCache(): string {
     const cacheData: Record<string, any> = {}
-    
+
     Object.entries(this.CACHE_KEYS).forEach(([name, key]) => {
       const data = localStorage.getItem(key)
       if (data) {
@@ -165,31 +165,30 @@ export class CacheManager {
         }
       }
     })
-    
+
     return JSON.stringify(cacheData, null, 2)
   }
-  
+
   /**
    * 导入缓存数据
    */
   static importCache(cacheDataJson: string): boolean {
     try {
       const cacheData = JSON.parse(cacheDataJson)
-      
+
       Object.entries(this.CACHE_KEYS).forEach(([name, key]) => {
         if (cacheData[name]) {
-          const dataToStore = typeof cacheData[name] === 'string' 
-            ? cacheData[name] 
-            : JSON.stringify(cacheData[name])
+          const dataToStore =
+            typeof cacheData[name] === 'string' ? cacheData[name] : JSON.stringify(cacheData[name])
           localStorage.setItem(key, dataToStore)
           this.setTimestamp(key)
         }
       })
-      
+
       return true
     } catch (error) {
       console.error('Failed to import cache:', error)
       return false
     }
   }
-} 
+}

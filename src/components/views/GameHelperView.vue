@@ -29,7 +29,7 @@
       <CardContent>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="flex items-center space-x-3">
-            <div 
+            <div
               :class="[
                 'w-3 h-3 rounded-full',
                 gameStatus.connected ? 'bg-green-500' : 'bg-red-500'
@@ -42,13 +42,10 @@
               </p>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-3">
-            <div 
-              :class="[
-                'w-3 h-3 rounded-full',
-                gameStatus.inGame ? 'bg-blue-500' : 'bg-gray-400'
-              ]"
+            <div
+              :class="['w-3 h-3 rounded-full', gameStatus.inGame ? 'bg-blue-500' : 'bg-gray-400']"
             />
             <div>
               <p class="font-medium">游戏状态</p>
@@ -57,9 +54,9 @@
               </p>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-3">
-            <div 
+            <div
               :class="[
                 'w-3 h-3 rounded-full',
                 gameStatus.summonerName ? 'bg-green-500' : 'bg-gray-400'
@@ -82,9 +79,7 @@
       <Card>
         <CardHeader>
           <CardTitle>基础功能</CardTitle>
-          <CardDescription>
-            基本的自动化操作设置
-          </CardDescription>
+          <CardDescription> 基本的自动化操作设置 </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="flex items-center justify-between">
@@ -94,16 +89,16 @@
             </div>
             <Switch v-model:checked="config.autoAccept.enabled" />
           </div>
-          
+
           <div v-if="config.autoAccept.enabled" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
             <div class="flex items-center space-x-3">
               <label class="text-sm font-medium min-w-0">延迟时间:</label>
               <div class="flex items-center space-x-2">
-                <input 
-                  v-model.number="config.autoAccept.delay" 
-                  type="number" 
-                  min="0" 
-                  max="10" 
+                <input
+                  v-model.number="config.autoAccept.delay"
+                  type="number"
+                  min="0"
+                  max="10"
                   class="w-20 px-2 py-1 text-sm border rounded"
                 />
                 <span class="text-sm text-muted-foreground">秒</span>
@@ -120,12 +115,15 @@
             </div>
             <Switch v-model:checked="config.autoPickChampion.enabled" />
           </div>
-          
-          <div v-if="config.autoPickChampion.enabled" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
+
+          <div
+            v-if="config.autoPickChampion.enabled"
+            class="ml-4 space-y-3 border-l-2 border-muted pl-4"
+          >
             <div class="space-y-2">
               <label class="text-sm font-medium">主选英雄:</label>
-              <select 
-                v-model="config.autoPickChampion.championId" 
+              <select
+                v-model="config.autoPickChampion.championId"
                 class="w-full px-3 py-2 text-sm border rounded-md"
               >
                 <option value="">选择英雄</option>
@@ -134,14 +132,14 @@
                 </option>
               </select>
             </div>
-            
+
             <div class="space-y-2">
               <label class="text-sm font-medium">备选英雄:</label>
               <div class="flex flex-wrap gap-2">
-                <Button 
-                  v-for="backup in config.autoPickChampion.backupChampions" 
+                <Button
+                  v-for="backup in config.autoPickChampion.backupChampions"
                   :key="backup.id"
-                  variant="outline" 
+                  variant="outline"
                   size="sm"
                   @click="removeBackupChampion(backup.id)"
                 >
@@ -165,12 +163,15 @@
             </div>
             <Switch v-model:checked="config.autoBanChampion.enabled" />
           </div>
-          
-          <div v-if="config.autoBanChampion.enabled" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
+
+          <div
+            v-if="config.autoBanChampion.enabled"
+            class="ml-4 space-y-3 border-l-2 border-muted pl-4"
+          >
             <div class="space-y-2">
               <label class="text-sm font-medium">禁用英雄:</label>
-              <select 
-                v-model="config.autoBanChampion.championId" 
+              <select
+                v-model="config.autoBanChampion.championId"
                 class="w-full px-3 py-2 text-sm border rounded-md"
               >
                 <option value="">选择英雄</option>
@@ -187,9 +188,7 @@
       <Card>
         <CardHeader>
           <CardTitle>高级功能</CardTitle>
-          <CardDescription>
-            进阶的辅助功能
-          </CardDescription>
+          <CardDescription> 进阶的辅助功能 </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="flex items-center justify-between">
@@ -199,12 +198,12 @@
             </div>
             <Switch v-model:checked="config.autoRune.enabled" />
           </div>
-          
+
           <div v-if="config.autoRune.enabled" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
             <div class="space-y-2">
               <label class="text-sm font-medium">数据来源:</label>
-              <select 
-                v-model="config.autoRune.source" 
+              <select
+                v-model="config.autoRune.source"
                 class="w-full px-3 py-2 text-sm border rounded-md"
               >
                 <option value="op.gg">OP.GG</option>
@@ -212,8 +211,8 @@
                 <option value="champion.gg">Champion.GG</option>
               </select>
             </div>
-            
-            <Button @click="updateRunePage" class="w-full">
+
+            <Button class="w-full" @click="updateRunePage">
               <BookOpen class="w-4 h-4 mr-2" />
               立即更新符文页
             </Button>
@@ -252,22 +251,17 @@
     <Card>
       <CardHeader>
         <CardTitle>功能状态</CardTitle>
-        <CardDescription>
-          当前启用的自动化功能状态
-        </CardDescription>
+        <CardDescription> 当前启用的自动化功能状态 </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div 
-            v-for="feature in featureStatus" 
+          <div
+            v-for="feature in featureStatus"
             :key="feature.name"
             class="flex items-center space-x-3 p-3 border rounded-lg"
           >
-            <div 
-              :class="[
-                'w-3 h-3 rounded-full',
-                feature.active ? 'bg-green-500' : 'bg-gray-400'
-              ]"
+            <div
+              :class="['w-3 h-3 rounded-full', feature.active ? 'bg-green-500' : 'bg-gray-400']"
             />
             <div>
               <p class="font-medium text-sm">{{ feature.name }}</p>
@@ -285,14 +279,11 @@
           <DialogTitle>添加备选英雄</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
-          <select 
-            v-model="selectedBackupChampion" 
-            class="w-full px-3 py-2 border rounded-md"
-          >
+          <select v-model="selectedBackupChampion" class="w-full px-3 py-2 border rounded-md">
             <option value="">选择英雄</option>
-            <option 
-              v-for="champion in availableBackupChampions" 
-              :key="champion.id" 
+            <option
+              v-for="champion in availableBackupChampions"
+              :key="champion.id"
               :value="champion"
             >
               {{ champion.name }}
@@ -301,9 +292,7 @@
         </div>
         <DialogFooter>
           <Button variant="outline" @click="showAddBackup = false">取消</Button>
-          <Button @click="addBackupChampion" :disabled="!selectedBackupChampion">
-            添加
-          </Button>
+          <Button :disabled="!selectedBackupChampion" @click="addBackupChampion"> 添加 </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -316,15 +305,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { 
-  RefreshCw, 
-  Power, 
-  Activity, 
-  BookOpen, 
-  Plus, 
-  X 
-} from 'lucide-vue-next'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { RefreshCw, Power, Activity, BookOpen, Plus, X } from 'lucide-vue-next'
 
 const gameStatus = ref({
   connected: true,
@@ -341,8 +329,8 @@ const config = ref({
     enabled: false,
     championId: 76,
     backupChampions: [
-      { id: 103, name: "阿狸" },
-      { id: 84, name: "阿卡丽" }
+      { id: 103, name: '阿狸' },
+      { id: 84, name: '阿卡丽' }
     ]
   },
   autoBanChampion: {
@@ -365,23 +353,25 @@ const config = ref({
 })
 
 const champions = ref([
-  { id: 76, name: "尼德丽" },
-  { id: 103, name: "阿狸" },
-  { id: 84, name: "阿卡丽" },
-  { id: 157, name: "亚索" },
-  { id: 238, name: "劫" },
-  { id: 11, name: "易" },
-  { id: 64, name: "盲僧" }
+  { id: 76, name: '尼德丽' },
+  { id: 103, name: '阿狸' },
+  { id: 84, name: '阿卡丽' },
+  { id: 157, name: '亚索' },
+  { id: 238, name: '劫' },
+  { id: 11, name: '易' },
+  { id: 64, name: '盲僧' }
 ])
 
 const showAddBackup = ref(false)
 const selectedBackupChampion = ref(null)
 
 const allFeaturesEnabled = computed(() => {
-  return config.value.autoAccept.enabled && 
-         config.value.autoPickChampion.enabled && 
-         config.value.autoBanChampion.enabled && 
-         config.value.autoRune.enabled
+  return (
+    config.value.autoAccept.enabled &&
+    config.value.autoPickChampion.enabled &&
+    config.value.autoBanChampion.enabled &&
+    config.value.autoRune.enabled
+  )
 })
 
 const availableBackupChampions = computed(() => {
@@ -444,4 +434,4 @@ function removeBackupChampion(championId: number) {
     config.value.autoPickChampion.backupChampions.splice(index, 1)
   }
 }
-</script> 
+</script>

@@ -8,11 +8,11 @@
     <!-- 快速操作 -->
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
-        <Button @click="enableAll" variant="default">
+        <Button variant="default" @click="enableAll">
           <Power class="w-4 h-4 mr-2" />
           全部启用
         </Button>
-        <Button @click="disableAll" variant="outline">
+        <Button variant="outline" @click="disableAll">
           <PowerOff class="w-4 h-4 mr-2" />
           全部禁用
         </Button>
@@ -29,7 +29,7 @@
         <CardHeader class="pb-3">
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-3">
-              <div 
+              <div
                 :class="[
                   'w-10 h-10 rounded-lg flex items-center justify-center',
                   func.enabled ? 'bg-primary text-primary-foreground' : 'bg-muted'
@@ -45,18 +45,18 @@
             <Switch v-model:checked="func.enabled" />
           </div>
         </CardHeader>
-        
+
         <CardContent v-if="func.enabled" class="pt-0">
           <!-- 自动接受对局配置 -->
           <div v-if="func.id === 'auto-accept'" class="space-y-3">
             <div class="flex items-center justify-between">
               <label class="text-sm font-medium">延迟时间</label>
               <div class="flex items-center space-x-2">
-                <input 
-                  v-model.number="func.config.delay" 
-                  type="range" 
-                  min="0" 
-                  max="10" 
+                <input
+                  v-model.number="func.config.delay"
+                  type="range"
+                  min="0"
+                  max="10"
                   class="w-20"
                 />
                 <span class="text-sm min-w-0">{{ func.config.delay }}s</span>
@@ -68,7 +68,10 @@
           <div v-else-if="func.id === 'auto-pick'" class="space-y-3">
             <div class="space-y-2">
               <label class="text-sm font-medium">首选英雄</label>
-              <select v-model="func.config.championId" class="w-full text-sm border rounded px-2 py-1">
+              <select
+                v-model="func.config.championId"
+                class="w-full text-sm border rounded px-2 py-1"
+              >
                 <option value="">选择英雄</option>
                 <option v-for="champ in champions" :key="champ.id" :value="champ.id">
                   {{ champ.name }}
@@ -91,7 +94,7 @@
                 <option value="porofessor">Porofessor</option>
               </select>
             </div>
-            <Button @click="updateRunes" size="sm" class="w-full">
+            <Button size="sm" class="w-full" @click="updateRunes">
               <BookOpen class="w-4 h-4 mr-2" />
               立即更新符文
             </Button>
@@ -109,9 +112,7 @@
     <Card>
       <CardHeader>
         <CardTitle>高级设置</CardTitle>
-        <CardDescription>
-          更详细的自动化配置选项
-        </CardDescription>
+        <CardDescription> 更详细的自动化配置选项 </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -132,7 +133,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="space-y-4">
             <h4 class="font-medium">安全设置</h4>
             <div class="space-y-3">
@@ -158,19 +159,23 @@
     <Card>
       <CardHeader>
         <CardTitle>实时状态</CardTitle>
-        <CardDescription>
-          各功能的运行状态监控
-        </CardDescription>
+        <CardDescription> 各功能的运行状态监控 </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div v-for="status in functionStatus" :key="status.name" 
-               class="flex items-center space-x-3 p-3 border rounded-lg">
-            <div 
+          <div
+            v-for="status in functionStatus"
+            :key="status.name"
+            class="flex items-center space-x-3 p-3 border rounded-lg"
+          >
+            <div
               :class="[
                 'w-3 h-3 rounded-full',
-                status.status === 'active' ? 'bg-green-500' : 
-                status.status === 'standby' ? 'bg-yellow-500' : 'bg-gray-400'
+                status.status === 'active'
+                  ? 'bg-green-500'
+                  : status.status === 'standby'
+                    ? 'bg-yellow-500'
+                    : 'bg-gray-400'
               ]"
             />
             <div>
@@ -189,14 +194,15 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { 
-  Power, 
-  PowerOff, 
-  Zap, 
-  User, 
-  BookOpen, 
-  Shield, 
-  Eye, 
+
+import {
+  Power,
+  PowerOff,
+  Zap,
+  User,
+  BookOpen,
+  Shield,
+  Eye,
   Target,
   MessageSquare,
   Settings
@@ -311,7 +317,7 @@ const functionStatus = ref([
   },
   {
     name: '自动禁用',
-    status: 'standby', 
+    status: 'standby',
     message: '等待禁用阶段'
   },
   {
@@ -350,4 +356,4 @@ function updateRunes() {
   // TODO: 实现更新符文逻辑
   console.log('更新符文')
 }
-</script> 
+</script>

@@ -44,9 +44,7 @@
     <Card>
       <CardHeader>
         <CardTitle>使用限制</CardTitle>
-        <CardDescription>
-          设置自动功能的使用限制以降低风险
-        </CardDescription>
+        <CardDescription> 设置自动功能的使用限制以降低风险 </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -58,30 +56,33 @@
               </div>
               <Switch v-model:checked="safetySettings.enableRateLimit" />
             </div>
-            
-            <div v-if="safetySettings.enableRateLimit" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
+
+            <div
+              v-if="safetySettings.enableRateLimit"
+              class="ml-4 space-y-3 border-l-2 border-muted pl-4"
+            >
               <div class="space-y-2">
                 <label class="text-sm font-medium">每小时操作上限</label>
                 <div class="flex items-center space-x-3">
-                  <input 
-                    v-model.number="safetySettings.hourlyLimit" 
-                    type="range" 
-                    min="1" 
-                    max="100" 
+                  <input
+                    v-model.number="safetySettings.hourlyLimit"
+                    type="range"
+                    min="1"
+                    max="100"
                     class="flex-1"
                   />
                   <span class="text-sm min-w-0">{{ safetySettings.hourlyLimit }}次</span>
                 </div>
               </div>
-              
+
               <div class="space-y-2">
                 <label class="text-sm font-medium">操作间隔</label>
                 <div class="flex items-center space-x-3">
-                  <input 
-                    v-model.number="safetySettings.operationInterval" 
-                    type="range" 
-                    min="1" 
-                    max="30" 
+                  <input
+                    v-model.number="safetySettings.operationInterval"
+                    type="range"
+                    min="1"
+                    max="30"
                     class="flex-1"
                   />
                   <span class="text-sm min-w-0">{{ safetySettings.operationInterval }}秒</span>
@@ -98,23 +99,26 @@
               </div>
               <Switch v-model:checked="safetySettings.randomDelay" />
             </div>
-            
-            <div v-if="safetySettings.randomDelay" class="ml-4 space-y-3 border-l-2 border-muted pl-4">
+
+            <div
+              v-if="safetySettings.randomDelay"
+              class="ml-4 space-y-3 border-l-2 border-muted pl-4"
+            >
               <div class="space-y-2">
                 <label class="text-sm font-medium">延迟范围</label>
                 <div class="flex items-center space-x-3">
-                  <input 
-                    v-model.number="safetySettings.minDelay" 
-                    type="number" 
-                    min="0" 
+                  <input
+                    v-model.number="safetySettings.minDelay"
+                    type="number"
+                    min="0"
                     max="10"
                     class="w-20 px-2 py-1 text-sm border rounded"
                   />
                   <span class="text-sm">-</span>
-                  <input 
-                    v-model.number="safetySettings.maxDelay" 
-                    type="number" 
-                    min="0" 
+                  <input
+                    v-model.number="safetySettings.maxDelay"
+                    type="number"
+                    min="0"
                     max="30"
                     class="w-20 px-2 py-1 text-sm border rounded"
                   />
@@ -131,9 +135,7 @@
     <Card>
       <CardHeader>
         <CardTitle>检测规避</CardTitle>
-        <CardDescription>
-          配置反检测措施
-        </CardDescription>
+        <CardDescription> 配置反检测措施 </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -201,7 +203,9 @@
         </CardTitle>
       </CardHeader>
       <CardContent class="space-y-4">
-        <div class="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+        <div
+          class="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4"
+        >
           <div class="flex items-start space-x-3">
             <AlertTriangle class="w-5 h-5 text-yellow-500 mt-0.5" />
             <div class="space-y-2">
@@ -216,13 +220,16 @@
           </div>
         </div>
 
-        <div class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div
+          class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+        >
           <div class="flex items-start space-x-3">
             <Info class="w-5 h-5 text-blue-500 mt-0.5" />
             <div class="space-y-2">
               <h4 class="font-medium text-blue-800 dark:text-blue-200">技术说明</h4>
               <p class="text-sm text-blue-700 dark:text-blue-300">
-                本工具通过League Client Protocol (LCP) 与游戏客户端通信，所有操作都在官方支持的范围内进行。
+                本工具通过League Client Protocol (LCP)
+                与游戏客户端通信，所有操作都在官方支持的范围内进行。
               </p>
             </div>
           </div>
@@ -234,20 +241,24 @@
     <Card>
       <CardHeader>
         <CardTitle>操作日志</CardTitle>
-        <CardDescription>
-          最近的自动操作记录
-        </CardDescription>
+        <CardDescription> 最近的自动操作记录 </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="space-y-3">
-          <div v-for="log in operationLogs" :key="log.id" 
-               class="flex items-center justify-between p-3 border rounded-lg">
+          <div
+            v-for="log in operationLogs"
+            :key="log.id"
+            class="flex items-center justify-between p-3 border rounded-lg"
+          >
             <div class="flex items-center space-x-3">
-              <div 
+              <div
                 :class="[
                   'w-2 h-2 rounded-full',
-                  log.type === 'success' ? 'bg-green-500' : 
-                  log.type === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                  log.type === 'success'
+                    ? 'bg-green-500'
+                    : log.type === 'error'
+                      ? 'bg-red-500'
+                      : 'bg-yellow-500'
                 ]"
               />
               <div>
@@ -260,7 +271,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="flex justify-between items-center mt-4 pt-4 border-t">
           <Button variant="outline" size="sm" @click="clearLogs">
             <Trash2 class="w-4 h-4 mr-2" />
@@ -281,13 +292,7 @@ import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { 
-  Shield, 
-  AlertTriangle, 
-  Info, 
-  Trash2, 
-  Download 
-} from 'lucide-vue-next'
+import { Shield, AlertTriangle, Info, Trash2, Download } from 'lucide-vue-next'
 
 const safetySettings = ref({
   enableRateLimit: true,
@@ -350,4 +355,4 @@ function exportLogs() {
   // TODO: 实现导出日志功能
   console.log('导出日志')
 }
-</script> 
+</script>

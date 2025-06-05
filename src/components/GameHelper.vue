@@ -2,11 +2,11 @@
   <div class="game-helper">
     <div class="config-panel">
       <h2>功能设置</h2>
-      
+
       <!-- 自动接受对局 -->
       <div class="config-item">
         <label>
-          <input type="checkbox" v-model="config.autoAccept" />
+          <input v-model="config.autoAccept" type="checkbox" />
           自动接受对局
         </label>
       </div>
@@ -14,10 +14,13 @@
       <!-- 自动选择英雄 -->
       <div class="config-item">
         <label>
-          <input type="checkbox" v-model="config.autoPickChampion.enabled" />
+          <input v-model="config.autoPickChampion.enabled" type="checkbox" />
           自动选择英雄
         </label>
-        <select v-model="config.autoPickChampion.championId" :disabled="!config.autoPickChampion.enabled">
+        <select
+          v-model="config.autoPickChampion.championId"
+          :disabled="!config.autoPickChampion.enabled"
+        >
           <option v-for="champion in champions" :key="champion.id" :value="champion.id">
             {{ champion.name }}
           </option>
@@ -27,10 +30,13 @@
       <!-- 自动禁用英雄 -->
       <div class="config-item">
         <label>
-          <input type="checkbox" v-model="config.autoBanChampion.enabled" />
+          <input v-model="config.autoBanChampion.enabled" type="checkbox" />
           自动禁用英雄
         </label>
-        <select v-model="config.autoBanChampion.championId" :disabled="!config.autoBanChampion.enabled">
+        <select
+          v-model="config.autoBanChampion.championId"
+          :disabled="!config.autoBanChampion.enabled"
+        >
           <option v-for="champion in champions" :key="champion.id" :value="champion.id">
             {{ champion.name }}
           </option>
@@ -40,12 +46,12 @@
       <!-- 自动符文配置 -->
       <div class="config-item">
         <label>
-          <input type="checkbox" v-model="config.autoRune.enabled" />
+          <input v-model="config.autoRune.enabled" type="checkbox" />
           自动符文配置
         </label>
-        <button 
-          @click="updateRunePage" 
+        <button
           :disabled="!config.autoRune.enabled || !config.autoPickChampion.championId"
+          @click="updateRunePage"
         >
           更新符文页
         </button>
@@ -55,20 +61,26 @@
     <!-- 对局分析 -->
     <div v-if="matchAnalysis" class="match-analysis">
       <h2>对局分析</h2>
-      
+
       <div class="analysis-overview">
         <div class="analysis-item">
           <h3>团队评分</h3>
           <div class="score">{{ matchAnalysis.teamScore }}/100</div>
         </div>
-        
+
         <div class="analysis-item">
           <h3>阵容优势</h3>
-          <div class="score" :class="{ positive: matchAnalysis.compositionScore > 0, negative: matchAnalysis.compositionScore < 0 }">
+          <div
+            class="score"
+            :class="{
+              positive: matchAnalysis.compositionScore > 0,
+              negative: matchAnalysis.compositionScore < 0
+            }"
+          >
             {{ matchAnalysis.compositionScore > 0 ? '+' : '' }}{{ matchAnalysis.compositionScore }}
           </div>
         </div>
-        
+
         <div class="analysis-item">
           <h3>团战能力</h3>
           <div class="score">{{ matchAnalysis.teamfightScore }}/100</div>
@@ -77,12 +89,16 @@
 
       <div class="lane-advantages">
         <h3>各路对线形势</h3>
-        <div v-for="(advantage, position) in matchAnalysis.laneAdvantages" :key="position" class="lane-item">
+        <div
+          v-for="(advantage, position) in matchAnalysis.laneAdvantages"
+          :key="position"
+          class="lane-item"
+        >
           <span class="position">{{ getPositionName(position) }}</span>
           <div class="advantage-bar">
-            <div 
-              class="advantage-indicator" 
-              :style="{ left: `${50 + advantage/2}%` }"
+            <div
+              class="advantage-indicator"
+              :style="{ left: `${50 + advantage / 2}%` }"
               :class="{ positive: advantage > 0, negative: advantage < 0 }"
             ></div>
           </div>
@@ -103,19 +119,29 @@
     <div class="teams-container">
       <div class="team-info">
         <h3>我方队伍</h3>
-        <div v-for="player in gameInfo?.myTeam" :key="player.summoner.summonerId" class="player-card">
+        <div
+          v-for="player in gameInfo?.myTeam"
+          :key="player.summoner.summonerId"
+          class="player-card"
+        >
           <div class="player-basic">
-            <img :src="getChampionIcon(player.championId)" :alt="getChampionName(player.championId)" class="champion-icon" />
+            <img
+              :src="getChampionIcon(player.championId)"
+              :alt="getChampionName(player.championId)"
+              class="champion-icon"
+            />
             <div class="player-info">
               <div class="player-name">{{ player.summoner.displayName }}</div>
               <div class="player-position">{{ getPositionName(player.assignedPosition) }}</div>
             </div>
           </div>
-          
-          <div class="player-stats" v-if="player.stats">
+
+          <div v-if="player.stats" class="player-stats">
             <div class="stat-item">
               <span class="label">胜率</span>
-              <span class="value">{{ (player.stats.wins / player.stats.totalGames * 100).toFixed(1) }}%</span>
+              <span class="value"
+                >{{ ((player.stats.wins / player.stats.totalGames) * 100).toFixed(1) }}%</span
+              >
             </div>
             <div class="stat-item">
               <span class="label">KDA</span>
@@ -131,19 +157,29 @@
 
       <div class="team-info">
         <h3>敌方队伍</h3>
-        <div v-for="player in gameInfo?.theirTeam" :key="player.summoner.summonerId" class="player-card">
+        <div
+          v-for="player in gameInfo?.theirTeam"
+          :key="player.summoner.summonerId"
+          class="player-card"
+        >
           <div class="player-basic">
-            <img :src="getChampionIcon(player.championId)" :alt="getChampionName(player.championId)" class="champion-icon" />
+            <img
+              :src="getChampionIcon(player.championId)"
+              :alt="getChampionName(player.championId)"
+              class="champion-icon"
+            />
             <div class="player-info">
               <div class="player-name">{{ player.summoner.displayName }}</div>
               <div class="player-position">{{ getPositionName(player.assignedPosition) }}</div>
             </div>
           </div>
-          
-          <div class="player-stats" v-if="player.stats">
+
+          <div v-if="player.stats" class="player-stats">
             <div class="stat-item">
               <span class="label">胜率</span>
-              <span class="value">{{ (player.stats.wins / player.stats.totalGames * 100).toFixed(1) }}%</span>
+              <span class="value"
+                >{{ ((player.stats.wins / player.stats.totalGames) * 100).toFixed(1) }}%</span
+              >
             </div>
             <div class="stat-item">
               <span class="label">KDA</span>
@@ -242,27 +278,42 @@ const config = ref<GameConfig>({
 })
 
 // 监听配置变化
-watch(() => config.value.autoAccept, async (enabled) => {
-  await invoke('set_auto_accept', { enabled })
-})
-
-watch(() => config.value.autoPickChampion, async (pick) => {
-  await invoke('set_auto_pick', { championId: pick.enabled ? pick.championId : null })
-}, { deep: true })
-
-watch(() => config.value.autoBanChampion, async (ban) => {
-  await invoke('set_auto_ban', { championId: ban.enabled ? ban.championId : null })
-}, { deep: true })
-
-watch(() => config.value.autoRune, async (rune) => {
-  if (rune.enabled && rune.page) {
-    try {
-      // TODO: 应用符文页到客户端
-    } catch (error) {
-      console.error('应用符文页失败:', error)
-    }
+watch(
+  () => config.value.autoAccept,
+  async enabled => {
+    await invoke('set_auto_accept', { enabled })
   }
-}, { deep: true })
+)
+
+watch(
+  () => config.value.autoPickChampion,
+  async pick => {
+    await invoke('set_auto_pick', { championId: pick.enabled ? pick.championId : null })
+  },
+  { deep: true }
+)
+
+watch(
+  () => config.value.autoBanChampion,
+  async ban => {
+    await invoke('set_auto_ban', { championId: ban.enabled ? ban.championId : null })
+  },
+  { deep: true }
+)
+
+watch(
+  () => config.value.autoRune,
+  async rune => {
+    if (rune.enabled && rune.page) {
+      try {
+        // TODO: 应用符文页到客户端
+      } catch (error) {
+        console.error('应用符文页失败:', error)
+      }
+    }
+  },
+  { deep: true }
+)
 
 // 英雄列表
 const champions = ref<Champion[]>([])
@@ -270,7 +321,7 @@ const champions = ref<Champion[]>([])
 // 游戏服务
 const client = new LCPClient({
   token: '', // 需要从客户端获取
-  port: ''  // 需要从客户端获取
+  port: '' // 需要从客户端获取
 })
 
 // 游戏信息
@@ -281,7 +332,7 @@ const updateInterval = ref<NodeJS.Timeout | null>(null)
 // 方法
 async function updateRunePage() {
   if (!config.value.autoPickChampion.championId) return
-  
+
   try {
     const runePage = await client.getRuneSuggestion(config.value.autoPickChampion.championId)
     config.value.autoRune.page = runePage
@@ -325,7 +376,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('初始化游戏助手失败:', error)
   }
-  
+
   // 启动自动更新
   updateInterval.value = setInterval(updateGameInfo, 2000)
 })
@@ -379,7 +430,9 @@ function getWinRate(history: any): number {
   font-family: Arial, sans-serif;
 }
 
-.config-panel, .match-analysis, .team-info {
+.config-panel,
+.match-analysis,
+.team-info {
   background: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -407,8 +460,12 @@ function getWinRate(history: any): number {
   margin-top: 10px;
 }
 
-.score.positive { color: #4caf50; }
-.score.negative { color: #f44336; }
+.score.positive {
+  color: #4caf50;
+}
+.score.negative {
+  color: #f44336;
+}
 
 .lane-advantages {
   margin-bottom: 30px;
@@ -442,8 +499,12 @@ function getWinRate(history: any): number {
   transform: translateX(-50%);
 }
 
-.advantage-indicator.positive { background: #4caf50; }
-.advantage-indicator.negative { background: #f44336; }
+.advantage-indicator.positive {
+  background: #4caf50;
+}
+.advantage-indicator.negative {
+  background: #f44336;
+}
 
 .tactics ul {
   list-style: none;
@@ -521,4 +582,4 @@ function getWinRate(history: any): number {
   font-weight: 500;
   font-size: 14px;
 }
-</style> 
+</style>

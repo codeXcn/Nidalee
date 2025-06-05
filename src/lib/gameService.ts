@@ -56,7 +56,7 @@ export class GameService {
     const checkGameflow = async () => {
       try {
         const phase = await this.client.getGameflowPhase()
-        
+
         // 自动接受对局
         if (this.config.autoAccept && phase.phase === 'ReadyCheck') {
           await this.client.acceptMatchmaking()
@@ -74,21 +74,21 @@ export class GameService {
   // 监听英雄选择
   private async watchChampSelect() {
     let lastCounter = -1
-    
+
     const checkChampSelect = async () => {
       try {
         const phase = await this.client.getGameflowPhase()
         if (phase.phase !== 'ChampSelect') return
 
         const session = await this.client.getChampSelectSession()
-        
+
         // 避免重复处理同一个状态
         if (session.counter === lastCounter) return
         lastCounter = session.counter
 
         // 处理英雄选择和禁用
         await this.handleChampSelect(session)
-        
+
         // 处理符文配置
         if (this.config.autoRune.enabled) {
           await this.handleRune()
@@ -106,11 +106,11 @@ export class GameService {
   // 处理英雄选择和禁用
   private async handleChampSelect(session: ChampSelectSession) {
     const currentSummoner = await this.client.getCurrentSummoner()
-    
+
     for (const action of session.actions.flat()) {
       // 跳过已完成的动作
       if (action.completed) continue
-      
+
       // 找到当前召唤师的动作
       const player = session.myTeam.find(p => p.summonerId === currentSummoner.summonerId)
       if (!player || action.actorCellId !== player.cellId) continue
@@ -119,7 +119,7 @@ export class GameService {
       if (action.type === 'ban' && this.config.autoBanChampion.enabled) {
         await this.client.banChampion(action.id, this.config.autoBanChampion.championId)
       }
-      
+
       // 自动选择英雄
       if (action.type === 'pick' && this.config.autoPickChampion.enabled) {
         await this.client.selectChampion(action.id, this.config.autoPickChampion.championId)
@@ -151,7 +151,7 @@ export class GameService {
     const summoner = await this.client.getSummonerByName(player.summonerId.toString())
     const ranked = await this.client.getRankedStats(summoner.puuid)
     const history = await this.client.getMatchHistory(summoner.puuid, 0, 10)
-    
+
     return {
       summoner,
       ranked,
@@ -160,4 +160,4 @@ export class GameService {
       championId: player.championId
     }
   }
-} 
+}

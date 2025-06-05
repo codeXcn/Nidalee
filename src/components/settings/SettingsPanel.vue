@@ -3,19 +3,19 @@
     <!-- 设置标签页 -->
     <div class="border-b border-border">
       <nav class="flex space-x-8">
-        <button 
-          v-for="tab in tabs" 
+        <button
+          v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
           :class="[
             'py-3 px-2 border-b-2 font-medium text-sm transition-all duration-200 relative',
-            activeTab === tab.id 
-              ? 'border-primary text-primary shadow-primary/20 shadow-sm' 
+            activeTab === tab.id
+              ? 'border-primary text-primary shadow-primary/20 shadow-sm'
               : 'border-transparent text-muted-foreground hover:text-foreground hover:border-primary/30'
           ]"
+          @click="activeTab = tab.id"
         >
           {{ tab.name }}
-          <div 
+          <div
             v-if="activeTab === tab.id"
             class="absolute inset-x-0 -bottom-0.5 h-0.5 bg-primary rounded-full"
           />
@@ -27,12 +27,15 @@
     <div v-if="activeTab === 'general'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">通用设置</h3>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <div class="space-y-2">
               <label class="text-sm font-medium">应用语言</label>
-              <select v-model="configStore.config.general.language" class="w-full px-3 py-2 border rounded-md">
+              <select
+                v-model="configStore.config.general.language"
+                class="w-full px-3 py-2 border rounded-md"
+              >
                 <option value="zh-CN">简体中文</option>
                 <option value="en-US">English</option>
                 <option value="ja-JP">日本語</option>
@@ -90,7 +93,7 @@
     <div v-if="activeTab === 'connection'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">连接设置</h3>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <div class="flex items-center justify-between">
@@ -104,11 +107,11 @@
             <div class="space-y-2">
               <label class="text-sm font-medium">连接超时时间</label>
               <div class="flex items-center space-x-3">
-                <input 
-                  v-model.number="configStore.config.connection.timeout" 
-                  type="range" 
-                  min="5" 
-                  max="60" 
+                <input
+                  v-model.number="configStore.config.connection.timeout"
+                  type="range"
+                  min="5"
+                  max="60"
                   class="flex-1"
                 />
                 <span class="text-sm min-w-0">{{ configStore.config.connection.timeout }}秒</span>
@@ -118,14 +121,16 @@
             <div class="space-y-2">
               <label class="text-sm font-medium">重连间隔</label>
               <div class="flex items-center space-x-3">
-                <input 
-                  v-model.number="configStore.config.connection.retryInterval" 
-                  type="range" 
-                  min="1" 
-                  max="30" 
+                <input
+                  v-model.number="configStore.config.connection.retryInterval"
+                  type="range"
+                  min="1"
+                  max="30"
                   class="flex-1"
                 />
-                <span class="text-sm min-w-0">{{ configStore.config.connection.retryInterval }}秒</span>
+                <span class="text-sm min-w-0"
+                  >{{ configStore.config.connection.retryInterval }}秒</span
+                >
               </div>
             </div>
           </div>
@@ -134,14 +139,16 @@
             <div class="space-y-2">
               <label class="text-sm font-medium">最大重连次数</label>
               <div class="flex items-center space-x-3">
-                <input 
-                  v-model.number="configStore.config.connection.maxRetries" 
-                  type="range" 
-                  min="1" 
-                  max="10" 
+                <input
+                  v-model.number="configStore.config.connection.maxRetries"
+                  type="range"
+                  min="1"
+                  max="10"
                   class="flex-1"
                 />
-                <span class="text-sm min-w-0">{{ configStore.config.connection.maxRetries }}次</span>
+                <span class="text-sm min-w-0"
+                  >{{ configStore.config.connection.maxRetries }}次</span
+                >
               </div>
             </div>
 
@@ -161,7 +168,7 @@
     <div v-if="activeTab === 'notifications'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">通知设置</h3>
-        
+
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
@@ -210,11 +217,11 @@
     <div v-if="activeTab === 'cache'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">缓存与存储</h3>
-        
+
         <!-- 缓存控制 -->
         <div class="space-y-4">
           <h4 class="font-medium">缓存控制</h4>
-          
+
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <div>
@@ -245,71 +252,81 @@
         <!-- 缓存信息 -->
         <div class="space-y-4">
           <h4 class="font-medium">缓存信息</h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]">
+            <div
+              class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]"
+            >
               <div class="flex items-center justify-between mb-2">
                 <span class="font-medium">配置缓存</span>
-                <div 
+                <div
                   :class="[
                     'size-3 rounded-full transition-all duration-200',
-                    cacheStatus.configCacheExists 
-                      ? 'bg-green-500 shadow-lg shadow-green-500/30 animate-pulse' 
+                    cacheStatus.configCacheExists
+                      ? 'bg-green-500 shadow-lg shadow-green-500/30 animate-pulse'
                       : 'bg-gray-400 shadow-md shadow-gray-400/20'
                   ]"
                 />
               </div>
               <p class="text-xs text-muted-foreground">{{ formatCacheSize('userConfig') }}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                class="w-full mt-2" 
-                @click="clearSpecificCache('config')"
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full mt-2"
                 :disabled="!cacheStatus.configCacheExists"
+                @click="clearSpecificCache('config')"
               >
                 清除
               </Button>
             </div>
 
-            <div class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]">
+            <div
+              class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]"
+            >
               <div class="flex items-center justify-between mb-2">
                 <span class="font-medium">主题缓存</span>
-                <div :class="[
-                  'size-3 rounded-full transition-all duration-200', 
-                  cacheStatus.themeCacheExists 
-                    ? 'bg-green-500 shadow-green-500/40 shadow-md animate-pulse' 
-                    : 'bg-gray-400 shadow-gray-400/20 shadow-sm'
-                ]" />
+                <div
+                  :class="[
+                    'size-3 rounded-full transition-all duration-200',
+                    cacheStatus.themeCacheExists
+                      ? 'bg-green-500 shadow-green-500/40 shadow-md animate-pulse'
+                      : 'bg-gray-400 shadow-gray-400/20 shadow-sm'
+                  ]"
+                />
               </div>
               <p class="text-xs text-muted-foreground">{{ formatCacheSize('theme') }}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                class="w-full mt-2" 
-                @click="clearSpecificCache('theme')"
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full mt-2"
                 :disabled="!cacheStatus.themeCacheExists"
+                @click="clearSpecificCache('theme')"
               >
                 清除
               </Button>
             </div>
 
-            <div class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]">
+            <div
+              class="p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:scale-[1.02]"
+            >
               <div class="flex items-center justify-between mb-2">
                 <span class="font-medium">游戏数据</span>
-                <div :class="[
-                  'size-3 rounded-full transition-all duration-200', 
-                  cacheStatus.gameDataCacheExists 
-                    ? 'bg-green-500 shadow-green-500/40 shadow-md animate-pulse' 
-                    : 'bg-gray-400 shadow-gray-400/20 shadow-sm'
-                ]" />
+                <div
+                  :class="[
+                    'size-3 rounded-full transition-all duration-200',
+                    cacheStatus.gameDataCacheExists
+                      ? 'bg-green-500 shadow-green-500/40 shadow-md animate-pulse'
+                      : 'bg-gray-400 shadow-gray-400/20 shadow-sm'
+                  ]"
+                />
               </div>
               <p class="text-xs text-muted-foreground">{{ formatCacheSize('gameStore') }}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                class="w-full mt-2" 
-                @click="clearSpecificCache('gameData')"
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full mt-2"
                 :disabled="!cacheStatus.gameDataCacheExists"
+                @click="clearSpecificCache('gameData')"
               >
                 清除
               </Button>
@@ -334,7 +351,7 @@
     <div v-if="activeTab === 'advanced'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">高级设置</h3>
-        
+
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
@@ -355,28 +372,32 @@
           <div class="space-y-2">
             <label class="text-sm font-medium">日志保留天数</label>
             <div class="flex items-center space-x-3">
-              <input 
-                v-model.number="configStore.config.advanced.logRetentionDays" 
-                type="range" 
-                min="1" 
-                max="30" 
+              <input
+                v-model.number="configStore.config.advanced.logRetentionDays"
+                type="range"
+                min="1"
+                max="30"
                 class="flex-1"
               />
-              <span class="text-sm min-w-0">{{ configStore.config.advanced.logRetentionDays }}天</span>
+              <span class="text-sm min-w-0"
+                >{{ configStore.config.advanced.logRetentionDays }}天</span
+              >
             </div>
           </div>
 
           <div class="space-y-2">
             <label class="text-sm font-medium">API请求频率限制</label>
             <div class="flex items-center space-x-3">
-              <input 
-                v-model.number="configStore.config.advanced.apiRateLimit" 
-                type="range" 
-                min="10" 
-                max="100" 
+              <input
+                v-model.number="configStore.config.advanced.apiRateLimit"
+                type="range"
+                min="10"
+                max="100"
                 class="flex-1"
               />
-              <span class="text-sm min-w-0">{{ configStore.config.advanced.apiRateLimit }}次/分钟</span>
+              <span class="text-sm min-w-0"
+                >{{ configStore.config.advanced.apiRateLimit }}次/分钟</span
+              >
             </div>
           </div>
         </div>
@@ -410,7 +431,7 @@
     <div v-if="activeTab === 'about'" class="space-y-6">
       <div class="space-y-4">
         <h3 class="text-lg font-medium">关于 Nidalee</h3>
-        
+
         <div class="space-y-6">
           <div class="flex items-center space-x-4">
             <img src="/src/assets/logo.svg" alt="Nidalee Logo" class="size-16" />
@@ -493,12 +514,8 @@
 
     <!-- 操作按钮 -->
     <div class="flex justify-end space-x-3 pt-6 border-t">
-      <Button variant="outline" @click="cancelSettings">
-        取消
-      </Button>
-      <Button @click="saveSettings">
-        保存设置
-      </Button>
+      <Button variant="outline" @click="cancelSettings"> 取消 </Button>
+      <Button @click="saveSettings"> 保存设置 </Button>
     </div>
 
     <!-- 重置确认对话框 -->
@@ -511,12 +528,8 @@
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" @click="showResetDialog = false">
-            取消
-          </Button>
-          <Button variant="destructive" @click="confirmReset">
-            确认重置
-          </Button>
+          <Button variant="outline" @click="showResetDialog = false"> 取消 </Button>
+          <Button variant="destructive" @click="confirmReset"> 确认重置 </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -527,16 +540,15 @@
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { 
-  Download, 
-  Upload, 
-  RotateCcw, 
-  Trash2, 
-  Github, 
-  Globe, 
-  MessageCircle 
-} from 'lucide-vue-next'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Download, Upload, RotateCcw, Trash2, Github, Globe, MessageCircle } from 'lucide-vue-next'
 
 // 导入 stores
 import { useUserConfigStore } from '@/stores/useUserConfigStore'
@@ -596,7 +608,7 @@ function formatCacheSize(cacheType: string): string {
 // 清除特定缓存
 function clearSpecificCache(type: 'config' | 'theme' | 'gameData') {
   configStore.clearCache(type)
-  
+
   gameStore.addNotification({
     message: `${type === 'config' ? '配置' : type === 'theme' ? '主题' : '游戏数据'}缓存已清除`,
     type: 'success'
@@ -620,7 +632,7 @@ function resetToDefaults() {
   resetAction.value = () => {
     configStore.resetConfig()
     themeStore.resetToDefault()
-    
+
     gameStore.addNotification({
       message: '设置已重置为默认值',
       type: 'success'
@@ -631,14 +643,15 @@ function resetToDefaults() {
 
 // 重置所有数据
 function resetAllData() {
-  resetDialogMessage.value = '这将删除所有应用数据，包括设置、主题、缓存和游戏数据。此操作不可撤销，应用将重启。'
+  resetDialogMessage.value =
+    '这将删除所有应用数据，包括设置、主题、缓存和游戏数据。此操作不可撤销，应用将重启。'
   resetAction.value = () => {
     configStore.clearAllCache()
     configStore.resetConfig()
     themeStore.resetToDefault()
     gameStore.clearNotifications()
     gameStore.clearOperationLogs()
-    
+
     // 重新加载页面
     setTimeout(() => {
       window.location.reload()
@@ -675,7 +688,7 @@ function exportSettings() {
     const allData = CacheManager.exportAllCache()
     const blob = new Blob([allData], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-    
+
     const a = document.createElement('a')
     a.href = url
     a.download = `nidalee-settings-${new Date().toISOString().split('T')[0]}.json`
@@ -683,7 +696,7 @@ function exportSettings() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    
+
     gameStore.addNotification({
       message: '设置导出成功',
       type: 'success'
@@ -701,21 +714,21 @@ function importSettings() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.json'
-  
-  input.onchange = async (e) => {
+
+  input.onchange = async e => {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
-    
+
     try {
       const text = await file.text()
       const success = CacheManager.importCache(text)
-      
+
       if (success) {
         gameStore.addNotification({
           message: '设置导入成功，即将重新加载应用',
           type: 'success'
         })
-        
+
         // 重新加载应用以应用导入的设置
         setTimeout(() => {
           window.location.reload()
@@ -730,7 +743,7 @@ function importSettings() {
       })
     }
   }
-  
+
   input.click()
 }
-</script> 
+</script>

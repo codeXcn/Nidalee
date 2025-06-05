@@ -8,7 +8,7 @@
           <p class="text-muted-foreground mt-1">准备开始你的英雄联盟征程</p>
         </div>
         <div class="flex items-center space-x-4">
-          <Button @click="connectToGame" :disabled="gameStatus.connecting">
+          <Button :disabled="gameStatus.connecting" @click="connectToGame">
             <Gamepad2 class="w-4 h-4 mr-2" />
             {{ gameStatus.connected ? '已连接' : '连接游戏' }}
           </Button>
@@ -21,11 +21,8 @@
       <Card>
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle class="text-sm font-medium">游戏连接</CardTitle>
-          <div 
-            :class="[
-              'w-3 h-3 rounded-full',
-              gameStatus.connected ? 'bg-green-500' : 'bg-red-500'
-            ]"
+          <div
+            :class="['w-3 h-3 rounded-full', gameStatus.connected ? 'bg-green-500' : 'bg-red-500']"
           />
         </CardHeader>
         <CardContent>
@@ -45,9 +42,7 @@
         </CardHeader>
         <CardContent>
           <div class="text-2xl font-bold">{{ dailyStats.wins }}</div>
-          <p class="text-xs text-muted-foreground">
-            胜率 {{ dailyStats.winRate }}%
-          </p>
+          <p class="text-xs text-muted-foreground">胜率 {{ dailyStats.winRate }}%</p>
         </CardContent>
       </Card>
 
@@ -58,9 +53,7 @@
         </CardHeader>
         <CardContent>
           <div class="text-2xl font-bold">{{ enabledFeatures }}</div>
-          <p class="text-xs text-muted-foreground">
-            项功能启用中
-          </p>
+          <p class="text-xs text-muted-foreground">项功能启用中</p>
         </CardContent>
       </Card>
 
@@ -71,9 +64,7 @@
         </CardHeader>
         <CardContent>
           <div class="text-2xl font-bold">{{ sessionTime }}</div>
-          <p class="text-xs text-muted-foreground">
-            本次会话
-          </p>
+          <p class="text-xs text-muted-foreground">本次会话</p>
         </CardContent>
       </Card>
     </div>
@@ -84,14 +75,14 @@
       <Card>
         <CardHeader>
           <CardTitle>快速功能</CardTitle>
-          <CardDescription>
-            常用功能的快捷访问
-          </CardDescription>
+          <CardDescription> 常用功能的快捷访问 </CardDescription>
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+              <div
+                class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"
+              >
                 <Zap class="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -104,7 +95,9 @@
 
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+              <div
+                class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center"
+              >
                 <Users class="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
@@ -117,7 +110,9 @@
 
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+              <div
+                class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center"
+              >
                 <BookOpen class="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
@@ -134,19 +129,23 @@
       <Card>
         <CardHeader>
           <CardTitle>最近活动</CardTitle>
-          <CardDescription>
-            最新的系统活动记录
-          </CardDescription>
+          <CardDescription> 最新的系统活动记录 </CardDescription>
         </CardHeader>
         <CardContent>
           <div class="space-y-4">
-            <div v-for="activity in recentActivities" :key="activity.id" class="flex items-start space-x-3">
-              <div 
+            <div
+              v-for="activity in recentActivities"
+              :key="activity.id"
+              class="flex items-start space-x-3"
+            >
+              <div
                 :class="[
                   'w-2 h-2 rounded-full mt-2',
-                  activity.type === 'success' ? 'bg-green-500' : 
-                  activity.type === 'warning' ? 'bg-yellow-500' : 
-                  'bg-blue-500'
+                  activity.type === 'success'
+                    ? 'bg-green-500'
+                    : activity.type === 'warning'
+                      ? 'bg-yellow-500'
+                      : 'bg-blue-500'
                 ]"
               />
               <div class="flex-1 min-w-0">
@@ -163,9 +162,7 @@
     <Card>
       <CardHeader>
         <CardTitle>游戏统计</CardTitle>
-        <CardDescription>
-          近期游戏表现分析
-        </CardDescription>
+        <CardDescription> 近期游戏表现分析 </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="h-64 flex items-center justify-center text-muted-foreground">
@@ -184,16 +181,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { 
-  Gamepad2, 
-  Trophy, 
-  Sparkles, 
-  Clock, 
-  Zap, 
-  Users, 
-  BookOpen,
-  BarChart3
-} from 'lucide-vue-next'
+import { Gamepad2, Trophy, Sparkles, Clock, Zap, Users, BookOpen, BarChart3 } from 'lucide-vue-next'
 
 const gameStatus = ref({
   connected: false,
@@ -260,7 +248,7 @@ async function connectToGame() {
     // TODO: 实现实际的游戏连接逻辑
     await new Promise(resolve => setTimeout(resolve, 2000))
     gameStatus.value.connected = true
-    
+
     recentActivities.value.unshift({
       id: Date.now(),
       message: '成功连接到英雄联盟客户端',
@@ -286,4 +274,4 @@ onMounted(() => {
     sessionStartTime.value = sessionStartTime.value
   }, 60000)
 })
-</script> 
+</script>

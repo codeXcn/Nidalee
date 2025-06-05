@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-bold">对局分析</h2>
         <p class="text-muted-foreground">实时对局数据分析和战术建议</p>
       </div>
-      <Button @click="analyzeCurrentMatch" :disabled="!gameStatus.inMatch">
+      <Button :disabled="!gameStatus.inMatch" @click="analyzeCurrentMatch">
         <Search class="w-4 h-4 mr-2" />
         分析当前对局
       </Button>
@@ -51,16 +51,23 @@
         </CardHeader>
         <CardContent>
           <div class="space-y-3">
-            <div v-for="player in matchData.myTeam" :key="player.summonerId" 
-                 class="flex items-center space-x-3 p-3 border rounded-lg">
-              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+            <div
+              v-for="player in matchData.myTeam"
+              :key="player.summonerId"
+              class="flex items-center space-x-3 p-3 border rounded-lg"
+            >
+              <div
+                class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"
+              >
                 <span class="text-blue-600 dark:text-blue-400 font-bold text-sm">
                   {{ player.championName.charAt(0) }}
                 </span>
               </div>
               <div class="flex-1">
                 <p class="font-medium">{{ player.summonerName }}</p>
-                <p class="text-sm text-muted-foreground">{{ player.championName }} - {{ player.position }}</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ player.championName }} - {{ player.position }}
+                </p>
               </div>
               <div class="text-right">
                 <p class="text-sm font-medium">{{ player.rank }}</p>
@@ -78,16 +85,23 @@
         </CardHeader>
         <CardContent>
           <div class="space-y-3">
-            <div v-for="player in matchData.enemyTeam" :key="player.summonerId" 
-                 class="flex items-center space-x-3 p-3 border rounded-lg">
-              <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+            <div
+              v-for="player in matchData.enemyTeam"
+              :key="player.summonerId"
+              class="flex items-center space-x-3 p-3 border rounded-lg"
+            >
+              <div
+                class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center"
+              >
                 <span class="text-red-600 dark:text-red-400 font-bold text-sm">
                   {{ player.championName.charAt(0) }}
                 </span>
               </div>
               <div class="flex-1">
                 <p class="font-medium">{{ player.summonerName }}</p>
-                <p class="text-sm text-muted-foreground">{{ player.championName }} - {{ player.position }}</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ player.championName }} - {{ player.position }}
+                </p>
               </div>
               <div class="text-right">
                 <p class="text-sm font-medium">{{ player.rank }}</p>
@@ -112,8 +126,11 @@
           <div class="space-y-3">
             <h4 class="font-medium text-green-600">优势项</h4>
             <ul class="space-y-2">
-              <li v-for="advantage in matchData.advantages" :key="advantage" 
-                  class="flex items-center text-sm">
+              <li
+                v-for="advantage in matchData.advantages"
+                :key="advantage"
+                class="flex items-center text-sm"
+              >
                 <CheckCircle class="w-4 h-4 mr-2 text-green-500" />
                 {{ advantage }}
               </li>
@@ -122,8 +139,11 @@
           <div class="space-y-3">
             <h4 class="font-medium text-red-600">注意事项</h4>
             <ul class="space-y-2">
-              <li v-for="warning in matchData.warnings" :key="warning" 
-                  class="flex items-center text-sm">
+              <li
+                v-for="warning in matchData.warnings"
+                :key="warning"
+                class="flex items-center text-sm"
+              >
                 <AlertTriangle class="w-4 h-4 mr-2 text-red-500" />
                 {{ warning }}
               </li>
@@ -137,16 +157,17 @@
     <Card>
       <CardHeader>
         <CardTitle>最近对局</CardTitle>
-        <CardDescription>
-          最近的对局分析结果
-        </CardDescription>
+        <CardDescription> 最近的对局分析结果 </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="space-y-3">
-          <div v-for="match in recentMatches" :key="match.id" 
-               class="flex items-center justify-between p-3 border rounded-lg">
+          <div
+            v-for="match in recentMatches"
+            :key="match.id"
+            class="flex items-center justify-between p-3 border rounded-lg"
+          >
             <div class="flex items-center space-x-3">
-              <div 
+              <div
                 :class="[
                   'w-3 h-3 rounded-full',
                   match.result === 'win' ? 'bg-green-500' : 'bg-red-500'
@@ -172,13 +193,7 @@
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Search, 
-  Users, 
-  Lightbulb, 
-  CheckCircle, 
-  AlertTriangle 
-} from 'lucide-vue-next'
+import { Search, Users, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-vue-next'
 
 const gameStatus = ref({
   inMatch: true // 模拟在对局中
@@ -271,12 +286,7 @@ const matchData = ref({
       winRate: 78
     }
   ],
-  advantages: [
-    '我方团战能力更强',
-    '中期推塔节奏优势',
-    '打野前期gank能力突出',
-    '下路组合配合良好'
-  ],
+  advantages: ['我方团战能力更强', '中期推塔节奏优势', '打野前期gank能力突出', '下路组合配合良好'],
   warnings: [
     '敌方剑姬单带威胁较大',
     '注意敌方卡莎后期输出',
@@ -319,4 +329,4 @@ function analyzeCurrentMatch() {
   // TODO: 实现分析当前对局的逻辑
   console.log('分析当前对局')
 }
-</script> 
+</script>

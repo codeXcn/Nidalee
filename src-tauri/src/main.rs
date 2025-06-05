@@ -4,10 +4,11 @@
 mod lib;
 use lib::{GameHelper, LcpConfig};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[derive(Default)]
 struct AppState {
-    game_helper: Option<Arc<GameHelper>>,
+    game_helper: Arc<Mutex<Option<Arc<GameHelper>>>>,
 }
 
 #[tauri::command]
@@ -32,7 +33,7 @@ async fn set_auto_accept(
     state: tauri::State<'_, AppState>,
     enabled: bool,
 ) -> Result<(), String> {
-    if let Some(helper) = &state.game_helper {
+    if let Some(helper) = &*state.game_helper.lock().await {
         helper.set_auto_accept(enabled).await;
         Ok(())
     } else {
@@ -45,7 +46,7 @@ async fn set_auto_pick(
     state: tauri::State<'_, AppState>,
     champion_id: Option<i32>,
 ) -> Result<(), String> {
-    if let Some(helper) = &state.game_helper {
+    if let Some(helper) = &*state.game_helper.lock().await {
         helper.set_auto_pick(champion_id).await;
         Ok(())
     } else {
@@ -58,7 +59,7 @@ async fn set_auto_ban(
     state: tauri::State<'_, AppState>,
     champion_id: Option<i32>,
 ) -> Result<(), String> {
-    if let Some(helper) = &state.game_helper {
+    if let Some(helper) = &*state.game_helper.lock().await {
         helper.set_auto_ban(champion_id).await;
         Ok(())
     } else {
@@ -68,6 +69,7 @@ async fn set_auto_ban(
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             init_game_helper,

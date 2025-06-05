@@ -1,5 +1,5 @@
 <template>
-  <aside 
+  <aside
     :class="[
       'sidebar',
       'h-screen bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col',
@@ -15,15 +15,9 @@
       <div v-else class="flex items-center justify-center">
         <img src="/src/assets/logo-simple.svg" alt="Nidalee Logo" class="size-8" />
       </div>
-      <button 
-        @click="toggleCollapse"
-        class="p-2 rounded-lg hover:bg-accent transition-colors"
-      >
+      <button class="p-2 rounded-lg hover:bg-accent transition-colors" @click="toggleCollapse">
         <ChevronLeft
-          :class="[
-            'size-4 transition-transform duration-300',
-            isCollapsed ? 'rotate-180' : ''
-          ]"
+          :class="['size-4 transition-transform duration-300', isCollapsed ? 'rotate-180' : '']"
         />
       </button>
     </div>
@@ -33,21 +27,17 @@
       <ul class="space-y-1">
         <li v-for="item in navigationItems" :key="item.id">
           <button
-            @click="$emit('navigate', item.id)"
             :class="[
               'w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200',
               'hover:bg-accent hover:text-accent-foreground',
-              activeItem === item.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+              activeItem === item.id
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground'
             ]"
+            @click="$emit('navigate', item.id)"
           >
-            <component 
-              :is="item.icon" 
-              class="w-5 h-5 flex-shrink-0"
-            />
-            <span 
-              v-if="!isCollapsed" 
-              class="ml-3 font-medium transition-opacity duration-300"
-            >
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span v-if="!isCollapsed" class="ml-3 font-medium transition-opacity duration-300">
               {{ item.label }}
             </span>
           </button>
@@ -58,11 +48,11 @@
     <!-- 侧边栏底部 -->
     <div class="p-2 border-t border-border">
       <button
-        @click="$emit('openSettings')"
         :class="[
           'w-full flex items-center px-3 py-2 rounded-lg transition-colors',
           'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
         ]"
+        @click="$emit('openSettings')"
       >
         <Settings class="w-5 h-5 flex-shrink-0" />
         <span v-if="!isCollapsed" class="ml-3 font-medium">设置</span>
@@ -73,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { 
+import {
   ChevronLeft,
   Settings,
   Gamepad2,
@@ -137,4 +127,4 @@ function toggleCollapse() {
 .sidebar {
   user-select: none;
 }
-</style> 
+</style>

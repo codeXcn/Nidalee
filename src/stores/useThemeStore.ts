@@ -17,7 +17,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(240 3.8% 46.1%)',
       border: 'hsl(240 5.9% 90%)',
       input: 'hsl(240 5.9% 90%)',
-      ring: 'hsl(240 5.9% 10%)',
+      ring: 'hsl(240 5.9% 10%)'
     },
     dark: {
       primary: 'hsl(0 0% 98%)',
@@ -28,7 +28,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(240 5% 64.9%)',
       border: 'hsl(240 3.7% 15.9%)',
       input: 'hsl(240 3.7% 15.9%)',
-      ring: 'hsl(240 4.9% 83.9%)',
+      ring: 'hsl(240 4.9% 83.9%)'
     }
   },
   slate: {
@@ -42,7 +42,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215.4 16.3% 46.9%)',
       border: 'hsl(214.3 31.8% 91.4%)',
       input: 'hsl(214.3 31.8% 91.4%)',
-      ring: 'hsl(222.2 84% 4.9%)',
+      ring: 'hsl(222.2 84% 4.9%)'
     },
     dark: {
       primary: 'hsl(210 40% 98%)',
@@ -53,7 +53,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215 20.2% 65.1%)',
       border: 'hsl(217.2 32.6% 17.5%)',
       input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(212.7 26.8% 83.9%)',
+      ring: 'hsl(212.7 26.8% 83.9%)'
     }
   },
   blue: {
@@ -67,7 +67,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215.4 16.3% 46.9%)',
       border: 'hsl(214.3 31.8% 91.4%)',
       input: 'hsl(214.3 31.8% 91.4%)',
-      ring: 'hsl(221.2 83.2% 53.3%)',
+      ring: 'hsl(221.2 83.2% 53.3%)'
     },
     dark: {
       primary: 'hsl(217.2 91.2% 59.8%)',
@@ -78,7 +78,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215 20.2% 65.1%)',
       border: 'hsl(217.2 32.6% 17.5%)',
       input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(217.2 91.2% 59.8%)',
+      ring: 'hsl(217.2 91.2% 59.8%)'
     }
   },
   green: {
@@ -92,7 +92,7 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215.4 16.3% 46.9%)',
       border: 'hsl(214.3 31.8% 91.4%)',
       input: 'hsl(214.3 31.8% 91.4%)',
-      ring: 'hsl(142.1 76.2% 36.3%)',
+      ring: 'hsl(142.1 76.2% 36.3%)'
     },
     dark: {
       primary: 'hsl(142.1 70.6% 45.3%)',
@@ -103,162 +103,178 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215 20.2% 65.1%)',
       border: 'hsl(217.2 32.6% 17.5%)',
       input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(142.1 70.6% 45.3%)',
+      ring: 'hsl(142.1 70.6% 45.3%)'
     }
   }
 }
 
-export const useThemeStore = defineStore('theme', () => {
-  // 使用 VueUse 的 colorMode
-  const colorMode = useColorMode({
-    modes: {
-      light: 'light',
-      dark: 'dark',
-      auto: 'auto'
-    }
-  })
-  
-  const prefersDark = usePreferredDark()
-  
-  // 主题相关状态
-  const theme = ref<Theme>('auto')
-  const selectedPreset = ref<keyof typeof THEME_PRESETS>('slate')
-  
-  // 计算属性
-  const isDark = computed(() => {
-    if (theme.value === 'dark') return true
-    if (theme.value === 'light') return false
-    return prefersDark.value
-  })
-  
-  const currentTheme = computed(() => {
-    return theme.value
-  })
-  
-  const themePresets = computed(() => THEME_PRESETS)
-  
-  // 方法
-  function setTheme(newTheme: Theme) {
-    theme.value = newTheme
-    colorMode.value = newTheme === 'auto' ? 'auto' : newTheme
-    updateDOMTheme()
-  }
-  
-  function setPreset(preset: keyof typeof THEME_PRESETS) {
-    selectedPreset.value = preset
-    applyPreset()
-  }
-  
-  function applyPreset() {
-    const preset = THEME_PRESETS[selectedPreset.value]
-    if (!preset) return
-    
-    const root = document.documentElement
-    
-    // 应用浅色主题变量
-    Object.entries(preset.light).forEach(([key, value]) => {
-      const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase()
-      root.style.setProperty(`--${cssVar}`, value)
-    })
-    
-    // 创建或更新 .dark 样式
-    let darkStyleEl = document.getElementById('dynamic-dark-theme')
-    if (!darkStyleEl) {
-      darkStyleEl = document.createElement('style')
-      darkStyleEl.id = 'dynamic-dark-theme'
-      document.head.appendChild(darkStyleEl)
-    }
-    
-    const darkVars = Object.entries(preset.dark)
-      .map(([key, value]) => {
-        const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase()
-        return `--${cssVar}: ${value};`
-      })
-      .join('\n    ')
-    
-    darkStyleEl.textContent = `.dark {\n    ${darkVars}\n  }`
-  }
-  
-  function updateDOMTheme() {
-    const root = document.documentElement
-    
-    // 移除所有主题类
-    root.classList.remove('light', 'dark')
-    
-    // 添加当前主题类
-    if (isDark.value) {
-      root.classList.add('dark')
-    } else {
-      root.classList.add('light')
-    }
-  }
-  
-  function resetToDefault() {
-    theme.value = 'auto'
-    selectedPreset.value = 'slate'
-    
-    // 移除动态样式
-    const darkStyleEl = document.getElementById('dynamic-dark-theme')
-    if (darkStyleEl) {
-      darkStyleEl.remove()
-    }
-    
-    // 重置为默认 CSS 变量
-    const root = document.documentElement
-    const defaultVars = [
-      '--primary', '--primary-foreground', '--secondary', '--secondary-foreground',
-      '--accent', '--accent-foreground', '--muted', '--muted-foreground',
-      '--border', '--input', '--ring'
-    ]
-    
-    defaultVars.forEach(varName => {
-      root.style.removeProperty(varName)
-    })
-    
-    updateDOMTheme()
-  }
-  
-  // 初始化
-  function initializeTheme() {
-    // 监听主题变化
-    watch([theme, isDark], () => {
-      updateDOMTheme()
-    }, { immediate: true })
-    
-    // 监听系统主题变化
-    watch(prefersDark, () => {
-      if (theme.value === 'auto') {
-        updateDOMTheme()
+export const useThemeStore = defineStore(
+  'theme',
+  () => {
+    // 使用 VueUse 的 colorMode
+    const colorMode = useColorMode({
+      modes: {
+        light: 'light',
+        dark: 'dark',
+        auto: 'auto'
       }
     })
-    
-    // 应用当前预设
-    if (selectedPreset.value !== 'slate') {
+
+    const prefersDark = usePreferredDark()
+
+    // 主题相关状态
+    const theme = ref<Theme>('auto')
+    const selectedPreset = ref<keyof typeof THEME_PRESETS>('slate')
+
+    // 计算属性
+    const isDark = computed(() => {
+      if (theme.value === 'dark') return true
+      if (theme.value === 'light') return false
+      return prefersDark.value
+    })
+
+    const currentTheme = computed(() => {
+      return theme.value
+    })
+
+    const themePresets = computed(() => THEME_PRESETS)
+
+    // 方法
+    function setTheme(newTheme: Theme) {
+      theme.value = newTheme
+      colorMode.value = newTheme === 'auto' ? 'auto' : newTheme
+      updateDOMTheme()
+    }
+
+    function setPreset(preset: keyof typeof THEME_PRESETS) {
+      selectedPreset.value = preset
       applyPreset()
     }
+
+    function applyPreset() {
+      const preset = THEME_PRESETS[selectedPreset.value]
+      if (!preset) return
+
+      const root = document.documentElement
+
+      // 应用浅色主题变量
+      Object.entries(preset.light).forEach(([key, value]) => {
+        const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase()
+        root.style.setProperty(`--${cssVar}`, value)
+      })
+
+      // 创建或更新 .dark 样式
+      let darkStyleEl = document.getElementById('dynamic-dark-theme')
+      if (!darkStyleEl) {
+        darkStyleEl = document.createElement('style')
+        darkStyleEl.id = 'dynamic-dark-theme'
+        document.head.appendChild(darkStyleEl)
+      }
+
+      const darkVars = Object.entries(preset.dark)
+        .map(([key, value]) => {
+          const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase()
+          return `--${cssVar}: ${value};`
+        })
+        .join('\n    ')
+
+      darkStyleEl.textContent = `.dark {\n    ${darkVars}\n  }`
+    }
+
+    function updateDOMTheme() {
+      const root = document.documentElement
+
+      // 移除所有主题类
+      root.classList.remove('light', 'dark')
+
+      // 添加当前主题类
+      if (isDark.value) {
+        root.classList.add('dark')
+      } else {
+        root.classList.add('light')
+      }
+    }
+
+    function resetToDefault() {
+      theme.value = 'auto'
+      selectedPreset.value = 'slate'
+
+      // 移除动态样式
+      const darkStyleEl = document.getElementById('dynamic-dark-theme')
+      if (darkStyleEl) {
+        darkStyleEl.remove()
+      }
+
+      // 重置为默认 CSS 变量
+      const root = document.documentElement
+      const defaultVars = [
+        '--primary',
+        '--primary-foreground',
+        '--secondary',
+        '--secondary-foreground',
+        '--accent',
+        '--accent-foreground',
+        '--muted',
+        '--muted-foreground',
+        '--border',
+        '--input',
+        '--ring'
+      ]
+
+      defaultVars.forEach(varName => {
+        root.style.removeProperty(varName)
+      })
+
+      updateDOMTheme()
+    }
+
+    // 初始化
+    function initializeTheme() {
+      // 监听主题变化
+      watch(
+        [theme, isDark],
+        () => {
+          updateDOMTheme()
+        },
+        { immediate: true }
+      )
+
+      // 监听系统主题变化
+      watch(prefersDark, () => {
+        if (theme.value === 'auto') {
+          updateDOMTheme()
+        }
+      })
+
+      // 应用当前预设
+      if (selectedPreset.value !== 'slate') {
+        applyPreset()
+      }
+    }
+
+    return {
+      // 状态
+      theme,
+      selectedPreset,
+
+      // 计算属性
+      isDark,
+      currentTheme,
+      themePresets,
+
+      // 方法
+      setTheme,
+      setPreset,
+      applyPreset,
+      updateDOMTheme,
+      resetToDefault,
+      initializeTheme
+    }
+  },
+  {
+    persist: {
+      storage: localStorage,
+      pick: ['theme', 'selectedPreset']
+    }
   }
-  
-  return {
-    // 状态
-    theme,
-    selectedPreset,
-    
-    // 计算属性
-    isDark,
-    currentTheme,
-    themePresets,
-    
-    // 方法
-    setTheme,
-    setPreset,
-    applyPreset,
-    updateDOMTheme,
-    resetToDefault,
-    initializeTheme
-  }
-}, {
-  persist: {
-    storage: localStorage,
-    pick: ['theme', 'selectedPreset']
-  }
-}) 
+)

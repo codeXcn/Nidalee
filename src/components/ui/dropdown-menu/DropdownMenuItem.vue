@@ -4,13 +4,18 @@ import { reactiveOmit } from '@vueuse/core'
 import { DropdownMenuItem, type DropdownMenuItemProps, useForwardProps } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
-const props = withDefaults(defineProps<DropdownMenuItemProps & {
-  class?: HTMLAttributes['class']
-  inset?: boolean
-  variant?: 'default' | 'destructive'
-}>(), {
-  variant: 'default',
-})
+const props = withDefaults(
+  defineProps<
+    DropdownMenuItemProps & {
+      class?: HTMLAttributes['class']
+      inset?: boolean
+      variant?: 'default' | 'destructive'
+    }
+  >(),
+  {
+    variant: 'default'
+  }
+)
 
 const delegatedProps = reactiveOmit(props, 'inset', 'variant', 'class')
 
@@ -23,7 +28,9 @@ const forwardedProps = useForwardProps(delegatedProps)
     :data-inset="inset ? '' : undefined"
     :data-variant="variant"
     v-bind="forwardedProps"
-    :class="cn(`
+    :class="
+      cn(
+        `
       focus:bg-accent focus:text-accent-foreground 
       hover:bg-accent/80 hover:text-accent-foreground
       dark:hover:bg-accent/60 dark:focus:bg-accent/60
@@ -39,7 +46,10 @@ const forwardedProps = useForwardProps(delegatedProps)
       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 
       data-[inset]:pl-8 
       [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4
-    `, props.class)"
+    `,
+        props.class
+      )
+    "
   >
     <slot />
   </DropdownMenuItem>
