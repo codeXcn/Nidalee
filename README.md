@@ -2,7 +2,7 @@
 
 > 功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。
 
-![Build Status](https://github.com/your-username/Nidalee/workflows/Release/badge.svg)
+![Build Status](https://github.com/codexlin/Nidalee/workflows/Release/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 
@@ -60,7 +60,7 @@ sudo apt install -f
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/Nidalee.git
+git clone https://github.com/codexlin/Nidalee.git
 cd Nidalee
 
 # 安装依赖
