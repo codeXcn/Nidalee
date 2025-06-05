@@ -6,7 +6,6 @@ export interface UserConfig {
   app: {
     enableConfigCache: boolean // 是否启用配置缓存
     enableThemeCache: boolean // 是否启用主题缓存
-    enableGameDataCache: boolean // 是否启用游戏数据缓存
   }
 
   // 通用设置
@@ -96,8 +95,7 @@ export interface UserConfig {
 const DEFAULT_CONFIG: UserConfig = {
   app: {
     enableConfigCache: true,
-    enableThemeCache: true,
-    enableGameDataCache: true
+    enableThemeCache: true
   },
   general: {
     language: 'zh-CN',
@@ -260,26 +258,23 @@ export const useUserConfigStore = defineStore(
           localStorage.removeItem('userConfig')
         } else if (path === 'app.enableThemeCache') {
           localStorage.removeItem('theme')
-        } else if (path === 'app.enableGameDataCache') {
-          localStorage.removeItem('gameStore')
         }
       }
     }
 
     // 清除所有缓存
     function clearAllCache() {
-      const storageKeys = ['userConfig', 'theme', 'gameStore']
+      const storageKeys = ['userConfig', 'theme']
       storageKeys.forEach(key => {
         localStorage.removeItem(key)
       })
     }
 
     // 清除特定缓存
-    function clearCache(type: 'config' | 'theme' | 'gameData') {
+    function clearCache(type: 'config' | 'theme') {
       const keyMap = {
         config: 'userConfig',
-        theme: 'theme',
-        gameData: 'gameStore'
+        theme: 'theme'
       }
 
       localStorage.removeItem(keyMap[type])
@@ -290,10 +285,8 @@ export const useUserConfigStore = defineStore(
       return {
         configCacheEnabled: config.value.app.enableConfigCache,
         themeCacheEnabled: config.value.app.enableThemeCache,
-        gameDataCacheEnabled: config.value.app.enableGameDataCache,
         configCacheExists: !!localStorage.getItem('userConfig'),
-        themeCacheExists: !!localStorage.getItem('theme'),
-        gameDataCacheExists: !!localStorage.getItem('gameStore')
+        themeCacheExists: !!localStorage.getItem('theme')
       }
     }
 

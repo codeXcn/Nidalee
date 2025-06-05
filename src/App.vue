@@ -10,14 +10,17 @@
         <div class="flex items-center space-x-4">
           <h1 class="text-xl font-semibold">{{ pageTitle }}</h1>
           <div v-if="gameStore.gameStatus" class="flex items-center space-x-2">
-            <div
+                        <div
               :class="[
                 'w-2 h-2 rounded-full',
-                gameStore.isConnected ? 'bg-green-500' : 'bg-red-500'
+                gameStore.isConnected ? 'bg-green-500' : 'bg-orange-500 animate-pulse'
               ]"
             />
             <span class="text-sm text-muted-foreground">
-              {{ gameStore.isConnected ? '已连接' : '未连接' }}
+              {{ gameStore.isConnected ? '已连接' : '等待游戏' }}
+            </span>
+            <span v-if="gameStore.gameStatus.lockfileInfo" class="text-xs text-muted-foreground">
+              (端口: {{ gameStore.gameStatus.lockfileInfo.port }})
             </span>
           </div>
         </div>
@@ -66,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -139,7 +142,19 @@ onMounted(() => {
     type: 'info'
   })
 
-  // TODO: 初始化游戏连接状态检查
+  // 启动自动连接检测
+  gameStore.startAutoConnect()
+
+  // 如果已经有连接状态，启动进程监控
+  if (gameStore.gameStatus.connected) {
+    gameStore.startProcessMonitoring()
+  }
+})
+
+// 组件卸载时清理资源
+onUnmounted(() => {
+  gameStore.stopProcessMonitoring()
+  gameStore.stopAutoConnect()
 })
 </script>
 

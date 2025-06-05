@@ -198,7 +198,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/core'
 import { LCPClient, Champion } from '@/lib/lcpClient'
 
 interface GameInfo {

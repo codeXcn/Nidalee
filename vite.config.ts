@@ -13,6 +13,11 @@ export default defineConfig(async () => ({
       '@': path.resolve(__dirname, './src')
     }
   },
+  // 添加对 Tauri API 的支持
+  define: {
+    __TAURI_PLATFORM__: JSON.stringify(process.platform),
+    __TAURI_ARCH__: JSON.stringify(process.arch)
+  },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent vite from obscuring rust errors
