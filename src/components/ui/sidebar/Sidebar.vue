@@ -30,8 +30,9 @@
             :class="[
               'w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200',
               'hover:bg-accent hover:text-accent-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               activeItem === item.id
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary text-primary-foreground shadow-md'
                 : 'text-muted-foreground'
             ]"
             @click="$emit('navigate', item.id)"
@@ -49,8 +50,9 @@
     <div class="p-2 border-t border-border">
       <button
         :class="[
-          'w-full flex items-center px-3 py-2 rounded-lg transition-colors',
-          'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
+          'w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200',
+          'hover:bg-accent hover:text-accent-foreground text-muted-foreground',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
         ]"
         @click="$emit('openSettings')"
       >

@@ -4,10 +4,10 @@ import { useColorMode, usePreferredDark } from '@vueuse/core'
 
 export type Theme = 'light' | 'dark' | 'auto'
 
-// shadcn-vue 标准主题预设 - Tailwind v4 格式
+// shadcn-vue 官方标准主题预设 - Tailwind v4 格式
 const THEME_PRESETS = {
   zinc: {
-    name: '锌灰色',
+    name: '锌灰色 (默认)',
     light: {
       primary: 'hsl(240 5.9% 10%)',
       primaryForeground: 'hsl(0 0% 98%)',
@@ -31,29 +31,54 @@ const THEME_PRESETS = {
       ring: 'hsl(240 4.9% 83.9%)'
     }
   },
-  slate: {
-    name: '石板色',
+  rose: {
+    name: '玫瑰色',
     light: {
-      primary: 'hsl(222.2 84% 4.9%)',
-      primaryForeground: 'hsl(210 40% 98%)',
-      secondary: 'hsl(210 40% 96%)',
-      accent: 'hsl(210 40% 96%)',
-      muted: 'hsl(210 40% 96%)',
-      mutedForeground: 'hsl(215.4 16.3% 46.9%)',
-      border: 'hsl(214.3 31.8% 91.4%)',
-      input: 'hsl(214.3 31.8% 91.4%)',
-      ring: 'hsl(222.2 84% 4.9%)'
+      primary: 'hsl(346.8 77.2% 49.8%)',
+      primaryForeground: 'hsl(355.7 100% 97.3%)',
+      secondary: 'hsl(240 4.8% 95.9%)',
+      accent: 'hsl(240 4.8% 95.9%)',
+      muted: 'hsl(240 4.8% 95.9%)',
+      mutedForeground: 'hsl(240 3.8% 46.1%)',
+      border: 'hsl(240 5.9% 90%)',
+      input: 'hsl(240 5.9% 90%)',
+      ring: 'hsl(346.8 77.2% 49.8%)'
     },
     dark: {
-      primary: 'hsl(210 40% 98%)',
-      primaryForeground: 'hsl(222.2 47.4% 11.2%)',
-      secondary: 'hsl(217.2 32.6% 17.5%)',
-      accent: 'hsl(217.2 32.6% 17.5%)',
-      muted: 'hsl(217.2 32.6% 17.5%)',
-      mutedForeground: 'hsl(215 20.2% 65.1%)',
-      border: 'hsl(217.2 32.6% 17.5%)',
-      input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(212.7 26.8% 83.9%)'
+      primary: 'hsl(346.8 77.2% 49.8%)',
+      primaryForeground: 'hsl(355.7 100% 97.3%)',
+      secondary: 'hsl(240 3.7% 15.9%)',
+      accent: 'hsl(12 6.5% 15.1%)',
+      muted: 'hsl(0 0% 15%)',
+      mutedForeground: 'hsl(240 5% 64.9%)',
+      border: 'hsl(240 3.7% 15.9%)',
+      input: 'hsl(240 3.7% 15.9%)',
+      ring: 'hsl(346.8 77.2% 49.8%)'
+    }
+  },
+  green: {
+    name: '绿色',
+    light: {
+      primary: 'hsl(142.1 76.2% 36.3%)',
+      primaryForeground: 'hsl(355.7 100% 97.3%)',
+      secondary: 'hsl(240 4.8% 95.9%)',
+      accent: 'hsl(240 4.8% 95.9%)',
+      muted: 'hsl(240 4.8% 95.9%)',
+      mutedForeground: 'hsl(240 3.8% 46.1%)',
+      border: 'hsl(240 5.9% 90%)',
+      input: 'hsl(240 5.9% 90%)',
+      ring: 'hsl(142.1 76.2% 36.3%)'
+    },
+    dark: {
+      primary: 'hsl(142.1 70.6% 45.3%)',
+      primaryForeground: 'hsl(144.9 80.4% 10%)',
+      secondary: 'hsl(240 3.7% 15.9%)',
+      accent: 'hsl(12 6.5% 15.1%)',
+      muted: 'hsl(0 0% 15%)',
+      mutedForeground: 'hsl(240 5% 64.9%)',
+      border: 'hsl(240 3.7% 15.9%)',
+      input: 'hsl(240 3.7% 15.9%)',
+      ring: 'hsl(142.4 71.8% 29.2%)'
     }
   },
   blue: {
@@ -61,9 +86,9 @@ const THEME_PRESETS = {
     light: {
       primary: 'hsl(221.2 83.2% 53.3%)',
       primaryForeground: 'hsl(210 40% 98%)',
-      secondary: 'hsl(210 40% 96%)',
-      accent: 'hsl(210 40% 96%)',
-      muted: 'hsl(210 40% 96%)',
+      secondary: 'hsl(210 40% 96.1%)',
+      accent: 'hsl(210 40% 96.1%)',
+      muted: 'hsl(210 40% 96.1%)',
       mutedForeground: 'hsl(215.4 16.3% 46.9%)',
       border: 'hsl(214.3 31.8% 91.4%)',
       input: 'hsl(214.3 31.8% 91.4%)',
@@ -78,32 +103,32 @@ const THEME_PRESETS = {
       mutedForeground: 'hsl(215 20.2% 65.1%)',
       border: 'hsl(217.2 32.6% 17.5%)',
       input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(217.2 91.2% 59.8%)'
+      ring: 'hsl(224.3 76.3% 48%)'
     }
   },
-  green: {
-    name: '绿色',
+  yellow: {
+    name: '黄色',
     light: {
-      primary: 'hsl(142.1 76.2% 36.3%)',
-      primaryForeground: 'hsl(355.7 100% 97.3%)',
-      secondary: 'hsl(210 40% 96%)',
-      accent: 'hsl(210 40% 96%)',
-      muted: 'hsl(210 40% 96%)',
-      mutedForeground: 'hsl(215.4 16.3% 46.9%)',
-      border: 'hsl(214.3 31.8% 91.4%)',
-      input: 'hsl(214.3 31.8% 91.4%)',
-      ring: 'hsl(142.1 76.2% 36.3%)'
+      primary: 'hsl(47.9 95.8% 53.1%)',
+      primaryForeground: 'hsl(26 83.3% 14.1%)',
+      secondary: 'hsl(60 4.8% 95.9%)',
+      accent: 'hsl(60 4.8% 95.9%)',
+      muted: 'hsl(60 4.8% 95.9%)',
+      mutedForeground: 'hsl(25 5.3% 44.7%)',
+      border: 'hsl(20 5.9% 90%)',
+      input: 'hsl(20 5.9% 90%)',
+      ring: 'hsl(20 14.3% 4.1%)'
     },
     dark: {
-      primary: 'hsl(142.1 70.6% 45.3%)',
-      primaryForeground: 'hsl(144.9 80.4% 10%)',
-      secondary: 'hsl(217.2 32.6% 17.5%)',
-      accent: 'hsl(217.2 32.6% 17.5%)',
-      muted: 'hsl(217.2 32.6% 17.5%)',
-      mutedForeground: 'hsl(215 20.2% 65.1%)',
-      border: 'hsl(217.2 32.6% 17.5%)',
-      input: 'hsl(217.2 32.6% 17.5%)',
-      ring: 'hsl(142.1 70.6% 45.3%)'
+      primary: 'hsl(47.9 95.8% 53.1%)',
+      primaryForeground: 'hsl(26 83.3% 14.1%)',
+      secondary: 'hsl(12 6.5% 15.1%)',
+      accent: 'hsl(12 6.5% 15.1%)',
+      muted: 'hsl(12 6.5% 15.1%)',
+      mutedForeground: 'hsl(24 5.4% 63.9%)',
+      border: 'hsl(12 6.5% 15.1%)',
+      input: 'hsl(12 6.5% 15.1%)',
+      ring: 'hsl(35.5 91.7% 32.9%)'
     }
   }
 }
@@ -124,7 +149,7 @@ export const useThemeStore = defineStore(
 
     // 主题相关状态
     const theme = ref<Theme>('auto')
-    const selectedPreset = ref<keyof typeof THEME_PRESETS>('slate')
+    const selectedPreset = ref<keyof typeof THEME_PRESETS>('zinc')
 
     // 计算属性
     const isDark = computed(() => {
@@ -197,7 +222,7 @@ export const useThemeStore = defineStore(
 
     function resetToDefault() {
       theme.value = 'auto'
-      selectedPreset.value = 'slate'
+      selectedPreset.value = 'zinc'
 
       // 移除动态样式
       const darkStyleEl = document.getElementById('dynamic-dark-theme')
@@ -247,7 +272,7 @@ export const useThemeStore = defineStore(
       })
 
       // 应用当前预设
-      if (selectedPreset.value !== 'slate') {
+      if (selectedPreset.value !== 'zinc') {
         applyPreset()
       }
     }

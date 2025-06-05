@@ -32,15 +32,11 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <label class="text-sm font-medium">应用语言</label>
-              <select
+              <Select
                 v-model="configStore.config.general.language"
-                class="w-full px-3 py-2 border rounded-md"
-              >
-                <option value="zh-CN">简体中文</option>
-                <option value="en-US">English</option>
-                <option value="ja-JP">日本語</option>
-                <option value="ko-KR">한국어</option>
-              </select>
+                :options="languageOptions"
+                placeholder="选择语言"
+              />
             </div>
 
             <div class="flex items-center justify-between">
@@ -112,7 +108,7 @@
                   type="range"
                   min="5"
                   max="60"
-                  class="flex-1"
+                  class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 />
                 <span class="text-sm min-w-0">{{ configStore.config.connection.timeout }}秒</span>
               </div>
@@ -126,7 +122,7 @@
                   type="range"
                   min="1"
                   max="30"
-                  class="flex-1"
+                  class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 />
                 <span class="text-sm min-w-0"
                   >{{ configStore.config.connection.retryInterval }}秒</span
@@ -144,7 +140,7 @@
                   type="range"
                   min="1"
                   max="10"
-                  class="flex-1"
+                  class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 />
                 <span class="text-sm min-w-0"
                   >{{ configStore.config.connection.maxRetries }}次</span
@@ -377,7 +373,7 @@
                 type="range"
                 min="1"
                 max="30"
-                class="flex-1"
+                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               <span class="text-sm min-w-0"
                 >{{ configStore.config.advanced.logRetentionDays }}天</span
@@ -393,7 +389,7 @@
                 type="range"
                 min="10"
                 max="100"
-                class="flex-1"
+                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               <span class="text-sm min-w-0"
                 >{{ configStore.config.advanced.apiRateLimit }}次/分钟</span
@@ -549,6 +545,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { Download, Upload, RotateCcw, Trash2, Github, Globe, MessageCircle } from 'lucide-vue-next'
+import { Select } from '@/components/ui/select'
 
 // 导入 stores
 import { useUserConfigStore } from '@/stores/useUserConfigStore'
@@ -746,4 +743,11 @@ function importSettings() {
 
   input.click()
 }
+
+const languageOptions = [
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'en-US', label: 'English' },
+  { value: 'ja-JP', label: '日本語' },
+  { value: 'ko-KR', label: '한국어' }
+]
 </script>

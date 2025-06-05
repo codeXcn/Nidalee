@@ -15,6 +15,6 @@ pinia.use(
   })
 )
 
+export * from './useGameStore'
 export * from './useUserConfigStore'
 export * from './useThemeStore'
-export * from './useGameStore'
