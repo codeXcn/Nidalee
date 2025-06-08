@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore'
 import {
@@ -17,6 +17,7 @@ import ThemeSettings from '@/components/ThemeSettings.vue'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import type { SummonerInfo } from './stores/gameStore'
+import TitleBar from './components/TitleBar.vue'
 
 const themeStore = useThemeStore()
 const gameStore = useGameStore()
@@ -24,7 +25,20 @@ const isDark = computed(() => themeStore.isDark)
 
 // 初始化游戏监控
 const { startMonitoring } = useGameMonitor()
+// 定义动画类型
+const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
+const currentTransition = ref(transitions[0])
 
+// 随机切换动画
+const randomTransition = () => {
+  const index = Math.floor(Math.random() * transitions.length)
+  currentTransition.value = transitions[index]
+}
+
+// 监听路由变化
+const handleRouteChange = () => {
+  randomTransition()
+}
 // 获取对局历史
 const fetchMatchHistory = async () => {
   try {
@@ -104,15 +118,17 @@ onMounted(async () => {
 </script>
 
 <template>
+
   <div id="app" :class="{ dark: isDark }">
+    <TitleBar />
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset class="top-8">
         <header
           class="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border/40"
         >
           <div class="flex items-center gap-2 px-4">
-            <SidebarTrigger class="-ml-1" />
+            <SidebarTrigger class="-ml-1 text-foreground/70 hover:text-foreground hover:bg-accent" />
             <div class="h-4 w-px bg-border/60 ml-2" />
             <ConnectionStatus />
           </div>
@@ -121,9 +137,63 @@ onMounted(async () => {
           </div>
         </header>
         <div class="flex flex-1 flex-col gap-6 p-6">
-          <RouterView />
+          <router-view v-slot="{ Component }">
+            <transition :name="currentTransition" mode="out-in" @before-leave="handleRouteChange">
+              <component :is="Component" />
+            </transition>
+          </router-view>
         </div>
       </SidebarInset>
     </SidebarProvider>
   </div>
 </template>
+
+<style>
+/* 淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动淡入淡出 */
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* 缩放 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.2s ease;
+}
+.scale-enter-from,
+.scale-leave-to {
+  transform: scale(0.98);
+  opacity: 0;
+}
+
+/* 向上滑动 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.2s ease;
+}
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+</style>

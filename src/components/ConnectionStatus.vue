@@ -15,23 +15,26 @@
         ]"
       />
       <span class="text-sm font-medium text-foreground">
-        {{ statusText }}
+        {{ isConnected ? summonerInfo?.displayName || '未知召唤师' : statusText }}
       </span>
     </div>
 
-    <!-- 召唤师信息 -->
+    <!-- 等级和段位信息 -->
     <div
-      v-if="connectionStatus === 'connected' && summonerName"
+      v-if="isConnected && summonerInfo"
       class="flex items-center gap-2 text-sm"
     >
       <div class="h-4 w-px bg-muted-foreground/30" />
-      <span class="text-foreground/80">{{ summonerName }}</span>
+      <span class="text-foreground/80">等级 {{ summonerInfo.summonerLevel }}</span>
+      <span v-if="summonerInfo.soloRankTier" class="text-foreground/80">
+        {{ formatRankTier(summonerInfo.soloRankTier) }} {{ summonerInfo.soloRankDivision }}
+      </span>
     </div>
 
     <!-- 连接按钮 -->
     <button
-      v-if="connectionStatus === 'disconnected'"
-      @click="connect"
+      v-if="!isConnected && !isConnecting"
+      @click="attemptConnection"
       class="ml-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
     >
       连接
@@ -40,12 +43,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useGameStore } from '@/stores/gameStore'
+import { useGameMonitor } from '@/composables/useGameMonitor'
 
-// 连接状态
-const connectionStatus = ref<'connected' | 'connecting' | 'disconnected'>('disconnected')
-const summonerName = ref<string>('')
+// 使用store和监控
+const gameStore = useGameStore()
+const { attemptConnection } = useGameMonitor()
+
+// 从store中解构响应式状态
+const { isConnected, isConnecting, summonerInfo, connectionStatus } = storeToRefs(gameStore)
 
 // 状态文本
 const statusText = computed(() => {
@@ -60,48 +68,20 @@ const statusText = computed(() => {
   }
 })
 
-// 连接到LCU
-const connect = async () => {
-  connectionStatus.value = 'connecting'
-
-  try {
-    // 调用Rust后端连接LCU
-    await invoke('connect_to_lcu')
-
-    // 获取召唤师信息
-    const summoner: any = await invoke('get_current_summoner')
-
-    connectionStatus.value = 'connected'
-    summonerName.value = summoner?.displayName || '未知召唤师'
-  } catch (error) {
-    console.error('连接LCU失败:', error)
-    connectionStatus.value = 'disconnected'
+// 格式化段位
+const formatRankTier = (tier: string): string => {
+  const tierMap: Record<string, string> = {
+    IRON: '坚韧黑铁',
+    BRONZE: '英勇青铜',
+    SILVER: '不屈白银',
+    GOLD: '荣耀黄金',
+    PLATINUM: '华贵铂金',
+    EMERALD: '流光翡翠',
+    DIAMOND: '璀璨钻石',
+    MASTER: '超凡大师',
+    GRANDMASTER: '傲世宗师',
+    CHALLENGER: '最强王者'
   }
+  return tierMap[tier] || tier
 }
-
-// 检查连接状态
-const checkConnectionStatus = async () => {
-  try {
-    const isConnected = await invoke('check_lcu_connection')
-    if (isConnected) {
-      connectionStatus.value = 'connected'
-      const summoner: any = await invoke('get_current_summoner')
-      summonerName.value = summoner?.displayName || '未知召唤师'
-    } else {
-      connectionStatus.value = 'disconnected'
-    }
-  } catch (error) {
-    console.error('检查连接状态失败:', error)
-    connectionStatus.value = 'disconnected'
-  }
-}
-
-// 组件挂载时检查连接状态
-onMounted(() => {
-  // checkConnectionStatus()
-  // 定期检查连接状态
-  // const interval = setInterval(checkConnectionStatus, 5000)
-  // 组件卸载时清理定时器
-  // return () => clearInterval(interval)
-})
 </script>

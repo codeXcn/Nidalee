@@ -1,5 +1,5 @@
 <template>
-  <Sidebar variant="inset">
+  <Sidebar variant="inset" class="top-8">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
@@ -8,19 +8,7 @@
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="size-4"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
+                <img src="../assets/logo.svg" alt="Nidalee" class="size-8" />
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">Nidalee</span>

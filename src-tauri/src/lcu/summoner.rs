@@ -43,12 +43,16 @@ pub async fn get_current_summoner(client: &Client, auth_info: &LcuAuthInfo) -> R
         summoner_info.soloRankLP = rank_info.solo_lp;
         summoner_info.soloRankWins = rank_info.solo_wins;
         summoner_info.soloRankLosses = rank_info.solo_losses;
-
         summoner_info.flexRankTier = rank_info.flex_tier;
         summoner_info.flexRankDivision = rank_info.flex_division;
         summoner_info.flexRankLP = rank_info.flex_lp;
         summoner_info.flexRankWins = rank_info.flex_wins;
         summoner_info.flexRankLosses = rank_info.flex_losses;
+    }
+
+    // 如果有 gameName 和 tagLine，则组合它们
+    if let (Some(game_name), Some(tag_line)) = (summoner_info.gameName.clone(), summoner_info.tagLine.clone()) {
+        summoner_info.displayName = format!("{}#{}", game_name, tag_line);
     }
 
     println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info);

@@ -1,7 +1,21 @@
 mod lcu;
 
+use tauri::{
+    tray::{
+        TrayIconBuilder,
+        MouseButtonState,
+        MouseButton,
+        TrayIconEvent
+    },
+    menu::{
+        Menu,
+        MenuItem,
+        MenuEvent
+    },
+    Manager,
+    Window
+};
 use std::sync::Arc;
-use tauri::{AppHandle, Manager};
 use crate::lcu::polling::PollingManager;
 
 #[tauri::command]
@@ -58,6 +72,69 @@ async fn get_game_detail(game_id: u64) -> Result<serde_json::Value, String> {
 async fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            // 创建托盘菜单项
+            let show_i = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
+            let maximize_i = MenuItem::with_id(app, "maximize", "最大化", true, None::<&str>)?;
+            let minimize_i = MenuItem::with_id(app, "minimize", "最小化", true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+
+            // 创建托盘菜单
+            let menu = Menu::with_items(app, &[&show_i, &maximize_i, &minimize_i, &quit_i])?;
+
+            // 创建系统托盘
+            let _tray = TrayIconBuilder::new()
+                // 添加托盘图标
+                .icon(app.default_window_icon().unwrap().clone())
+                // 添加菜单
+                .menu(&menu)
+                // 添加悬浮提示
+                .tooltip("Nidalee - 英雄联盟游戏助手")
+                // 禁用鼠标左键点击图标显示托盘菜单
+                .show_menu_on_left_click(false)
+                // 监听托盘图标发出的鼠标事件
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event {
+                        if let Some(window) = tray.app_handle().get_webview_window("main") {
+                            if let Ok(is_visible) = window.is_visible() {
+                                if is_visible {
+                                    let _ = window.hide();
+                                } else {
+                                    let _ = window.show();
+                                    let _ = window.unminimize();
+                                    let _ = window.set_focus();
+                                }
+                            }
+                        }
+                    }
+                })
+                // 监听菜单事件
+                .on_menu_event(|app_handle, event| {
+                    let window = app_handle.get_webview_window("main").unwrap();
+                    match event.id.as_ref() {
+                        "show" => {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                        }
+                        "maximize" => {
+                            let _ = window.maximize();
+                            let _ = window.set_focus();
+                        }
+                        "minimize" => {
+                            let _ = window.minimize();
+                        }
+                        "quit" => {
+                            app_handle.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .build(app)?;
+
             // 创建并启动轮询管理器
             let polling_manager = Arc::new(PollingManager::new(app.handle().clone()));
             let manager_clone = polling_manager.clone();
