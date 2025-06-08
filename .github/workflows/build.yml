@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🔍 Lint code
         run: pnpm run lint
@@ -139,13 +139,13 @@ jobs:
             - 多主题切换
 
             ## 📦 安装包
-            
+
             ### Windows
             - `Nidalee_*_x64_zh-CN.msi` - Windows 安装程序（推荐）
-            
+
             ### macOS
             - `Nidalee_*_x64.dmg` - macOS 磁盘映像
-            
+
             ### Linux
             - `Nidalee_*_amd64.deb` - Debian/Ubuntu 软件包
             - `Nidalee_*_amd64.AppImage` - AppImage 通用包
@@ -154,7 +154,7 @@ jobs:
             如遇到问题，请在 [Issues](https://github.com/codexlin/Nidalee/issues) 中反馈。
 
             ---
-            
+
             **完整更新日志**: https://github.com/codexlin/Nidalee/compare/v__PREV_VERSION__...v__VERSION__
           releaseDraft: true
           prerelease: false
@@ -174,4 +174,4 @@ jobs:
       - name: 🎉 Create Release
         run: |
           echo "✅ Release created for tag: ${{ github.ref_name }}"
-          echo "🔗 Check releases at: https://github.com/${{ github.repository }}/releases" 
+          echo "🔗 Check releases at: https://github.com/${{ github.repository }}/releases"
