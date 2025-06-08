@@ -24,6 +24,7 @@ export default defineConfigWithVueTs(
   {
     rules: {
       '@typescript-eslint/no-empty-object-type': 0,
+      '@typescript-eslint/no-unused-expressions': 0,
       '@typescript-eslint/no-unused-vars': 1, //允许未使用的变量
       '@typescript-eslint/no-explicit-any': 0, //允许使用any类型
       // 要求组件名称始终为 “-” 链接的单词
