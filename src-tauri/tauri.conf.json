@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "identifier": "com.nidalee.lol-assistant",
   "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1422",
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "pnpm build"
   },
   "app": {
     "windows": [
@@ -22,13 +22,12 @@
       }
     ],
     "security": {
-      "csp": null,
-      "capabilities": ["default"]
+      "csp": null
     }
   },
   "bundle": {
-    "targets": ["deb", "dmg", "msi"],
     "active": true,
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -36,23 +35,23 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [],
-    "externalBin": [],
-    "copyright": "Copyright © 2024 Nidalee Team. All rights reserved.",
-    "category": "Game",
-    "shortDescription": "英雄联盟游戏助手",
-    "longDescription": "Nidalee 是一个功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。",
-    "publisher": "Nidalee Team",
-    "homepage": "https://github.com/codexlin/Nidalee",
-    "licenseFile": "../LICENSE",
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": null,
-      "tsp": false,
-      "wix": {
-        "language": "zh-CN"
-      }
-    }
+        "resources": [],
+        "externalBin": [],
+        "copyright": "Copyright © 2024 Nidalee Team. All rights reserved.",
+        "category": "Game",
+        "shortDescription": "英雄联盟游戏助手",
+        "longDescription": "Nidalee 是一个功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。",
+        "publisher": "Nidalee Team",
+        "homepage": "https://github.com/codexlin/Nidalee",
+        "licenseFile": "../LICENSE",
+        "windows": {
+          "certificateThumbprint": null,
+          "digestAlgorithm": "sha256",
+          "timestampUrl": null,
+          "tsp": false,
+          "wix": {
+            "language": "zh-CN"
+          }
+        }
   }
 }

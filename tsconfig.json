@@ -12,9 +12,6 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "types": [
-      "@tauri-apps/api"
-    ],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

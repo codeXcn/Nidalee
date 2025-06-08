@@ -10,6 +10,7 @@ documentation = "https://github.com/codexlin/Nidalee"
 keywords = ["lol", "league-of-legends", "game", "assistant", "helper"]
 categories = ["games"]
 edition = "2021"
+rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,19 +22,20 @@ name = "nidalee_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.6", features = [] }
+tauri-build = { version = "2.2.0", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.0.0-alpha.10", features = [] }
-tauri-plugin-opener = "2.0.0-alpha.5"
-tokio = { version = "1.28", features = ["full"] }
-reqwest = { version = "0.11", features = ["json"] }
-base64 = "0.21"
-anyhow = "1.0"
-lazy_static = "1.4"
-futures = "0.3"
+log = "0.4"
+tauri = { version = "2.5.0", features = [] }
+tauri-plugin-log = "2.0.0-rc"
+regex = "1.11.1"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+base64 = "0.22"
+tokio = { version = "1.0", features = ["full"] }
+percent-encoding = "2.3"
+
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

@@ -1,132 +1,102 @@
-<template>
-  <aside
-    :class="[
-      'sidebar',
-      'h-screen bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col',
-      isCollapsed ? 'w-16' : 'w-64'
-    ]"
-  >
-    <!-- 侧边栏头部 -->
-    <div class="p-4 border-b border-border flex items-center justify-between">
-      <div v-if="!isCollapsed" class="flex items-center space-x-3">
-        <img src="/src/assets/logo-simple.svg" alt="Nidalee Logo" class="size-8" />
-        <span class="font-semibold text-foreground text-lg">Nidalee</span>
-      </div>
-      <div v-else class="flex items-center justify-center">
-        <img src="/src/assets/logo-simple.svg" alt="Nidalee Logo" class="size-8" />
-      </div>
-      <button class="p-2 rounded-lg hover:bg-accent transition-colors" @click="toggleCollapse">
-        <ChevronLeft
-          :class="['size-4 transition-transform duration-300', isCollapsed ? 'rotate-180' : '']"
-        />
-      </button>
-    </div>
-
-    <!-- 导航菜单 -->
-    <nav class="flex-1 p-2">
-      <ul class="space-y-1">
-        <li v-for="item in navigationItems" :key="item.id">
-          <button
-            :class="[
-              'w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200',
-              'hover:bg-accent hover:text-accent-foreground',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              activeItem === item.id
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-muted-foreground'
-            ]"
-            @click="$emit('navigate', item.id)"
-          >
-            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
-            <span v-if="!isCollapsed" class="ml-3 font-medium transition-opacity duration-300">
-              {{ item.label }}
-            </span>
-          </button>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- 侧边栏底部 -->
-    <div class="p-2 border-t border-border">
-      <button
-        :class="[
-          'w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200',
-          'hover:bg-accent hover:text-accent-foreground text-muted-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-        ]"
-        @click="$emit('openSettings')"
-      >
-        <Settings class="w-5 h-5 flex-shrink-0" />
-        <span v-if="!isCollapsed" class="ml-3 font-medium">设置</span>
-      </button>
-    </div>
-  </aside>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
-import {
-  ChevronLeft,
-  Settings,
-  Gamepad2,
-  BarChart3,
-  Users,
-  Shield,
-  Sparkles
-} from 'lucide-vue-next'
+import type { SidebarProps } from '.'
+import { cn } from '@/lib/utils'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import SheetDescription from '@/components/ui/sheet/SheetDescription.vue'
+import SheetHeader from '@/components/ui/sheet/SheetHeader.vue'
+import SheetTitle from '@/components/ui/sheet/SheetTitle.vue'
+import { SIDEBAR_WIDTH_MOBILE, useSidebar } from './utils'
 
-interface NavigationItem {
-  id: string
-  label: string
-  icon: any
-}
+defineOptions({
+  inheritAttrs: false
+})
 
-defineProps<{
-  activeItem?: string
-}>()
+const props = withDefaults(defineProps<SidebarProps>(), {
+  side: 'left',
+  variant: 'sidebar',
+  collapsible: 'offcanvas'
+})
 
-defineEmits<{
-  navigate: [itemId: string]
-  openSettings: []
-}>()
-
-const isCollapsed = ref(false)
-
-const navigationItems: NavigationItem[] = [
-  {
-    id: 'dashboard',
-    label: '仪表板',
-    icon: BarChart3
-  },
-  {
-    id: 'game-helper',
-    label: '游戏助手',
-    icon: Gamepad2
-  },
-  {
-    id: 'match-analysis',
-    label: '对局分析',
-    icon: Users
-  },
-  {
-    id: 'auto-functions',
-    label: '自动功能',
-    icon: Sparkles
-  },
-  {
-    id: 'safety',
-    label: '安全设置',
-    icon: Shield
-  }
-]
-
-function toggleCollapse() {
-  isCollapsed.value = !isCollapsed.value
-}
+const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 </script>
 
-<style scoped>
-.sidebar {
-  user-select: none;
-}
-</style>
+<template>
+  <div
+    v-if="collapsible === 'none'"
+    data-slot="sidebar"
+    :class="
+      cn('bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col', props.class)
+    "
+    v-bind="$attrs"
+  >
+    <slot />
+  </div>
+
+  <Sheet v-else-if="isMobile" :open="openMobile" v-bind="$attrs" @update:open="setOpenMobile">
+    <SheetContent
+      data-sidebar="sidebar"
+      data-slot="sidebar"
+      data-mobile="true"
+      :side="side"
+      class="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+      :style="{
+        '--sidebar-width': SIDEBAR_WIDTH_MOBILE
+      }"
+    >
+      <SheetHeader class="sr-only">
+        <SheetTitle>Sidebar</SheetTitle>
+        <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+      </SheetHeader>
+      <div class="flex h-full w-full flex-col">
+        <slot />
+      </div>
+    </SheetContent>
+  </Sheet>
+
+  <div
+    v-else
+    class="group peer text-sidebar-foreground hidden md:block"
+    data-slot="sidebar"
+    :data-state="state"
+    :data-collapsible="state === 'collapsed' ? collapsible : ''"
+    :data-variant="variant"
+    :data-side="side"
+  >
+    <!-- This is what handles the sidebar gap on desktop  -->
+    <div
+      :class="
+        cn(
+          'relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
+          'group-data-[collapsible=offcanvas]:w-0',
+          'group-data-[side=right]:rotate-180',
+          variant === 'floating' || variant === 'inset'
+            ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
+            : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)'
+        )
+      "
+    />
+    <div
+      :class="
+        cn(
+          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
+          side === 'left'
+            ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
+            : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
+          // Adjust the padding for floating and inset variants.
+          variant === 'floating' || variant === 'inset'
+            ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
+            : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
+          props.class
+        )
+      "
+      v-bind="$attrs"
+    >
+      <div
+        data-sidebar="sidebar"
+        class="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+      >
+        <slot />
+      </div>
+    </div>
+  </div>
+</template>

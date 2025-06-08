@@ -1,18 +1,18 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import './index.css'
+import './style.css'
 
-// 导入 Pinia
-import { pinia } from '@/stores'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+
+import App from './App.vue'
+import router from './router'
+
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App)
 
-// 注册 Pinia
 app.use(pinia)
+app.use(router)
 
 app.mount('#app')
-
-// 应用挂载后初始化主题
-import { useThemeStore } from '@/stores/useThemeStore'
-const themeStore = useThemeStore()
-themeStore.initializeTheme()
