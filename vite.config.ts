@@ -4,9 +4,27 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
+import Components from 'unplugin-vue-components/vite'
+import ViteAutoImport from 'unplugin-auto-import/vite'
 const host = process.env.TAURI_DEV_HOST
 export default defineConfig({
-  plugins: [vue(), vueJsx(), vueDevTools(), tailwindcss()],
+  plugins: [
+    vue(),
+    vueJsx(),
+    vueDevTools(),
+    tailwindcss(),
+    ViteAutoImport({
+      imports: ['vue', 'vue-router', 'pinia'],
+      dts: 'types/auto-imports.d.ts',
+      dirs: ['./src/hooks']
+    }),
+    Components({
+      dirs: ['src/components'],
+      dts: false,
+      resolvers: [],
+      include: [/\.vue$/, /\.vue\?vue/, /\.jsx$/]
+    })
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

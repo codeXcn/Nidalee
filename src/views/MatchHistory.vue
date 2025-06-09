@@ -17,14 +17,7 @@
           fill="none"
           viewBox="0 0 24 24"
         >
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle>
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path
             class="opacity-75"
             fill="currentColor"
@@ -88,10 +81,7 @@
     </div>
 
     <!-- 错误信息 -->
-    <div
-      v-if="error"
-      class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
-    >
+    <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
       <div class="flex">
         <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
           <path
@@ -137,12 +127,7 @@
             </div>
             <div class="p-3 bg-green-400 bg-opacity-30 rounded-full">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-                />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
@@ -156,12 +141,7 @@
             </div>
             <div class="p-3 bg-red-400 bg-opacity-30 rounded-full">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
           </div>
@@ -237,18 +217,14 @@
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ champion.champion_name }}
                 </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ champion.games_played }} 场游戏
-                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ champion.games_played }} 场游戏</p>
               </div>
             </div>
             <div class="text-right">
               <p
                 class="font-medium"
                 :class="
-                  champion.win_rate >= 50
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
+                  champion.win_rate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 "
               >
                 {{ champion.win_rate.toFixed(1) }}%
@@ -275,20 +251,14 @@
               :key="game.game_creation"
               @click="openGameDetail(game)"
               class="cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
-              :class="
-                game.win
-                  ? 'border-green-200 hover:border-green-300'
-                  : 'border-red-200 hover:border-red-300'
-              "
+              :class="game.win ? 'border-green-200 hover:border-green-300' : 'border-red-200 hover:border-red-300'"
             >
               <CardContent class="p-4">
                 <!-- 主要信息行 -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center space-x-3">
                     <Avatar class="h-12 w-12">
-                      <AvatarFallback
-                        class="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold"
-                      >
+                      <AvatarFallback class="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
                         {{ game.champion_name.charAt(0) }}
                       </AvatarFallback>
                     </Avatar>
@@ -302,24 +272,11 @@
 
                   <!-- 胜负标识 -->
                   <div class="flex items-center space-x-3">
-                    <Badge
-                      :variant="game.win ? 'default' : 'destructive'"
-                      class="text-sm font-bold"
-                    >
+                    <Badge :variant="game.win ? 'default' : 'destructive'" class="text-sm font-bold">
                       {{ game.win ? '胜利' : '失败' }}
                     </Badge>
-                    <svg
-                      class="w-5 h-5 text-muted-foreground"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5l7 7-7 7"
-                      ></path>
+                    <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                   </div>
                 </div>
@@ -343,12 +300,7 @@
 
                     <!-- 游戏时长 -->
                     <div class="text-muted-foreground flex items-center">
-                      <svg
-                        class="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -391,9 +343,7 @@
                 <!-- 加载状态 -->
                 <div v-if="gameDetailLoading" class="flex items-center justify-center py-16">
                   <div class="text-center">
-                    <div
-                      class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"
-                    ></div>
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                     <p class="text-lg font-medium">正在加载游戏详细信息...</p>
                     <p class="text-sm text-muted-foreground">这可能需要几秒钟</p>
                   </div>
@@ -407,12 +357,7 @@
                     <Card class="lg:col-span-2">
                       <CardHeader>
                         <CardTitle class="flex items-center gap-2">
-                          <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
@@ -449,9 +394,7 @@
                           </div>
                           <div class="space-y-1">
                             <p class="text-sm text-muted-foreground">队列类型</p>
-                            <Badge variant="outline">{{
-                              getQueueName((gameDetailData.queueId as number) || 0)
-                            }}</Badge>
+                            <Badge variant="outline">{{ getQueueName((gameDetailData.queueId as number) || 0) }}</Badge>
                           </div>
                           <div class="space-y-1">
                             <p class="text-sm text-muted-foreground">游戏版本</p>
@@ -465,12 +408,7 @@
                     <Card>
                       <CardHeader>
                         <CardTitle class="flex items-center gap-2">
-                          <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
@@ -483,36 +421,24 @@
                       </CardHeader>
                       <CardContent>
                         <div class="space-y-4">
-                          <div
-                            class="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"
-                          >
+                          <div class="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
                             <div class="flex items-center gap-2">
                               <div class="w-4 h-4 bg-blue-500 rounded"></div>
                               <span class="font-medium">蓝色方</span>
                             </div>
                             <Badge
-                              :variant="
-                                getTeamResult('100', gameDetailData.teams) === '胜利'
-                                  ? 'default'
-                                  : 'secondary'
-                              "
+                              :variant="getTeamResult('100', gameDetailData.teams) === '胜利' ? 'default' : 'secondary'"
                             >
                               {{ getTeamResult('100', gameDetailData.teams) }}
                             </Badge>
                           </div>
-                          <div
-                            class="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/20"
-                          >
+                          <div class="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/20">
                             <div class="flex items-center gap-2">
                               <div class="w-4 h-4 bg-red-500 rounded"></div>
                               <span class="font-medium">红色方</span>
                             </div>
                             <Badge
-                              :variant="
-                                getTeamResult('200', gameDetailData.teams) === '胜利'
-                                  ? 'default'
-                                  : 'secondary'
-                              "
+                              :variant="getTeamResult('200', gameDetailData.teams) === '胜利' ? 'default' : 'secondary'"
                             >
                               {{ getTeamResult('200', gameDetailData.teams) }}
                             </Badge>
@@ -625,17 +551,11 @@
                             <!-- KDA和等级 -->
                             <div class="lg:col-span-2 text-center">
                               <p class="font-mono text-lg font-bold">
-                                <span class="text-green-600">{{
-                                  participant.stats?.kills || 0
-                                }}</span>
+                                <span class="text-green-600">{{ participant.stats?.kills || 0 }}</span>
                                 <span class="text-muted-foreground">/</span>
-                                <span class="text-red-600">{{
-                                  participant.stats?.deaths || 0
-                                }}</span>
+                                <span class="text-red-600">{{ participant.stats?.deaths || 0 }}</span>
                                 <span class="text-muted-foreground">/</span>
-                                <span class="text-blue-600">{{
-                                  participant.stats?.assists || 0
-                                }}</span>
+                                <span class="text-blue-600">{{ participant.stats?.assists || 0 }}</span>
                               </p>
                               <Badge variant="outline" class="text-xs mt-1">
                                 {{
@@ -655,14 +575,10 @@
                             <!-- 伤害数据 -->
                             <div class="lg:col-span-2 text-center">
                               <p class="text-sm font-semibold">
-                                {{
-                                  formatNumber(participant.stats?.totalDamageDealtToChampions || 0)
-                                }}
+                                {{ formatNumber(participant.stats?.totalDamageDealtToChampions || 0) }}
                               </p>
                               <p class="text-xs text-muted-foreground">对英雄伤害</p>
-                              <p class="text-xs text-green-600 mt-1">
-                                视野: {{ participant.stats?.visionScore || 0 }}
-                              </p>
+                              <p class="text-xs text-green-600 mt-1">视野: {{ participant.stats?.visionScore || 0 }}</p>
                             </div>
 
                             <!-- 补刀和金币 -->
@@ -691,32 +607,16 @@
                                 </div>
                               </div>
                               <div class="flex gap-1 mt-2 justify-center">
-                                <Badge
-                                  v-if="participant.stats?.doubleKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.doubleKills" variant="secondary" class="text-xs">
                                   双杀x{{ participant.stats.doubleKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.tripleKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.tripleKills" variant="secondary" class="text-xs">
                                   三杀x{{ participant.stats.tripleKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.quadraKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.quadraKills" variant="secondary" class="text-xs">
                                   四杀x{{ participant.stats.quadraKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.pentaKills"
-                                  variant="destructive"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.pentaKills" variant="destructive" class="text-xs">
                                   五杀x{{ participant.stats.pentaKills }}
                                 </Badge>
                               </div>
@@ -738,9 +638,7 @@
                             <!-- 玩家基本信息 -->
                             <div class="lg:col-span-3 flex items-center gap-3">
                               <Avatar class="h-12 w-12">
-                                <AvatarFallback
-                                  class="bg-gradient-to-br from-red-500 to-pink-600 text-white font-bold"
-                                >
+                                <AvatarFallback class="bg-gradient-to-br from-red-500 to-pink-600 text-white font-bold">
                                   {{ getChampionName(participant.championId).charAt(0) }}
                                 </AvatarFallback>
                               </Avatar>
@@ -760,17 +658,11 @@
                             <!-- KDA和等级 -->
                             <div class="lg:col-span-2 text-center">
                               <p class="font-mono text-lg font-bold">
-                                <span class="text-green-600">{{
-                                  participant.stats?.kills || 0
-                                }}</span>
+                                <span class="text-green-600">{{ participant.stats?.kills || 0 }}</span>
                                 <span class="text-muted-foreground">/</span>
-                                <span class="text-red-600">{{
-                                  participant.stats?.deaths || 0
-                                }}</span>
+                                <span class="text-red-600">{{ participant.stats?.deaths || 0 }}</span>
                                 <span class="text-muted-foreground">/</span>
-                                <span class="text-blue-600">{{
-                                  participant.stats?.assists || 0
-                                }}</span>
+                                <span class="text-blue-600">{{ participant.stats?.assists || 0 }}</span>
                               </p>
                               <Badge variant="outline" class="text-xs mt-1">
                                 {{
@@ -790,14 +682,10 @@
                             <!-- 伤害数据 -->
                             <div class="lg:col-span-2 text-center">
                               <p class="text-sm font-semibold">
-                                {{
-                                  formatNumber(participant.stats?.totalDamageDealtToChampions || 0)
-                                }}
+                                {{ formatNumber(participant.stats?.totalDamageDealtToChampions || 0) }}
                               </p>
                               <p class="text-xs text-muted-foreground">对英雄伤害</p>
-                              <p class="text-xs text-green-600 mt-1">
-                                视野: {{ participant.stats?.visionScore || 0 }}
-                              </p>
+                              <p class="text-xs text-green-600 mt-1">视野: {{ participant.stats?.visionScore || 0 }}</p>
                             </div>
 
                             <!-- 补刀和金币 -->
@@ -826,32 +714,16 @@
                                 </div>
                               </div>
                               <div class="flex gap-1 mt-2 justify-center">
-                                <Badge
-                                  v-if="participant.stats?.doubleKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.doubleKills" variant="secondary" class="text-xs">
                                   双杀x{{ participant.stats.doubleKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.tripleKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.tripleKills" variant="secondary" class="text-xs">
                                   三杀x{{ participant.stats.tripleKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.quadraKills"
-                                  variant="secondary"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.quadraKills" variant="secondary" class="text-xs">
                                   四杀x{{ participant.stats.quadraKills }}
                                 </Badge>
-                                <Badge
-                                  v-if="participant.stats?.pentaKills"
-                                  variant="destructive"
-                                  class="text-xs"
-                                >
+                                <Badge v-if="participant.stats?.pentaKills" variant="destructive" class="text-xs">
                                   五杀x{{ participant.stats.pentaKills }}
                                 </Badge>
                               </div>
@@ -921,12 +793,7 @@
 
     <!-- 空状态 -->
     <div v-else-if="!loading && !error" class="text-center py-12">
-      <svg
-        class="mx-auto h-12 w-12 text-gray-400"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -943,13 +810,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1183,9 +1044,7 @@ const getChampionName = (championId: number) => {
 const getPlayerName = (participantId: number, gameDetail: Record<string, unknown>) => {
   const identities = gameDetail?.participantIdentities
   if (!identities || !Array.isArray(identities)) return '未知玩家'
-  const identity = identities.find(
-    (id: Record<string, unknown>) => id.participantId === participantId
-  )
+  const identity = identities.find((id: Record<string, unknown>) => id.participantId === participantId)
   const player = identity?.player as Record<string, unknown>
   return player?.summonerName?.toString() || '未知玩家'
 }

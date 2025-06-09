@@ -167,7 +167,7 @@ export const useThemeStore = defineStore(
       }
 
       // 监听系统主题变化
-      mediaQuery.addEventListener('change', e => {
+      mediaQuery.addEventListener('change', (e) => {
         if (!localStorage.getItem('theme')) {
           isDark.value = e.matches
           if (e.matches) {

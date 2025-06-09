@@ -6,9 +6,7 @@
         <div class="flex items-center space-x-4">
           <!-- 头像 -->
           <div class="relative">
-            <div
-              class="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden"
-            >
+            <div class="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden">
               <img
                 v-if="summonerInfo.profileIconId && !imageLoadError"
                 :src="getProfileIconUrl(summonerInfo.profileIconId)"
@@ -24,18 +22,12 @@
                 v-if="imageLoading && summonerInfo.profileIconId && !imageLoadError"
                 class="absolute inset-0 w-full h-full flex items-center justify-center"
               >
-                <div
-                  class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"
-                ></div>
+                <div class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
 
               <!-- 备用显示（无头像ID或加载失败时） -->
               <div
-                v-if="
-                  !summonerInfo.profileIconId ||
-                  imageLoadError ||
-                  (!imageLoading && imageLoadError)
-                "
+                v-if="!summonerInfo.profileIconId || imageLoadError || (!imageLoading && imageLoadError)"
                 class="w-full h-full flex items-center justify-center text-white font-bold text-2xl"
               >
                 {{ summonerInfo.displayName }}
@@ -120,27 +112,16 @@
           <div v-if="summonerInfo.soloRankTier" class="space-y-2">
             <div class="flex items-center space-x-3">
               <div class="flex items-center space-x-3">
-                <div
-                  :class="[
-                    'px-3 py-1.5 rounded-lg text-sm font-bold',
-                    getRankColor(summonerInfo.soloRankTier)
-                  ]"
-                >
+                <div :class="['px-3 py-1.5 rounded-lg text-sm font-bold', getRankColor(summonerInfo.soloRankTier)]">
                   {{ formatRankTier(summonerInfo.soloRankTier) }}
                   {{ summonerInfo.soloRankDivision }}
                 </div>
-                <span class="text-sm text-muted-foreground"
-                  >{{ summonerInfo.soloRankLP }} LP</span
-                >
+                <span class="text-sm text-muted-foreground">{{ summonerInfo.soloRankLP }} LP</span>
               </div>
             </div>
             <div class="flex items-center space-x-4 text-sm">
-              <span class="text-green-600 dark:text-green-400 font-medium"
-                >{{ summonerInfo.soloRankWins }}胜</span
-              >
-              <span class="text-red-600 dark:text-red-400 font-medium"
-                >{{ summonerInfo.soloRankLosses }}负</span
-              >
+              <span class="text-green-600 dark:text-green-400 font-medium">{{ summonerInfo.soloRankWins }}胜</span>
+              <span class="text-red-600 dark:text-red-400 font-medium">{{ summonerInfo.soloRankLosses }}负</span>
               <span class="text-muted-foreground">
                 胜率 {{ getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses) }}%
               </span>
@@ -163,27 +144,16 @@
           <div v-if="summonerInfo.flexRankTier" class="space-y-2">
             <div class="flex items-center space-x-3">
               <div class="flex items-center space-x-3">
-                <div
-                  :class="[
-                    'px-3 py-1.5 rounded-lg text-sm font-bold',
-                    getRankColor(summonerInfo.flexRankTier)
-                  ]"
-                >
+                <div :class="['px-3 py-1.5 rounded-lg text-sm font-bold', getRankColor(summonerInfo.flexRankTier)]">
                   {{ formatRankTier(summonerInfo.flexRankTier) }}
                   {{ summonerInfo.flexRankDivision }}
                 </div>
-                <span class="text-sm text-muted-foreground"
-                  >{{ summonerInfo.flexRankLP }} LP</span
-                >
+                <span class="text-sm text-muted-foreground">{{ summonerInfo.flexRankLP }} LP</span>
               </div>
             </div>
             <div class="flex items-center space-x-4 text-sm">
-              <span class="text-green-600 dark:text-green-400 font-medium"
-                >{{ summonerInfo.flexRankWins }}胜</span
-              >
-              <span class="text-red-600 dark:text-red-400 font-medium"
-                >{{ summonerInfo.flexRankLosses }}负</span
-              >
+              <span class="text-green-600 dark:text-green-400 font-medium">{{ summonerInfo.flexRankWins }}胜</span>
+              <span class="text-red-600 dark:text-red-400 font-medium">{{ summonerInfo.flexRankLosses }}负</span>
               <span class="text-muted-foreground">
                 胜率 {{ getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses) }}%
               </span>
@@ -202,12 +172,7 @@
       <div class="flex items-center justify-between mt-6 pt-4 border-t border-border">
         <div v-if="summonerInfo.gameStatus" class="flex items-center space-x-2">
           <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-          <span
-            :class="[
-              'px-3 py-1 rounded-full text-sm font-medium',
-              getGameStatusColor(summonerInfo.gameStatus)
-            ]"
-          >
+          <span :class="['px-3 py-1 rounded-full text-sm font-medium', getGameStatusColor(summonerInfo.gameStatus)]">
             {{ formatGameStatus(summonerInfo.gameStatus) }}
           </span>
         </div>

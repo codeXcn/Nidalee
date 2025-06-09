@@ -61,11 +61,7 @@
       <div class="space-y-3">
         <Label class="text-sm font-medium">主题模式</Label>
         <div class="flex items-center space-x-2">
-          <Switch
-            :model-value="themeStore.isDark"
-            @update:model-value="themeStore.toggleTheme"
-            id="dark-mode"
-          />
+          <Switch :model-value="themeStore.isDark" @update:model-value="themeStore.toggleTheme" id="dark-mode" />
           <Label for="dark-mode" class="text-sm">
             {{ themeStore.isDark ? '深色模式' : '浅色模式' }}
           </Label>

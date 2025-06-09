@@ -24,13 +24,7 @@
                   : 'text-red-600 dark:text-red-400'
             ]"
           >
-            {{
-              connectionStatus === 'connected'
-                ? '已连接'
-                : connectionStatus === 'connecting'
-                  ? '连接中'
-                  : '离线'
-            }}
+            {{ connectionStatus === 'connected' ? '已连接' : connectionStatus === 'connecting' ? '连接中' : '离线' }}
           </h2>
           <p class="text-xs text-muted-foreground mt-1">
             {{
@@ -66,10 +60,7 @@
           <RefreshCw class="h-3 w-3 mr-1" />
           重新连接
         </Button>
-        <div
-          v-else-if="isConnecting"
-          class="flex items-center text-sm text-yellow-600 dark:text-yellow-400"
-        >
+        <div v-else-if="isConnecting" class="flex items-center text-sm text-yellow-600 dark:text-yellow-400">
           <Loader2 class="h-3 w-3 mr-1 animate-spin" />
           连接中...
         </div>
@@ -118,19 +109,8 @@
       </div>
       <div class="mt-4 text-sm">
         <div class="flex items-center space-x-1">
-          <div
-            :class="[
-              'h-2 w-2 rounded-full',
-              enabledFunctionsCount > 0 ? 'bg-green-500' : 'bg-gray-400'
-            ]"
-          ></div>
-          <span
-            :class="[
-              enabledFunctionsCount > 0
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-muted-foreground'
-            ]"
-          >
+          <div :class="['h-2 w-2 rounded-full', enabledFunctionsCount > 0 ? 'bg-green-500' : 'bg-gray-400']"></div>
+          <span :class="[enabledFunctionsCount > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground']">
             {{ enabledFunctionsCount > 0 ? '自动化已启用' : '所有功能已停用' }}
           </span>
         </div>
@@ -162,15 +142,7 @@
 <script setup lang="ts">
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Settings,
-  Clock,
-  TrendingUp,
-  RefreshCw,
-  Loader2,
-  Wifi,
-  Play
-} from 'lucide-vue-next'
+import { Settings, Clock, TrendingUp, RefreshCw, Loader2, Wifi, Play } from 'lucide-vue-next'
 import { useFormatters } from '@/composables/useFormatters'
 
 const props = defineProps<{

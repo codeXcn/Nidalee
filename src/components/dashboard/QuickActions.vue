@@ -32,10 +32,7 @@
               <p class="text-sm text-muted-foreground">自动接受匹配成功后的对局</p>
             </div>
           </div>
-          <Switch
-            :checked="autoFunctions.acceptMatch"
-            @update:checked="() => toggleAutoFunction('acceptMatch')"
-          />
+          <Switch :checked="autoFunctions.acceptMatch" @update:checked="() => toggleAutoFunction('acceptMatch')" />
         </div>
 
         <!-- 自动选择英雄 -->
@@ -70,10 +67,7 @@
               <p class="text-sm text-muted-foreground">根据英雄自动配置最优符文</p>
             </div>
           </div>
-          <Switch
-            :checked="autoFunctions.runeConfig"
-            @update:checked="() => toggleAutoFunction('runeConfig')"
-          />
+          <Switch :checked="autoFunctions.runeConfig" @update:checked="() => toggleAutoFunction('runeConfig')" />
         </div>
 
         <!-- 自动禁用英雄 -->
@@ -89,10 +83,7 @@
               <p class="text-sm text-muted-foreground">智能禁用敌方强势英雄</p>
             </div>
           </div>
-          <Switch
-            :checked="autoFunctions.banChampion"
-            @update:checked="() => toggleAutoFunction('banChampion')"
-          />
+          <Switch :checked="autoFunctions.banChampion" @update:checked="() => toggleAutoFunction('banChampion')" />
         </div>
       </div>
     </div>

@@ -86,7 +86,7 @@ const updateValue = (value: number) => {
 }
 
 // 监听modelValue变化，同步到input
-watch(currentValue, newValue => {
+watch(currentValue, (newValue) => {
   if (sliderRef.value && sliderRef.value.value !== String(newValue)) {
     sliderRef.value.value = String(newValue)
   }

@@ -59,9 +59,7 @@
                 </div>
                 <div>
                   <p class="font-medium">{{ player.name }}</p>
-                  <p class="text-sm text-muted-foreground">
-                    {{ player.champion }} - {{ player.position }}
-                  </p>
+                  <p class="text-sm text-muted-foreground">{{ player.champion }} - {{ player.position }}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -85,16 +83,12 @@
               class="flex items-center justify-between p-3 rounded-lg bg-red-500/5 border border-red-500/20"
             >
               <div class="flex items-center space-x-3">
-                <div
-                  class="w-8 h-8 rounded bg-red-500 text-white flex items-center justify-center text-sm font-medium"
-                >
+                <div class="w-8 h-8 rounded bg-red-500 text-white flex items-center justify-center text-sm font-medium">
                   {{ player.champion.charAt(0) }}
                 </div>
                 <div>
                   <p class="font-medium">{{ player.name }}</p>
-                  <p class="text-sm text-muted-foreground">
-                    {{ player.champion }} - {{ player.position }}
-                  </p>
+                  <p class="text-sm text-muted-foreground">{{ player.champion }} - {{ player.position }}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -120,11 +114,7 @@
           <div class="space-y-3">
             <h4 class="font-medium text-green-500">优势项</h4>
             <div class="space-y-2">
-              <div
-                v-for="advantage in advantages"
-                :key="advantage"
-                class="flex items-center space-x-2"
-              >
+              <div v-for="advantage in advantages" :key="advantage" class="flex items-center space-x-2">
                 <CheckCircle class="h-4 w-4 text-green-500" />
                 <span class="text-sm">{{ advantage }}</span>
               </div>
@@ -160,17 +150,10 @@
             class="flex items-center justify-between p-4 rounded-lg border"
           >
             <div class="flex items-center space-x-3">
-              <div
-                :class="[
-                  'h-3 w-3 rounded-full',
-                  match.result === 'win' ? 'bg-green-500' : 'bg-red-500'
-                ]"
-              ></div>
+              <div :class="['h-3 w-3 rounded-full', match.result === 'win' ? 'bg-green-500' : 'bg-red-500']"></div>
               <div>
                 <p class="font-medium">{{ match.champion }}</p>
-                <p class="text-sm text-muted-foreground">
-                  {{ match.position }} - {{ match.duration }}
-                </p>
+                <p class="text-sm text-muted-foreground">{{ match.position }} - {{ match.duration }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -207,19 +190,9 @@ const redTeam = ref([
   { id: 10, name: 'Enemy5', champion: '剑姬', position: '上单', rank: '钻石 I', winRate: 78 }
 ])
 
-const advantages = ref([
-  '我方团战能力更强',
-  '中期推进实力优势',
-  '打野前期gank能力出色',
-  '下路组合配合默契'
-])
+const advantages = ref(['我方团战能力更强', '中期推进实力优势', '打野前期gank能力出色', '下路组合配合默契'])
 
-const warnings = ref([
-  '敌方剑姬单带能力强大',
-  '注意敌方卡莎的后期能力',
-  '小心盲僧前期入侵',
-  '控制视野防止被开团'
-])
+const warnings = ref(['敌方剑姬单带能力强大', '注意敌方卡莎的后期能力', '小心盲僧前期入侵', '控制视野防止被开团'])
 
 const recentMatches = ref([
   {

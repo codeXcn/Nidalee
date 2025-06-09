@@ -1,11 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- 用户信息卡片 -->
-    <SummonerCard
-      v-if="summonerInfo"
-      :summoner-info="summonerInfo"
-      :session-duration="sessionDuration"
-    />
+    <SummonerCard v-if="summonerInfo" :summoner-info="summonerInfo" :session-duration="sessionDuration" />
 
     <!-- 顶部统计卡片 -->
     <StatisticsCards
@@ -40,9 +36,7 @@
             <h3 class="text-lg font-semibold">API调试信息</h3>
             <p class="text-sm text-muted-foreground">LCU API响应数据</p>
           </div>
-          <Button variant="outline" size="sm" class="text-xs" @click="showDebugInfo = false">
-            关闭
-          </Button>
+          <Button variant="outline" size="sm" class="text-xs" @click="showDebugInfo = false"> 关闭 </Button>
         </div>
 
         <div class="space-y-4">
@@ -111,7 +105,7 @@ onMounted(() => {
 })
 
 // 监听连接状态变化，自动获取对局历史
-watch(isConnected, newValue => {
+watch(isConnected, (newValue) => {
   if (newValue && !matchStatistics.value) {
     fetchMatchHistory()
   }

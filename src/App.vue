@@ -71,7 +71,7 @@ onMounted(async () => {
     }
 
     // 监听召唤师信息变化
-    await listen('summoner-change', async event => {
+    await listen('summoner-change', async (event) => {
       console.log('[Event] 召唤师信息变化:', event.payload)
       if (event.payload) {
         gameStore.updateSummonerInfo(event.payload as SummonerInfo)
@@ -83,13 +83,13 @@ onMounted(async () => {
     })
 
     // 监听连接状态变化
-    await listen('lcu-status-change', event => {
+    await listen('lcu-status-change', (event) => {
       console.log('[Event] LCU 连接状态变化:', event.payload)
       gameStore.setConnectionStatus(event.payload as boolean)
     })
 
     // 监听认证信息变化
-    await listen('auth-info-change', event => {
+    await listen('auth-info-change', (event) => {
       console.log('[Event] 认证信息变化:', event.payload)
       if (event.payload) {
         gameStore.setAuthInfo(event.payload as LcuAuthInfo)
@@ -99,12 +99,12 @@ onMounted(async () => {
     })
 
     // 监听游戏阶段变化
-    await listen('gameflow-phase-change', event => {
+    await listen('gameflow-phase-change', (event) => {
       gameStore.updateGamePhase(event.payload as GamePhase | null)
     })
 
     // 监听房间状态变化
-    await listen('lobby-change', event => {
+    await listen('lobby-change', (event) => {
       gameStore.updateLobbyInfo(event.payload as LobbyInfo | null)
     })
 
@@ -118,7 +118,6 @@ onMounted(async () => {
 </script>
 
 <template>
-
   <div id="app" :class="{ dark: isDark }">
     <TitleBar />
     <SidebarProvider>

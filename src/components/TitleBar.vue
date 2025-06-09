@@ -17,7 +17,10 @@
       </div>
       <div class="titlebar-button close" id="titlebar-close" @click="hideWindow">
         <svg width="12" height="12" viewBox="0 0 12 12">
-          <path d="M2.4 1.399L1.399 2.4 5 6 1.399 9.6 2.4 10.6 6 7 9.6 10.6 10.6 9.6 7 6 10.6 2.4 9.6 1.399 6 5z" fill="currentColor" />
+          <path
+            d="M2.4 1.399L1.399 2.4 5 6 1.399 9.6 2.4 10.6 6 7 9.6 10.6 10.6 9.6 7 6 10.6 2.4 9.6 1.399 6 5z"
+            fill="currentColor"
+          />
         </svg>
       </div>
     </div>

@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="flex items-center gap-3 px-4 py-2 rounded-lg border-2 bg-background/50 backdrop-blur-sm shadow-sm"
-  >
+  <div class="flex items-center gap-3 px-4 py-2 rounded-lg border-2 bg-background/50 backdrop-blur-sm shadow-sm">
     <!-- 连接状态指示器 -->
     <div class="flex items-center gap-2">
       <div
@@ -20,10 +18,7 @@
     </div>
 
     <!-- 等级和段位信息 -->
-    <div
-      v-if="isConnected && summonerInfo"
-      class="flex items-center gap-2 text-sm"
-    >
+    <div v-if="isConnected && summonerInfo" class="flex items-center gap-2 text-sm">
       <div class="h-4 w-px bg-muted-foreground/30" />
       <span class="text-foreground/80">等级 {{ summonerInfo.summonerLevel }}</span>
       <span v-if="summonerInfo.soloRankTier" class="text-foreground/80">
