@@ -143,7 +143,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Settings, Clock, TrendingUp, RefreshCw, Loader2, Wifi, Play } from 'lucide-vue-next'
-import { useFormatters } from '@/composables/useFormatters'
+import { useFormatters } from '@/hooks/useFormatters'
 
 const props = defineProps<{
   connectionStatus: string

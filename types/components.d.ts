@@ -43,6 +43,7 @@ declare module 'vue' {
     DialogScrollContent: typeof import('./../src/components/ui/dialog/DialogScrollContent.vue')['default']
     DialogTitle: typeof import('./../src/components/ui/dialog/DialogTitle.vue')['default']
     DialogTrigger: typeof import('./../src/components/ui/dialog/DialogTrigger.vue')['default']
+    GameDetailDialog: typeof import('./../src/components/dashboard/detail/GameDetailDialog.vue')['default']
     GameStats: typeof import('./../src/components/dashboard/GameStats.vue')['default']
     GameStatus: typeof import('./../src/components/game/GameStatus.vue')['default']
     HelloWorld: typeof import('./../src/components/HelloWorld.vue')['default']

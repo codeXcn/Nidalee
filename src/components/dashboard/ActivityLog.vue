@@ -12,7 +12,9 @@
         </div>
       </div>
 
-      <div class="space-y-3 max-h-64 overflow-y-auto">
+      <div
+        class="space-y-3 max-h-80 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto"
+      >
         <div
           v-for="activity in activities.slice(0, 8)"
           :key="activity.id"
@@ -52,7 +54,7 @@
 <script setup lang="ts">
 import { Card } from '@/components/ui/card'
 import { Clock } from 'lucide-vue-next'
-import { useFormatters } from '@/composables/useFormatters'
+import { useFormatters } from '@/hooks/useFormatters'
 
 interface Activity {
   id: string | number

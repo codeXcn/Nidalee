@@ -189,8 +189,8 @@
 import { ref } from 'vue'
 import { Card } from '@/components/ui/card'
 import { User, Users, Shield, Trophy } from 'lucide-vue-next'
-import { useFormatters } from '@/composables/useFormatters'
-import { useGameAssets } from '@/composables/useGameAssets'
+import { useFormatters } from '@/hooks/useFormatters'
+import { useGameAssets } from '@/hooks/useGameAssets'
 
 const props = defineProps<{
   summonerInfo: any

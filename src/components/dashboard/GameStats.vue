@@ -171,7 +171,7 @@
                   : 'bg-red-500/10 border-red-500/30 hover:border-red-500/50'
               ]"
               class="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
-              @click="$emit('open-game-detail', game)"
+              @click="openGameDetail(game)"
             >
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium">{{ game.champion_name }}</span>
@@ -196,6 +196,7 @@
       </div>
     </div>
   </Card>
+  <GameDetailDialog v-model:visible="dialogOpen" :selectedGame="selectedGame" />
 </template>
 
 <script setup lang="ts">
@@ -215,8 +216,15 @@ import {
   Calendar,
   Award
 } from 'lucide-vue-next'
-import { useFormatters } from '@/composables/useFormatters'
+import { useFormatters } from '@/hooks/useFormatters'
+const dialogOpen = ref(false)
+const selectedGame = ref(null)
 
+const openGameDetail = (game: any) => {
+  selectedGame.value = game
+  console.log(game)
+  dialogOpen.value = true
+}
 const props = defineProps<{
   isConnected: boolean
   matchHistoryLoading: boolean

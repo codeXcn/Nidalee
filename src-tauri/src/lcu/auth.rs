@@ -1,114 +1,94 @@
-use std::process::Command;
 use regex::Regex;
 use crate::lcu::types::LcuAuthInfo;
+use sysinfo::{ProcessRefreshKind, RefreshKind, System};
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
-pub fn get_lcu_auth_info() -> Result<LcuAuthInfo, String> {
-    println!("[LCU] 开始获取 LCU 参数...");
+// 全局缓存 System 实例
+static SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
 
-    let output = Command::new("powershell")
-        .args(&[
-            "-Command",
-            "Get-CimInstance Win32_Process -Filter \"Name = 'LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine"
-        ])
-        .output()
-        .map_err(|e| format!("执行 PowerShell 命令失败: {}", e))?;
+/// 检查 LCU 是否正在运行
+pub fn check_lcu_running() -> bool {
+    let mut system = SYSTEM.lock().unwrap();
+    system.refresh_specifics(
+        RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
+    );
 
-    let output_str = String::from_utf8_lossy(&output.stdout);
-    println!("[LCU] 获取到的命令行参数: {}", output_str);
-
-    if output_str.trim().is_empty() {
-        println!("[LCU] 警告: 命令行参数为空");
-        return Err("无法获取英雄联盟客户端的命令行参数。请确保：\n1. 客户端已启动\n2. 以管理员身份运行程序\n3. 没有被安全软件拦截".to_string());
+    for (_pid, process) in system.processes() {
+        if process.name().to_string_lossy().to_lowercase().contains("leagueclientux") {
+            // 只输出关键：发现进程
+            println!("[LCU] 检测到 LeagueClientUx 进程正在运行");
+            return true;
+        }
     }
 
-    // 创建所有需要的正则表达式
-    let riotclient_token_re = Regex::new(r"--riotclient-auth-token=([\w-]+)").unwrap();
-    let riotclient_port_re = Regex::new(r"--riotclient-app-port=(\d+)").unwrap();
-    let remoting_token_re = Regex::new(r"--remoting-auth-token=([\w-]+)").unwrap();
-    let app_port_re = Regex::new(r"--app-port=(\d+)").unwrap();
-
-    // 提取所有参数
-    let riotclient_auth_token = match riotclient_token_re.captures(&output_str)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().to_string()) {
-            Some(token) => {
-                println!("[LCU] ✓ 已找到 riotclient-auth-token");
-                token
-            },
-            None => {
-                println!("[LCU] ✗ 未找到 riotclient-auth-token");
-                return Err("未找到 RiotClient auth token".to_string());
-            }
-        };
-
-    let riotclient_app_port = match riotclient_port_re.captures(&output_str)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().parse::<u16>()) {
-            Some(Ok(port)) => {
-                println!("[LCU] ✓ 已找到 riotclient-app-port");
-                port
-            },
-            Some(Err(_)) => {
-                println!("[LCU] ✗ riotclient-app-port 格式错误");
-                return Err("RiotClient app port 格式错误".to_string());
-            },
-            None => {
-                println!("[LCU] ✗ 未找到 riotclient-app-port");
-                return Err("未找到 RiotClient app port".to_string());
-            }
-        };
-
-    let remoting_auth_token = match remoting_token_re.captures(&output_str)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().to_string()) {
-            Some(token) => {
-                println!("[LCU] ✓ 已找到 remoting-auth-token");
-                token
-            },
-            None => {
-                println!("[LCU] ✗ 未找到 remoting-auth-token");
-                return Err("未找到 Remoting auth token".to_string());
-            }
-        };
-
-    let app_port = match app_port_re.captures(&output_str)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().parse::<u16>()) {
-            Some(Ok(port)) => {
-                println!("[LCU] ✓ 已找到 app-port");
-                port
-            },
-            Some(Err(_)) => {
-                println!("[LCU] ✗ app-port 格式错误");
-                return Err("App port 格式错误".to_string());
-            },
-            None => {
-                println!("[LCU] ✗ 未找到 app-port");
-                return Err("未找到 App port".to_string());
-            }
-        };
-
-    let auth_info = LcuAuthInfo {
-        app_port,
-        remoting_auth_token,
-        riotclient_app_port,
-        riotclient_auth_token,
-    };
-
-    println!("[LCU] 成功获取所有参数: {:?}", auth_info);
-    Ok(auth_info)
+    // 关键：未发现
+    println!("[LCU] 未检测到 LeagueClientUx 进程");
+    false
 }
 
-pub fn check_lcu_running() -> bool {
-    let output = Command::new("powershell")
-        .args(&[
-            "-Command",
-            "Get-Process LeagueClientUx -ErrorAction SilentlyContinue"
-        ])
-        .output();
+/// 获取 LeagueClientUx.exe 启动参数命令行（拼接成 String）
+fn get_lcu_cmdline() -> Option<String> {
+    let mut system = SYSTEM.lock().unwrap();
+    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
-    match output {
-        Ok(output) => output.status.success(),
-        Err(_) => false,
+    for (_pid, process) in system.processes() {
+        if process.name().eq_ignore_ascii_case("LeagueClientUx.exe") {
+            // 不再输出全部命令行
+            println!("[LCU] 已获取 LeagueClientUx.exe 启动参数");
+            let cmdline = process.cmd()
+                .iter()
+                .map(|s| s.to_string_lossy())
+                .collect::<Vec<_>>()
+                .join(" ");
+            return Some(cmdline);
+        }
+    }
+    println!("[LCU] 未找到 LeagueClientUx.exe 进程参数");
+    None
+}
+
+/// 提取授权信息
+pub fn get_lcu_auth_info() -> Result<LcuAuthInfo, String> {
+    let cmdline = get_lcu_cmdline().ok_or("LeagueClientUx.exe not found")?;
+
+    let riotclient_token_re = Regex::new(r"--riotclient-auth-token=([^\s]+)").unwrap();
+    let riotclient_port_re = Regex::new(r"--riotclient-app-port=([^\s]+)").unwrap();
+    let remoting_token_re = Regex::new(r"--remoting-auth-token=([^\s]+)").unwrap();
+    let app_port_re = Regex::new(r"--app-port=([^\s]+)").unwrap();
+
+    let riotclient_auth_token = riotclient_token_re
+        .captures(&cmdline)
+        .and_then(|c| c.get(1))
+        .map(|m| m.as_str().to_string());
+    let riotclient_app_port = riotclient_port_re
+        .captures(&cmdline)
+        .and_then(|c| c.get(1))
+        .and_then(|m| m.as_str().parse::<u16>().ok());
+    let remoting_auth_token = remoting_token_re
+        .captures(&cmdline)
+        .and_then(|c| c.get(1))
+        .map(|m| m.as_str().to_string());
+    let app_port = app_port_re
+        .captures(&cmdline)
+        .and_then(|c| c.get(1))
+        .and_then(|m| m.as_str().parse::<u16>().ok());
+
+    if let (Some(r_token), Some(r_port), Some(m_token), Some(a_port)) = (
+        riotclient_auth_token,
+        riotclient_app_port,
+        remoting_auth_token,
+        app_port,
+    ) {
+        println!("[LCU] 授权参数解析成功");
+        Ok(LcuAuthInfo {
+            riotclient_auth_token: r_token,
+            riotclient_app_port: r_port,
+            remoting_auth_token: m_token,
+            app_port: a_port,
+        })
+    } else {
+        println!("[LCU] 授权参数解析失败");
+        Err("Failed to parse LeagueClientUx command line".into())
     }
 }

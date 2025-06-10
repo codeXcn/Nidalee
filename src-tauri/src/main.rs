@@ -16,7 +16,6 @@ use tauri::{
     Window
 };
 use std::sync::Arc;
-use crate::lcu::polling::PollingManager;
 
 #[tauri::command]
 async fn check_lcu_connection() -> Result<bool, String> {
@@ -73,7 +72,7 @@ async fn main() {
     tauri::Builder::default()
         .setup(|app| {
             // 创建托盘菜单项
-            let show_i = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
+            let show_i = MenuItem::with_id(app, "show", "显示", true, None::<&str>)?;
             let maximize_i = MenuItem::with_id(app, "maximize", "最大化", true, None::<&str>)?;
             let minimize_i = MenuItem::with_id(app, "minimize", "最小化", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
@@ -136,11 +135,9 @@ async fn main() {
                 .build(app)?;
 
             // 创建并启动轮询管理器
-            let polling_manager = Arc::new(PollingManager::new(app.handle().clone()));
-            let manager_clone = polling_manager.clone();
-
+            let app_handle = app.handle().clone();
             tokio::spawn(async move {
-                manager_clone.start_polling().await;
+                lcu::polling::start_polling(app_handle).await;
             });
 
             Ok(())

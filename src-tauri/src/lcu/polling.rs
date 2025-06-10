@@ -1,165 +1,202 @@
-// 轮询模块 + App 事件通知
-use std::{thread, time::Duration};
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Manager};
-use tokio::sync::Mutex;
-use tokio::time::sleep;
-
+use std::time::Duration;
+use tauri::{AppHandle,Emitter};
+use tokio::sync::RwLock;
 use crate::lcu::{
     auth::{check_lcu_running, get_lcu_auth_info},
     gameflow::get_gameflow_phase,
     lobby::get_lobby_info,
     summoner::get_current_summoner,
-    types::PollState,
+    types::{LcuAuthInfo, PollState, SummonerInfo, GameflowPhase, LobbyInfo},
 };
+use log::{info, warn};
 
-pub struct PollingManager {
-    app: AppHandle,
-    state: Arc<Mutex<PollState>>,
-    client: reqwest::Client,
+// 防抖缓存
+#[derive(Clone, Default)]
+struct EmitCache {
+    is_lcu_running: Option<bool>,
+    auth_info: Option<LcuAuthInfo>,
+    current_summoner: Option<SummonerInfo>,
+    gameflow_phase: Option<String>,
+    in_lobby: Option<bool>,
 }
 
-impl PollingManager {
-    pub fn new(app: AppHandle) -> Self {
-        let client = reqwest::Client::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .expect("Failed to create HTTP client");
-
-        let state = Arc::new(Mutex::new(PollState {
+// 默认值
+impl Default for PollState {
+    fn default() -> Self {
+        PollState {
             is_lcu_running: false,
             auth_info: None,
             current_summoner: None,
             gameflow_phase: None,
             in_lobby: false,
-        }));
-
-        Self { app, state, client }
+        }
     }
+}
+pub async fn start_polling(app: AppHandle) {
+    let state = Arc::new(RwLock::new(PollState::default()));
+    let emit_cache = Arc::new(RwLock::new(EmitCache::default()));
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
 
-    pub async fn start_polling(self: Arc<Self>) {
-        let lcu_poll = self.clone();
-        let auth_poll = self.clone();
-        let summoner_poll = self.clone();
-        let gameflow_poll = self.clone();
-        let lobby_poll = self.clone();
+    tokio::spawn(polling_task(app, state, emit_cache, client));
+}
 
-        // LCU 进程检查 (1-2秒)
-        tokio::spawn(async move {
-            loop {
-                let is_running = check_lcu_running();
-                let mut state = lcu_poll.state.lock().await;
-                if state.is_lcu_running != is_running {
-                    state.is_lcu_running = is_running;
-                    let _ = lcu_poll.app.emit("lcu-status-change", is_running);
+async fn polling_task(
+    app: AppHandle,
+    state: Arc<RwLock<PollState>>,
+    emit_cache: Arc<RwLock<EmitCache>>,
+    client: reqwest::Client,
+) {
+    let mut tick: u64 = 0;
+    loop {
+
+        // 1. 检查LCU进程（每2秒）
+        if tick % 2 == 0 {
+            match retry(|| async { Ok(check_lcu_running()) as Result<bool, String> }, 2, 200).await {
+                Ok(is_running) => {
+                    let mut s = state.write().await;
+                    if s.is_lcu_running != is_running {
+                        s.is_lcu_running = is_running;
+                    }
                 }
-                drop(state);
-                sleep(Duration::from_secs(2)).await;
+                Err(_) => warn!("LCU进程检测多次失败"),
             }
-        });
+        }
 
-        // Auth 参数检查 (3-5秒)
-        tokio::spawn(async move {
-            loop {
-                let mut state = auth_poll.state.lock().await;
-                if state.is_lcu_running {
-                    match get_lcu_auth_info() {
-                        Ok(new_auth) => {
-                            if state.auth_info.as_ref() != Some(&new_auth) {
-                                state.auth_info = Some(new_auth.clone());
-                                let _ = auth_poll.app.emit("auth-info-change", &new_auth);
-                            }
+        // 2. 检查 auth_info（每5秒）
+        if tick % 5 == 0 {
+            let is_running = { state.read().await.is_lcu_running };
+            if is_running {
+                match retry(|| async { get_lcu_auth_info() }, 2, 200).await {
+                    Ok(auth) => {
+                        let mut s = state.write().await;
+                        if s.auth_info.as_ref() != Some(&auth) {
+                            s.auth_info = Some(auth);
                         }
-                        Err(_) => {
-                            if state.auth_info.is_some() {
-                                state.auth_info = None;
-                                let _ = auth_poll.app.emit("auth-info-change", ());
-                            }
+                    }
+                    Err(_) => {
+                        let mut s = state.write().await;
+                        if s.auth_info.is_some() {
+                            s.auth_info = None;
                         }
                     }
                 }
-                drop(state);
-                sleep(Duration::from_secs(5)).await;
             }
-        });
+        }
 
-        // 召唤师信息检查 (10秒)
-        tokio::spawn(async move {
-            loop {
-                let mut state = summoner_poll.state.lock().await;
-                if let Some(auth_info) = &state.auth_info {
-                    match get_current_summoner(&summoner_poll.client, auth_info).await {
-                        Ok(summoner) => {
-                            if state.current_summoner.as_ref() != Some(&summoner) {
-                                println!("[polling] summoner-change: {:?}", &summoner);
-                                state.current_summoner = Some(summoner.clone());
-                                let emit_result = summoner_poll.app.emit("summoner-change", &summoner);
-                                println!("[polling] emit summoner-change result: {:?}", emit_result);
-                            }
+        // 3. 检查召唤师信息（每10秒）
+        if tick % 10 == 0 {
+            let auth_info = { state.read().await.auth_info.clone() };
+            if let Some(auth) = auth_info {
+                match retry(|| get_current_summoner(&client, &auth), 2, 200).await {
+                    Ok(summoner) => {
+                        let mut s = state.write().await;
+                        if s.current_summoner.as_ref() != Some(&summoner) {
+                            s.current_summoner = Some(summoner);
                         }
-                        Err(_) => {
-                            if state.current_summoner.is_some() {
-                                println!("[polling] summoner-change: None");
-                                state.current_summoner = None;
-                                let emit_result = summoner_poll.app.emit("summoner-change", ());
-                                println!("[polling] emit summoner-change result: {:?}", emit_result);
-                            }
+                    }
+                    Err(_) => {
+                        let mut s = state.write().await;
+                        if s.current_summoner.is_some() {
+                            s.current_summoner = None;
                         }
                     }
                 }
-                drop(state);
-                sleep(Duration::from_secs(10)).await;
             }
-        });
+        }
 
-        // 游戏阶段检查 (1秒)
-        tokio::spawn(async move {
-            loop {
-                let mut state = gameflow_poll.state.lock().await;
-                if let Some(auth_info) = &state.auth_info {
-                    match get_gameflow_phase(&gameflow_poll.client, auth_info).await {
-                        Ok(phase) => {
-                            if state.gameflow_phase.as_ref() != Some(&phase.phase) {
-                                state.gameflow_phase = Some(phase.phase.clone());
-                                let _ = gameflow_poll.app.emit("gameflow-phase-change", &phase);
-                            }
+        // 4. 检查游戏阶段（每1秒）
+        if tick % 1 == 0 {
+            let auth_info = { state.read().await.auth_info.clone() };
+            if let Some(auth) = auth_info {
+                match retry(|| get_gameflow_phase(&client, &auth), 2, 200).await {
+                    Ok(phase) => {
+                        let mut s = state.write().await;
+                        if s.gameflow_phase.as_ref() != Some(&phase.phase) {
+                            s.gameflow_phase = Some(phase.phase.clone());
                         }
-                        Err(_) => {
-                            if state.gameflow_phase.is_some() {
-                                state.gameflow_phase = None;
-                                let _ = gameflow_poll.app.emit("gameflow-phase-change", ());
-                            }
+                    }
+                    Err(_) => {
+                        let mut s = state.write().await;
+                        if s.gameflow_phase.is_some() {
+                            s.gameflow_phase = None;
                         }
                     }
                 }
-                drop(state);
-                sleep(Duration::from_secs(1)).await;
             }
-        });
+        }
 
-        // 房间状态检查 (3秒)
-        tokio::spawn(async move {
-            loop {
-                let mut state = lobby_poll.state.lock().await;
-                if let Some(auth_info) = &state.auth_info {
-                    match get_lobby_info(&lobby_poll.client, auth_info).await {
-                        Ok(lobby) => {
-                            if !state.in_lobby {
-                                state.in_lobby = true;
-                                let _ = lobby_poll.app.emit("lobby-change", &lobby);
-                            }
+        // 5. 检查房间信息（每3秒）
+        if tick % 3 == 0 {
+            let auth_info = { state.read().await.auth_info.clone() };
+            if let Some(auth) = auth_info {
+                match retry(|| get_lobby_info(&client, &auth), 2, 200).await {
+                    Ok(_lobby) => {
+                        let mut s = state.write().await;
+                        if !s.in_lobby {
+                            s.in_lobby = true;
                         }
-                        Err(_) => {
-                            if state.in_lobby {
-                                state.in_lobby = false;
-                                let _ = lobby_poll.app.emit("lobby-change", ());
-                            }
+                    }
+                    Err(_) => {
+                        let mut s = state.write().await;
+                        if s.in_lobby {
+                            s.in_lobby = false;
                         }
                     }
                 }
-                drop(state);
-                sleep(Duration::from_secs(3)).await;
             }
-        });
+        }
+
+        // === 事件防抖，只有变化才 emit ===
+        {
+            let s = state.read().await;
+            let mut c = emit_cache.write().await;
+
+            if c.is_lcu_running != Some(s.is_lcu_running) {
+                let _ = app.emit("lcu-status-change", s.is_lcu_running);
+                c.is_lcu_running = Some(s.is_lcu_running);
+            }
+            if c.auth_info != s.auth_info {
+                let _ = app.emit("auth-info-change", &s.auth_info);
+                c.auth_info = s.auth_info.clone();
+            }
+            if c.current_summoner != s.current_summoner {
+                let _ = app.emit("summoner-change", &s.current_summoner);
+                c.current_summoner = s.current_summoner.clone();
+            }
+           if c.gameflow_phase.as_ref() != s.gameflow_phase.as_ref() {
+                let _ = app.emit("gameflow-phase-change", &s.gameflow_phase);
+                c.gameflow_phase = s.gameflow_phase.clone();
+            }
+            if c.in_lobby != Some(s.in_lobby) {
+                let _ = app.emit("lobby-change", s.in_lobby);
+                c.in_lobby = Some(s.in_lobby);
+            }
+        }
+
+        tick = tick.wrapping_add(1);
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
+}
+
+// 简单重试工具
+async fn retry<F, Fut, T, E>(mut f: F, retries: u32, delay_ms: u64) -> Result<T, E>
+where
+    F: FnMut() -> Fut,
+    Fut: std::future::Future<Output = Result<T, E>>,
+{
+    let mut last_err = None;
+    for _ in 0..retries {
+        match f().await {
+            Ok(val) => return Ok(val),
+            Err(e) => {
+                last_err = Some(e);
+                tokio::time::sleep(Duration::from_millis(delay_ms)).await;
+            }
+        }
+    }
+    Err(last_err.unwrap())
 }

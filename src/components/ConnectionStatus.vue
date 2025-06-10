@@ -41,7 +41,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useGameStore } from '@/stores/gameStore'
-import { useGameMonitor } from '@/composables/useGameMonitor'
+import { useGameMonitor } from '@/hooks/useGameMonitor'
 
 // 使用store和监控
 const gameStore = useGameStore()

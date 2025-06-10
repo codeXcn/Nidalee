@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore'
 import {
@@ -9,7 +8,6 @@ import {
   type LcuAuthInfo,
   type MatchStatistics
 } from './stores/gameStore'
-import { useGameMonitor } from '@/composables/useGameMonitor'
 import AppSidebar from '@/components/AppSidebar.vue'
 import ConnectionStatus from '@/components/ConnectionStatus.vue'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
@@ -24,7 +22,7 @@ const gameStore = useGameStore()
 const isDark = computed(() => themeStore.isDark)
 
 // 初始化游戏监控
-const { startMonitoring } = useGameMonitor()
+// const { startMonitoring } = useGameMonitor()
 // 定义动画类型
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
 const currentTransition = ref(transitions[0])
@@ -55,7 +53,7 @@ const fetchMatchHistory = async () => {
 onMounted(async () => {
   try {
     // 启动游戏监控
-    startMonitoring()
+    // startMonitoring()
 
     // 恢复持久化的数据
     if (gameStore.isConnected) {
@@ -120,9 +118,9 @@ onMounted(async () => {
 <template>
   <div id="app" :class="{ dark: isDark }">
     <TitleBar />
-    <SidebarProvider>
+    <SidebarProvider class="mt-8">
       <AppSidebar />
-      <SidebarInset class="top-8">
+      <SidebarInset>
         <header
           class="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border/40"
         >

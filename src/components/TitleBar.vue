@@ -31,9 +31,8 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const appWindow = getCurrentWindow()
-
 const minimizeWindow = () => appWindow.minimize()
-const toggleMaximize = () => appWindow.toggleMaximize()
+const toggleMaximize = () => appWindow.maximize()
 const hideWindow = () => appWindow.hide()
 </script>
 

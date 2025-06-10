@@ -55,7 +55,7 @@ pub async fn get_current_summoner(client: &Client, auth_info: &LcuAuthInfo) -> R
         summoner_info.displayName = format!("{}#{}", game_name, tag_line);
     }
 
-    println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info);
+    println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info.displayName);
     Ok(summoner_info)
 }
 
