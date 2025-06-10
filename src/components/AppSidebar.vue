@@ -1,5 +1,5 @@
 <template>
-  <Sidebar variant="inset" class="top-8">
+  <Sidebar variant="inset" class="top-8 h-auto">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
