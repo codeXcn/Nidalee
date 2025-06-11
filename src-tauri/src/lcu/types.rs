@@ -92,109 +92,185 @@ pub struct GameflowPhase {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct LobbyInfo {
-  pub id: String,
-  pub partyType: String,
-  pub members: Vec<LobbyMember>,
+    pub id: String,
+    pub party_type: String,
+    pub members: Vec<LobbyMember>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct LobbyMember {
-  pub summonerId: u64,
-  pub displayName: String,
+    pub summoner_id: u64,
+    pub display_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct SummonerInfo {
     // 基本信息
-    pub displayName: String,
-    #[serde(default)]
-    pub gameName: Option<String>,
-    #[serde(default)]
-    pub tagLine: Option<String>,
-    pub summonerLevel: i64,
-    pub profileIconId: i64,
+    pub display_name: String,
+    pub game_name: Option<String>,
+    pub tag_line: Option<String>,
+    pub summoner_level: i64,
+    pub profile_icon_id: i64,
     pub puuid: String,
-    pub accountId: i64,
-    pub summonerId: i64,
+    pub account_id: i64,
+    pub summoner_id: i64,
 
     // 经验信息
-    pub xpSinceLastLevel: i64,
-    pub xpUntilNextLevel: i64,
-    #[serde(default)]
-    pub percentCompleteForNextLevel: Option<f64>,
+    pub xp_since_last_level: i64,
+    pub xp_until_next_level: i64,
+    pub percent_complete_for_next_level: Option<f64>,
 
     // 游戏状态
-    #[serde(default)]
-    pub gameStatus: Option<String>,
-    #[serde(default)]
+    pub game_status: Option<String>,
     pub availability: Option<String>,
 
     // 挑战系统
-    #[serde(default)]
-    pub challengePoints: Option<String>,
-    #[serde(default)]
-    pub challengeCrystalLevel: Option<String>,
+    pub challenge_points: Option<String>,
+    pub challenge_crystal_level: Option<String>,
 
     // 排位信息 - 单人排位
-    #[serde(default)]
-    pub soloRankTier: Option<String>,
-    #[serde(default)]
-    pub soloRankDivision: Option<String>,
-    #[serde(default)]
-    pub soloRankWins: Option<i32>,
-    #[serde(default)]
-    pub soloRankLosses: Option<i32>,
-    #[serde(default)]
-    pub soloRankLP: Option<i32>,
+    pub solo_rank_tier: Option<String>,
+    pub solo_rank_division: Option<String>,
+    pub solo_rank_wins: Option<i32>,
+    pub solo_rank_losses: Option<i32>,
+    pub solo_rank_lp: Option<i32>,
 
     // 排位信息 - 灵活排位
-    #[serde(default)]
-    pub flexRankTier: Option<String>,
-    #[serde(default)]
-    pub flexRankDivision: Option<String>,
-    #[serde(default)]
-    pub flexRankWins: Option<i32>,
-    #[serde(default)]
-    pub flexRankLosses: Option<i32>,
-    #[serde(default)]
-    pub flexRankLP: Option<i32>,
+    pub flex_rank_tier: Option<String>,
+    pub flex_rank_division: Option<String>,
+    pub flex_rank_wins: Option<i32>,
+    pub flex_rank_losses: Option<i32>,
+    pub flex_rank_lp: Option<i32>,
 
     // 历史最高排位
-    #[serde(default)]
-    pub highestRankThisSeason: Option<String>,
+    pub highest_rank_this_season: Option<String>,
 
     // 天赋信息
-    #[serde(default)]
-    pub currentPerkPage: Option<String>,
-    #[serde(default)]
-    pub primaryStyleId: Option<i32>,
-    #[serde(default)]
-    pub subStyleId: Option<i32>,
-    #[serde(default)]
-    pub selectedPerkIds: Option<Vec<i32>>,
+    pub current_perk_page: Option<String>,
+    pub primary_style_id: Option<i32>,
+    pub sub_style_id: Option<i32>,
+    pub selected_perk_ids: Option<Vec<i32>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct RankedStats {
-  pub queueMap: std::collections::HashMap<String, QueueStats>,
+    pub queue_map: std::collections::HashMap<String, QueueStats>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct QueueStats {
-  pub tier: String,
-  pub division: String,
-  pub leaguePoints: u32,
-  pub wins: u32,
-  pub losses: u32,
+    pub tier: String,
+    pub division: String,
+    pub league_points: u32,
+    pub wins: u32,
+    pub losses: u32,
+}
+
+// 英雄选择阶段关键信息（用于推荐）
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampSelectSession {
+    pub local_player_cell_id: i32,
+    pub my_team: Vec<ChampSelectPlayer>,
+    pub their_team: Vec<ChampSelectPlayer>,
+    pub bans: ChampSelectBans,
+    pub timer: ChampSelectTimer,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampSelectPlayer {
+    pub cell_id: i32,
+    pub summoner_id: Option<u64>,
+    pub champion_id: i32,
+    pub champion_pick_intent: Option<i32>,
+    pub selected_skin_id: Option<i32>,
+    pub spell1_id: Option<i32>,
+    pub spell2_id: Option<i32>,
+    pub assigned_position: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampSelectBans {
+    pub my_team_bans: Vec<i32>,
+    pub their_team_bans: Vec<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampSelectTimer {
+    pub phase: String,
 }
 
 // 轮询状态结构体
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PollState {
-  pub is_lcu_running: bool,
-  pub auth_info: Option<LcuAuthInfo>,
-  pub current_summoner: Option<SummonerInfo>,
-  pub gameflow_phase: Option<String>,
-  pub in_lobby: bool,
+    pub is_lcu_running: bool,
+    pub auth_info: Option<LcuAuthInfo>,
+    pub current_summoner: Option<SummonerInfo>,
+    pub gameflow_phase: Option<String>,
+    pub in_lobby: bool,
+    pub matchmaking_state: Option<MatchmakingState>,
+    pub match_info: Option<MatchInfo>,
+    pub current_champ_select_session: Option<ChampSelectSession>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MatchmakingState {
+    pub errors: Vec<MatchmakingError>,
+    pub low_priority_data: LowPriorityData,
+    pub search_state: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MatchmakingError {
+    pub error_type: String,
+    pub id: i32,
+    pub message: String,
+    pub penalized_summoner_id: i64,
+    pub penalty_time_remaining: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct LowPriorityData {
+    pub busted_leaver_access_token: String,
+    pub penalized_summoner_ids: Vec<i64>,
+    pub penalty_time: f64,
+    pub penalty_time_remaining: f64,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize,PartialEq)]
+pub struct MatchInfo {
+    pub match_id: String,
+    pub players: Vec<PlayerInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize,PartialEq)]
+pub struct PlayerInfo {
+    pub summoner_name: String,
+    pub champion_id: i32,
+    pub team_id: i32,
+}
+
+/// 当前选择的英雄信息
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CurrentChampion {
+    /// 英雄ID
+    pub champion_id: i32,
+    /// 选择的皮肤ID
+    pub selected_skin_id: i32,
+    /// 是否已锁定
+    pub is_locked: bool,
 }

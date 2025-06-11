@@ -6,6 +6,7 @@ pub mod summoner;
 pub mod types;
 pub mod ranked;
 pub mod polling;
-
+pub mod matchmaking;
+pub mod champ_select;
 // Re-export
 pub use types::*;

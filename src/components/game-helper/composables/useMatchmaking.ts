@@ -1,0 +1,95 @@
+import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
+
+export interface MatchmakingError {
+  errorType: string
+  id: number
+  message: string
+  penalizedSummonerId: number
+  penaltyTimeRemaining: number
+}
+
+export interface LowPriorityData {
+  bustedLeaverAccessToken: string
+  penalizedSummonerIds: number[]
+  penaltyTime: number
+  penaltyTimeRemaining: number
+  reason: string
+}
+
+export interface MatchmakingState {
+  errors: MatchmakingError[]
+  lowPriorityData: LowPriorityData
+  searchState: string
+}
+
+export interface PlayerInfo {
+  summonerName: string
+  championId: number
+  teamId: number
+}
+
+export interface MatchInfo {
+  matchId: string
+  players: PlayerInfo[]
+}
+
+export function useMatchmaking() {
+  const matchmakingState = ref<MatchmakingState | null>(null)
+  const matchInfo = ref<MatchInfo | null>(null)
+
+  const handleMatchmaking = async () => {
+    try {
+      if (matchmakingState.value?.searchState === 'Searching') {
+        await invoke('stop_matchmaking')
+      } else {
+        await invoke('start_matchmaking')
+      }
+    } catch (error) {
+      console.error('匹配操作失败:', error)
+    }
+  }
+
+  const handleAcceptMatch = async () => {
+    try {
+      await invoke('accept_match')
+    } catch (error) {
+      console.error('接受对局失败:', error)
+    }
+  }
+
+  const handleDeclineMatch = async () => {
+    try {
+      await invoke('decline_match')
+    } catch (error) {
+      console.error('拒绝对局失败:', error)
+    }
+  }
+
+  let unlistenMatchmakingState: any
+  let unlistenMatchInfo: any
+
+  onMounted(async () => {
+    unlistenMatchmakingState = await listen('matchmaking-state-changed', (event) => {
+      console.log('matchmaking-state-changed', event.payload)
+      matchmakingState.value = event.payload as MatchmakingState
+    })
+    unlistenMatchInfo = await listen('match-info-change', (event) => {
+      console.log('match-info-change', event.payload)
+      matchInfo.value = event.payload as MatchInfo
+    })
+  })
+
+  onUnmounted(() => {
+    unlistenMatchmakingState && unlistenMatchmakingState()
+    unlistenMatchInfo && unlistenMatchInfo()
+  })
+
+  return {
+    matchmakingState,
+    matchInfo,
+    handleMatchmaking,
+    handleAcceptMatch,
+    handleDeclineMatch
+  }
+}

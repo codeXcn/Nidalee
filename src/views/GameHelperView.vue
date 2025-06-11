@@ -208,11 +208,14 @@
         </div>
       </div>
     </Card>
+
+    <!-- 匹配测试面板 -->
+    <MatchmakingPanel />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'

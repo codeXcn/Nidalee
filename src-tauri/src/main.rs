@@ -66,6 +66,49 @@ async fn get_match_history() -> Result<lcu::match_history::MatchStatistics, Stri
 async fn get_game_detail(game_id: u64) -> Result<serde_json::Value, String> {
     lcu::match_history::get_game_detail(game_id).await
 }
+#[tauri::command]
+async fn start_matchmaking() -> Result<(), String> {
+    let auth_info = get_lcu_auth_info().await?;
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+
+    lcu::matchmaking::start_matchmaking(&client, &auth_info).await
+}
+
+#[tauri::command]
+async fn stop_matchmaking() -> Result<(), String> {
+    let auth_info = get_lcu_auth_info().await?;
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+
+    lcu::matchmaking::stop_matchmaking(&client, &auth_info).await
+}
+
+#[tauri::command]
+async fn accept_match() -> Result<(), String> {
+    let auth_info = get_lcu_auth_info().await?;
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+
+    lcu::matchmaking::accept_match(&client, &auth_info).await
+}
+
+#[tauri::command]
+async fn decline_match() -> Result<(), String> {
+    let auth_info = get_lcu_auth_info().await?;
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+
+    lcu::matchmaking::decline_match(&client, &auth_info).await
+}
 
 #[tokio::main]
 async fn main() {
@@ -148,6 +191,10 @@ async fn main() {
             get_game_version,
             get_match_history,
             get_game_detail,
+            start_matchmaking,
+            stop_matchmaking,
+            accept_match,
+            decline_match,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

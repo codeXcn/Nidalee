@@ -38,24 +38,24 @@ pub async fn get_current_summoner(client: &Client, auth_info: &LcuAuthInfo) -> R
 
     // 获取段位信息
     if let Ok(rank_info) = get_rank_info(client, auth_info, &summoner_info.puuid).await {
-        summoner_info.soloRankTier = rank_info.solo_tier;
-        summoner_info.soloRankDivision = rank_info.solo_division;
-        summoner_info.soloRankLP = rank_info.solo_lp;
-        summoner_info.soloRankWins = rank_info.solo_wins;
-        summoner_info.soloRankLosses = rank_info.solo_losses;
-        summoner_info.flexRankTier = rank_info.flex_tier;
-        summoner_info.flexRankDivision = rank_info.flex_division;
-        summoner_info.flexRankLP = rank_info.flex_lp;
-        summoner_info.flexRankWins = rank_info.flex_wins;
-        summoner_info.flexRankLosses = rank_info.flex_losses;
+        summoner_info.solo_rank_tier = rank_info.solo_tier;
+        summoner_info.solo_rank_division = rank_info.solo_division;
+        summoner_info.solo_rank_lp = rank_info.solo_lp;
+        summoner_info.solo_rank_wins = rank_info.solo_wins;
+        summoner_info.solo_rank_losses = rank_info.solo_losses;
+        summoner_info.flex_rank_tier = rank_info.flex_tier;
+        summoner_info.flex_rank_division = rank_info.flex_division;
+        summoner_info.flex_rank_lp = rank_info.flex_lp;
+        summoner_info.flex_rank_wins = rank_info.flex_wins;
+        summoner_info.flex_rank_losses = rank_info.flex_losses;
     }
 
-    // 如果有 gameName 和 tagLine，则组合它们
-    if let (Some(game_name), Some(tag_line)) = (summoner_info.gameName.clone(), summoner_info.tagLine.clone()) {
-        summoner_info.displayName = format!("{}#{}", game_name, tag_line);
+    // 如果有 game_name 和 tag_line，则组合它们
+    if let (Some(game_name), Some(tag_line)) = (summoner_info.game_name.clone(), summoner_info.tag_line.clone()) {
+        summoner_info.display_name = format!("{}#{}", game_name, tag_line);
     }
 
-    println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info.displayName);
+    println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info.display_name);
     Ok(summoner_info)
 }
 
@@ -116,7 +116,7 @@ async fn get_rank_info(client: &Client, auth_info: &LcuAuthInfo, puuid: &str) ->
     Ok(rank_info)
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 struct RankInfo {
     solo_tier: Option<String>,
     solo_division: Option<String>,
@@ -162,7 +162,7 @@ pub async fn get_summoner_by_id(client: &Client, auth_info: &LcuAuthInfo, summon
 
     match response.json::<SummonerInfo>().await {
         Ok(info) => {
-            println!("[LCU] ✓ 成功获取召唤师信息: {}", info.displayName);
+            println!("[LCU] ✓ 成功获取召唤师信息: {}", info.display_name);
             Ok(info)
         }
         Err(e) => {
