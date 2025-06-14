@@ -55,7 +55,7 @@ export const formatNumber = (num: number): string => {
 }
 
 // 资源URL相关函数
-export const getChampionIconUrl = (championId: number): string => {
+export const getChampionIconUrl = (championId: number | string | null): string => {
   if (!championId) return ''
   return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`
 }
@@ -158,8 +158,9 @@ export interface Participant {
   rankTier?: string
   score?: number
 }
-export const getChampionName = (championId: number): string => {
-  const championMap: Record<number, string> = {
+export const getChampionName = (championId: number | string | null): string => {
+  if (!championId) return '未选择英雄'
+  const championMap: Record<number | string, string> = {
     1: '安妮',
     2: '奥拉夫',
     3: '加里奥',
@@ -330,4 +331,43 @@ export const getChampionName = (championId: number): string => {
     959: '纳亚菲利'
   }
   return championMap[championId] || `英雄${championId}`
+}
+
+export const getSpellIconUrl = (spellId: number | null): string => {
+  if (!spellId) return ''
+  return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/${spellId}.png`
+}
+
+export const getSpellMeta = (spellId: number | null): { label: string, icon: string } => {
+  if (!spellId) return { label: '', icon: '' }
+  const spellMap: Record<number, { label: string, icon: string }> = {
+    1: { label: '净化', icon: new URL('@/assets/SpellIconFiles/1.png', import.meta.url).href },
+    3: { label: '虚弱', icon: new URL('@/assets/SpellIconFiles/3.png', import.meta.url).href },
+    4: { label: '闪现', icon: new URL('@/assets/SpellIconFiles/4.png', import.meta.url).href },
+    6: { label: '幽灵疾步', icon: new URL('@/assets/SpellIconFiles/6.png', import.meta.url).href },
+    7: { label: '治疗术', icon: new URL('@/assets/SpellIconFiles/7.png', import.meta.url).href },
+    11: { label: '惩戒', icon: new URL('@/assets/SpellIconFiles/11.png', import.meta.url).href },
+    12: { label: '传送', icon: new URL('@/assets/SpellIconFiles/12.png', import.meta.url).href },
+    13: { label: '清晰术', icon: new URL('@/assets/SpellIconFiles/13.png', import.meta.url).href },
+    14: { label: '点燃', icon: new URL('@/assets/SpellIconFiles/14.png', import.meta.url).href },
+    21: { label: '屏障', icon: new URL('@/assets/SpellIconFiles/21.png', import.meta.url).href },
+    32: { label: '雪球', icon: new URL('@/assets/SpellIconFiles/32.png', import.meta.url).href }
+  }
+  return spellMap[spellId] || { label: `技能${spellId}`, icon: '' }
+}
+
+export const getTierIconUrl = (tier: string | undefined): string => {
+  if (!tier) return ''
+  const tierMap: Record<string, string> = {
+    IRON: new URL('@/assets/RankedIconFiles/IRON.png', import.meta.url).href,
+    BRONZE: new URL('@/assets/RankedIconFiles/BRONZE.png', import.meta.url).href,
+    SILVER: new URL('@/assets/RankedIconFiles/SILVER.png', import.meta.url).href,
+    GOLD: new URL('@/assets/RankedIconFiles/GOLD.png', import.meta.url).href,
+    PLATINUM: new URL('@/assets/RankedIconFiles/PLATINUM.png', import.meta.url).href,
+    DIAMOND: new URL('@/assets/RankedIconFiles/DIAMOND.png', import.meta.url).href,
+    MASTER: new URL('@/assets/RankedIconFiles/MASTER.png', import.meta.url).href,
+    GRANDMASTER: new URL('@/assets/RankedIconFiles/GRANDMASTER.png', import.meta.url).href,
+    CHALLENGER: new URL('@/assets/RankedIconFiles/CHALLENGER.png', import.meta.url).href
+  }
+  return tierMap[tier] || ''
 }

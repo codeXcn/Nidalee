@@ -110,21 +110,68 @@
             单人排位
           </h4>
           <div v-if="summonerInfo.soloRankTier" class="space-y-2">
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center space-x-3">
-                <div :class="['px-3 py-1.5 rounded-lg text-sm font-bold', getRankColor(summonerInfo.soloRankTier)]">
-                  {{ formatRankTier(summonerInfo.soloRankTier) }}
-                  {{ summonerInfo.soloRankDivision }}
+            <div class="flex items-center space-x-4">
+              <img
+                v-if="summonerInfo.soloRankTier"
+                :src="getTierIconUrl(summonerInfo.soloRankTier)"
+                :alt="formatRankTier(summonerInfo.soloRankTier)"
+                class="w-14 h-14 drop-shadow-xl ring-2 ring-yellow-400 bg-white rounded-full animate-pulse"
+              />
+              <div class="flex flex-col justify-center">
+                <div class="flex items-baseline gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span
+                          :class="`text-xl font-bold cursor-pointer px-3 py-1 rounded-lg shadow-sm transition-colors duration-200 ${getRankColor(summonerInfo.soloRankTier)}`"
+                        >
+                          {{ formatRankTier(summonerInfo.soloRankTier) }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        {{ _getTierTooltip(summonerInfo.soloRankTier) }}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <span class="text-base font-semibold text-gray-400 tracking-wider ml-2">{{
+                    summonerInfo.soloRankDivision
+                  }}</span>
                 </div>
-                <span class="text-sm text-muted-foreground">{{ summonerInfo.soloRankLP }} LP</span>
+                <span
+                  class="mt-1 inline-flex items-center px-3 py-1 rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 shadow text-white font-extrabold text-base tracking-wide"
+                  style="min-width: 60px; justify-content: center"
+                >
+                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 20 20">
+                    <path
+                      d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.77l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span class="text-lg font-bold">{{ summonerInfo.soloRankLp }}</span>
+                  <span class="ml-1 text-xs font-semibold" style="opacity: 0.85">LP</span>
+                </span>
               </div>
             </div>
-            <div class="flex items-center space-x-4 text-sm">
-              <span class="text-green-600 dark:text-green-400 font-medium">{{ summonerInfo.soloRankWins }}胜</span>
-              <span class="text-red-600 dark:text-red-400 font-medium">{{ summonerInfo.soloRankLosses }}负</span>
-              <span class="text-muted-foreground">
-                胜率 {{ getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses) }}%
-              </span>
+            <div class="flex items-center space-x-6 mt-2">
+              <span class="text-green-600 text-xl font-bold">{{ summonerInfo.soloRankWins }}胜</span>
+              <span class="text-red-600 text-xl font-bold">{{ summonerInfo.soloRankLosses }}负</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <span
+                      :class="`${getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).color} text-lg font-semibold flex items-center cursor-pointer`"
+                    >
+                      <span class="mr-1">{{
+                        getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).icon
+                      }}</span>
+                      胜率 {{ getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses) }}%
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    {{ getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).tip }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           <div v-else class="text-sm text-muted-foreground">
@@ -142,21 +189,68 @@
             灵活排位
           </h4>
           <div v-if="summonerInfo.flexRankTier" class="space-y-2">
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center space-x-3">
-                <div :class="['px-3 py-1.5 rounded-lg text-sm font-bold', getRankColor(summonerInfo.flexRankTier)]">
-                  {{ formatRankTier(summonerInfo.flexRankTier) }}
-                  {{ summonerInfo.flexRankDivision }}
+            <div class="flex items-center space-x-4">
+              <img
+                v-if="summonerInfo.flexRankTier"
+                :src="getTierIconUrl(summonerInfo.flexRankTier)"
+                :alt="formatRankTier(summonerInfo.flexRankTier)"
+                class="w-14 h-14 drop-shadow-xl ring-2 ring-yellow-400 bg-white rounded-full animate-pulse"
+              />
+              <div class="flex flex-col justify-center">
+                <div class="flex items-baseline gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span
+                          :class="`text-xl font-bold cursor-pointer px-3 py-1 rounded-lg shadow-sm transition-colors duration-200 ${getRankColor(summonerInfo.flexRankTier)}`"
+                        >
+                          {{ formatRankTier(summonerInfo.flexRankTier) }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        {{ _getTierTooltip(summonerInfo.flexRankTier) }}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <span class="text-base font-semibold text-gray-400 tracking-wider ml-2">{{
+                    summonerInfo.flexRankDivision
+                  }}</span>
                 </div>
-                <span class="text-sm text-muted-foreground">{{ summonerInfo.flexRankLP }} LP</span>
+                <span
+                  class="mt-1 inline-flex items-center px-3 py-1 rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 shadow text-white font-extrabold text-base tracking-wide"
+                  style="min-width: 60px; justify-content: center"
+                >
+                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 20 20">
+                    <path
+                      d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.77l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span class="text-lg font-bold">{{ summonerInfo.flexRankLp }}</span>
+                  <span class="ml-1 text-xs font-semibold" style="opacity: 0.85">LP</span>
+                </span>
               </div>
             </div>
-            <div class="flex items-center space-x-4 text-sm">
-              <span class="text-green-600 dark:text-green-400 font-medium">{{ summonerInfo.flexRankWins }}胜</span>
-              <span class="text-red-600 dark:text-red-400 font-medium">{{ summonerInfo.flexRankLosses }}负</span>
-              <span class="text-muted-foreground">
-                胜率 {{ getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses) }}%
-              </span>
+            <div class="flex items-center space-x-6 mt-2">
+              <span class="text-green-600 text-xl font-bold">{{ summonerInfo.flexRankWins }}胜</span>
+              <span class="text-red-600 text-xl font-bold">{{ summonerInfo.flexRankLosses }}负</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <span
+                      :class="`${getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).color} text-lg font-semibold flex items-center cursor-pointer`"
+                    >
+                      <span class="mr-1">{{
+                        getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).icon
+                      }}</span>
+                      胜率 {{ getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses) }}%
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    {{ getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).tip }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           <div v-else class="text-sm text-muted-foreground">
@@ -191,12 +285,14 @@ import { Card } from '@/components/ui/card'
 import { User, Users, Shield, Trophy } from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useGameAssets } from '@/hooks/useGameAssets'
+import { getTierIconUrl } from '@/lib'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const props = defineProps<{
   summonerInfo: any
   sessionDuration: string
 }>()
-
+console.log(props.summonerInfo)
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
 
@@ -275,6 +371,35 @@ const getRankWinRate = (wins?: number, losses?: number): number => {
   return Math.round(((wins || 0) / totalGames) * 100)
 }
 
+// 胜率趣味风格（emoji方案）
+const getWinRateStyle = (rate: number) => {
+  if (rate >= 100) {
+    return {
+      color: 'text-pink-500',
+      icon: '🔥',
+      tip: '孩子，你无敌了！'
+    }
+  } else if (rate >= 70) {
+    return {
+      color: 'text-yellow-500',
+      icon: '👑',
+      tip: '原来是高手！'
+    }
+  } else if (rate >= 50) {
+    return {
+      color: 'text-green-600',
+      icon: '👍',
+      tip: '你很稳，保持住！'
+    }
+  } else {
+    return {
+      color: 'text-orange-500',
+      icon: '💪',
+      tip: '努把力，你能行！'
+    }
+  }
+}
+
 // 格式化游戏状态
 const formatGameStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -312,4 +437,23 @@ const formatAvailability = (availability: string): string => {
   }
   return availabilityMap[availability] || availability
 }
+
+// 段位描述Tooltip
+const getTierTooltip = (tier: string) => {
+  const map: Record<string, string> = {
+    IRON: '坚韧黑铁：万丈高楼平地起！',
+    BRONZE: '英勇青铜：再接再厉，冲冲冲！',
+    SILVER: '不屈白银：稳扎稳打，步步高升！',
+    GOLD: '荣耀黄金：离梦想更进一步！',
+    PLATINUM: '华贵铂金：高手如云，继续加油！',
+    EMERALD: '流光翡翠：新赛季新气象！',
+    DIAMOND: '璀璨钻石：你已是高端玩家！',
+    MASTER: '超凡大师：巅峰对决，舍我其谁！',
+    GRANDMASTER: '傲世宗师：顶尖中的顶尖！',
+    CHALLENGER: '最强王者：你就是天选之子！'
+  }
+  return map[tier] || '加油，段位不是终点，享受游戏乐趣！'
+}
+
+const _getTierTooltip = getTierTooltip
 </script>

@@ -1,7 +1,7 @@
 // src/types/champSelect.ts
 export interface ChampSelectPlayer {
   cellId: number
-  summonerId?: number
+  summonerId?: string
   championId: number
   championPickIntent?: number
   selectedSkinId?: number

@@ -112,6 +112,7 @@ async fn decline_match() -> Result<(), String> {
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
     tauri::Builder::default()
         .setup(|app| {
             // 创建托盘菜单项

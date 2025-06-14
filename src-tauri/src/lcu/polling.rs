@@ -61,9 +61,8 @@ async fn polling_task(
 ) {
     let mut tick: u64 = 0;
     loop {
-
-        // 1. 检查LCU进程（每2秒）
-        if tick % 2 == 0 {
+        // 1. 检查LCU进程（每10秒）
+        if tick % 10 == 0 {
             match retry(|| async { Ok(check_lcu_running()) as Result<bool, String> }, 2, 200).await {
                 Ok(is_running) => {
                     let mut s = state.write().await;
@@ -75,8 +74,8 @@ async fn polling_task(
             }
         }
 
-        // 2. 检查 auth_info（每5秒）
-        if tick % 5 == 0 {
+        // 2. 检查 auth_info（每15秒）
+        if tick % 15 == 0 {
             let is_running = { state.read().await.is_lcu_running };
             if is_running {
                 match retry(|| async { get_lcu_auth_info() }, 2, 200).await {
@@ -96,8 +95,8 @@ async fn polling_task(
             }
         }
 
-        // 3. 检查召唤师信息（每10秒）
-        if tick % 10 == 0 {
+        // 3. 检查召唤师信息（每60秒）
+        if tick % 60 == 0 {
             let auth_info = { state.read().await.auth_info.clone() };
             if let Some(auth) = auth_info {
                 match retry(|| get_current_summoner(&client, &auth), 2, 200).await {
@@ -117,29 +116,35 @@ async fn polling_task(
             }
         }
 
-        // 4. 检查游戏阶段（每1秒）
-        if tick % 1 == 0 {
+        // 4. 检查游戏阶段（每5秒）
+        if tick % 5 == 0 {
+            log::info!("[轮询] 检查游戏阶段");
             let auth_info = { state.read().await.auth_info.clone() };
             if let Some(auth) = auth_info {
+                log::info!("[轮询] auth_info 存在，尝试获取 gameflow_phase");
                 match retry(|| get_gameflow_phase(&client, &auth), 2, 200).await {
                     Ok(phase) => {
+                        log::info!("[轮询] 获取到 gameflow_phase: {:?}", phase);
                         let mut s = state.write().await;
                         if s.gameflow_phase.as_ref() != Some(&phase) {
                             s.gameflow_phase = Some(phase.clone());
                         }
                     }
                     Err(_) => {
+                        log::warn!("[轮询] 获取 gameflow_phase 失败");
                         let mut s = state.write().await;
                         if s.gameflow_phase.is_some() {
                             s.gameflow_phase = None;
                         }
                     }
                 }
+            } else {
+                log::warn!("[轮询] auth_info 不存在，无法获取 gameflow_phase");
             }
         }
 
-        // 5. 检查房间信息（每3秒）
-        if tick % 3 == 0 {
+        // 5. 检查房间信息（每10秒）
+        if tick % 10 == 0 {
             let auth_info = { state.read().await.auth_info.clone() };
             if let Some(auth) = auth_info {
                 match retry(|| get_lobby_info(&client, &auth), 2, 200).await {
@@ -158,11 +163,11 @@ async fn polling_task(
                 }
             }
         }
-        // 6. 检查匹配状态（每1秒）
-        if tick % 1 == 0 {
+
+        // 6. 检查匹配状态（每5秒）
+        if tick % 5 == 0 {
             let auth_info = { state.read().await.auth_info.clone() };
             if let Some(auth) = auth_info {
-                println!("[Polling] Checking matchmaking state...");
                 match retry(|| get_matchmaking_state(&client, &auth), 2, 200).await {
                     Ok(matchmaking_state) => {
                         let mut s = state.write().await;
@@ -215,18 +220,19 @@ async fn polling_task(
             }
         }
 
-        // 7. 检查当前选人 session（每1秒）
-        if tick % 1 == 0 {
-            println!("[Polling] 进入选人 session tick 分支");
+        // 7. 检查当前选人 session（每5秒）
+        if tick % 5 == 0 {
+            log::info!("[轮询] 检查选人 session");
             let auth_info = { state.read().await.auth_info.clone() };
             let gameflow_phase = { state.read().await.gameflow_phase.clone() };
-            println!("[Polling] auth_info: {:?}, gameflow_phase: {:?}", auth_info.is_some(), gameflow_phase);
+
+            log::info!("[轮询] 当前 gameflow_phase: {:?}", gameflow_phase);
 
             // InProgress、WaitingForStats、EndOfGame 时停止轮询
             if let Some(phase) = gameflow_phase.as_deref() {
                 match phase {
-                    "InProgress" | "WaitingForStats" | "EndOfGame" => {
-                        println!("[Polling] 当前为 {}，停止选人 session 轮询", phase);
+                     "WaitingForStats" | "EndOfGame" => {
+                        log::info!("检测到 phase={}，停止轮询选人 session", phase);
                         return;
                     }
                     _ => {}
@@ -235,49 +241,54 @@ async fn polling_task(
 
             // 只在英雄选择阶段检查
             if let Some(auth) = auth_info {
+                log::info!("[轮询] auth_info 存在，准备判断是否进入英雄选择阶段");
                 if gameflow_phase.as_deref() == Some("ChampSelect") {
-                    println!("[Polling] 进入 ChampSelect 阶段，准备获取选人 session");
+                    log::info!("[轮询] 进入英雄选择阶段，尝试获取选人 session");
                     match retry(|| get_champ_select_session(&client, &auth), 2, 200).await {
                         Ok(session) => {
+                            log::info!("[轮询] 成功获取选人 session");
                             let mut s = state.write().await;
                             if s.current_champ_select_session.as_ref() != Some(&session) {
-                                println!("[Polling] 选人 Session 更新: {:?}", session);
+                                log::info!("[轮询] 选人 session 变化，准备 emit");
                                 s.current_champ_select_session = Some(session.clone());
+                                // 直接发送事件，不使用防抖缓存
                                 let _ = app.emit("champ-select-session-changed", session);
                             } else {
-                                println!("[Polling] 选人 Session 未变化");
+                                log::info!("[轮询] 选人 session 未变化，不 emit");
                             }
                         }
                         Err(e) => {
+                            log::warn!("[轮询] 获取选人 session 失败: {}", e);
                             if e.contains("403") {
-                                println!("[Polling] 训练模式/特殊房间 403，fallback 到 current_champion");
+                                log::info!("[轮询] 获取 session 403，尝试 fallback 到 current champion");
                                 match retry(|| get_current_champion(&client, &auth), 2, 200).await {
                                     Ok(champion) => {
-                                        println!("[Polling] fallback 当前高亮英雄: {:?}", champion);
                                         let _ = app.emit("current-champion-fallback", champion);
                                     }
-                                    Err(e2) => {
-                                        println!("[Polling] fallback 拉取 current_champion 失败: {}", e2);
-                                    }
+                                    Err(_) => {}
                                 }
-                            } else {
-                                println!("[Polling] 获取选人 Session 失败: {}", e);
                             }
                             let mut s = state.write().await;
                             if s.current_champ_select_session.is_some() {
+                                log::info!("[轮询] 选人 session 被清除，emit None");
                                 s.current_champ_select_session = None;
+                                // 当 session 被清除时也发送事件
+                                let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
                             }
                         }
                     }
                 } else {
-                    println!("[Polling] 当前不在 ChampSelect 阶段，清除 session 信息");
+                    log::info!("[轮询] 当前 phase 不是 ChampSelect，实际为: {:?}", gameflow_phase);
                     let mut s = state.write().await;
                     if s.current_champ_select_session.is_some() {
+                        log::info!("[轮询] 离开英雄选择阶段，选人 session 被清除，emit None");
                         s.current_champ_select_session = None;
+                        // 当 session 被清除时也发送事件
+                        let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
                     }
                 }
             } else {
-                println!("[Polling] 未获取到 auth_info，跳过选人 session 检查");
+                log::warn!("[轮询] auth_info 不存在，无法获取选人 session");
             }
         }
 
@@ -310,8 +321,8 @@ async fn polling_task(
                 let _ = app.emit("match-info-change", &s.match_info);
                 c.match_info = s.match_info.clone();
             }
+            // 移除这里的 session 变化事件，因为我们已经在上面直接发送了
             if c.current_champ_select_session.as_ref() != s.current_champ_select_session.as_ref() {
-                let _ = app.emit("current-champ-select-session-change", &s.current_champ_select_session);
                 c.current_champ_select_session = s.current_champ_select_session.clone();
             }
         }

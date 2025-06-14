@@ -1,5 +1,45 @@
 // LCU 数据结构定义
 use serde::{Deserialize, Serialize};
+use serde::de::{self, Deserializer};
+
+/// 兼容数字和字符串的反序列化 helper
+pub fn string_or_number<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct StringOrNumberVisitor;
+
+    impl<'de> de::Visitor<'de> for StringOrNumberVisitor {
+        type Value = String;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("string or number")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_owned())
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+    }
+
+    deserializer.deserialize_any(StringOrNumberVisitor)
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LcuAuthInfo {
@@ -102,7 +142,8 @@ pub struct LobbyInfo {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyMember {
-    pub summoner_id: u64,
+    #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
+    pub summoner_id: String,
     pub display_name: String,
 }
 
@@ -116,8 +157,10 @@ pub struct SummonerInfo {
     pub summoner_level: i64,
     pub profile_icon_id: i64,
     pub puuid: String,
-    pub account_id: i64,
-    pub summoner_id: i64,
+    #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
+    pub account_id: String,
+    #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
+    pub summoner_id: String,
 
     // 经验信息
     pub xp_since_last_level: i64,
@@ -187,20 +230,74 @@ pub struct ChampSelectSession {
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectPlayer {
     pub cell_id: i32,
-    pub summoner_id: Option<u64>,
-    pub champion_id: i32,
-    pub champion_pick_intent: Option<i32>,
-    pub selected_skin_id: Option<i32>,
-    pub spell1_id: Option<i32>,
-    pub spell2_id: Option<i32>,
+    pub summoner_id: Option<String>,
+    pub champion_id: Option<f64>,
+    pub champion_pick_intent: Option<f64>,
+    pub selected_skin_id: Option<f64>,
+    pub spell1_id: Option<f64>,
+    pub spell2_id: Option<f64>,
     pub assigned_position: Option<String>,
+    pub display_name: Option<String>,
+    pub tag_line: Option<String>,
+    pub profile_icon_id: Option<i64>,
+    pub tier: Option<String>,
+}
+
+impl ChampSelectPlayer {
+    // 检查是否是有效的召唤师技能ID
+    pub fn is_valid_spell_id(&self, spell_id: Option<f64>) -> bool {
+        if let Some(id) = spell_id {
+            // 检查是否是 u64::MAX 的浮点数表示
+            if id == 1.8446744073709552e19 {
+                return false;
+            }
+            // 检查是否是 0
+            if id == 0.0 {
+                return false;
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    // 获取有效的召唤师技能ID
+    pub fn get_valid_spell1_id(&self) -> Option<f64> {
+        if self.is_valid_spell_id(self.spell1_id) {
+            self.spell1_id
+        } else {
+            None
+        }
+    }
+
+    pub fn get_valid_spell2_id(&self) -> Option<f64> {
+        if self.is_valid_spell_id(self.spell2_id) {
+            self.spell2_id
+        } else {
+            None
+        }
+    }
+
+    // 检查是否是有效的英雄ID
+    pub fn is_valid_champion_id(&self) -> bool {
+        self.champion_id.map_or(false, |id| id > 0.0)
+    }
+
+    // 检查是否是有效的皮肤ID
+    pub fn is_valid_skin_id(&self) -> bool {
+        if let Some(skin_id) = self.selected_skin_id {
+            skin_id > 0.0
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectBans {
-    pub my_team_bans: Vec<i32>,
-    pub their_team_bans: Vec<i32>,
+    pub my_team_bans: Vec<Option<f64>>,
+    pub their_team_bans: Vec<Option<f64>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]

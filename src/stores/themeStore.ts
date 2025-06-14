@@ -33,8 +33,249 @@ export const useThemeStore = defineStore(
           muted: 'oklch(0.269 0 0)',
           'muted-foreground': 'oklch(0.708 0 0)'
         }
+      },
+      slate: {
+        light: {
+          primary: 'oklch(0.305 0.015 247.858)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.966 0.009 247.858)',
+          'secondary-foreground': 'oklch(0.145 0.015 247.858)',
+          accent: 'oklch(0.966 0.009 247.858)',
+          'accent-foreground': 'oklch(0.145 0.015 247.858)',
+          muted: 'oklch(0.966 0.009 247.858)',
+          'muted-foreground': 'oklch(0.556 0.015 247.858)'
+        },
+        dark: {
+          primary: 'oklch(0.985 0 0)',
+          'primary-foreground': 'oklch(0.243 0.015 247.858)',
+          secondary: 'oklch(0.269 0.015 247.858)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0.015 247.858)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0.015 247.858)',
+          'muted-foreground': 'oklch(0.708 0.015 247.858)'
+        }
+      },
+      stone: {
+        light: {
+          primary: 'oklch(0.305 0.008 41.116)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.966 0.005 41.116)',
+          'secondary-foreground': 'oklch(0.145 0.008 41.116)',
+          accent: 'oklch(0.966 0.005 41.116)',
+          'accent-foreground': 'oklch(0.145 0.008 41.116)',
+          muted: 'oklch(0.966 0.005 41.116)',
+          'muted-foreground': 'oklch(0.556 0.008 41.116)'
+        },
+        dark: {
+          primary: 'oklch(0.985 0 0)',
+          'primary-foreground': 'oklch(0.243 0.008 41.116)',
+          secondary: 'oklch(0.269 0.008 41.116)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0.008 41.116)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0.008 41.116)',
+          'muted-foreground': 'oklch(0.708 0.008 41.116)'
+        }
+      },
+      gray: {
+        light: {
+          primary: 'oklch(0.305 0.003 286.38)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.966 0.002 286.38)',
+          'secondary-foreground': 'oklch(0.145 0.003 286.38)',
+          accent: 'oklch(0.966 0.002 286.38)',
+          'accent-foreground': 'oklch(0.145 0.003 286.38)',
+          muted: 'oklch(0.966 0.002 286.38)',
+          'muted-foreground': 'oklch(0.556 0.003 286.38)'
+        },
+        dark: {
+          primary: 'oklch(0.985 0 0)',
+          'primary-foreground': 'oklch(0.243 0.003 286.38)',
+          secondary: 'oklch(0.269 0.003 286.38)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0.003 286.38)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0.003 286.38)',
+          'muted-foreground': 'oklch(0.708 0.003 286.38)'
+        }
+      },
+      neutral: {
+        light: {
+          primary: 'oklch(0.243 0 0)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.985 0 0)',
+          'primary-foreground': 'oklch(0.243 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      red: {
+        light: {
+          primary: 'oklch(0.577 0.245 27.325)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.637 0.237 25.331)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      rose: {
+        light: {
+          primary: 'oklch(0.627 0.265 3.9)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.645 0.246 16.439)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      orange: {
+        light: {
+          primary: 'oklch(0.646 0.222 41.116)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.769 0.188 70.08)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      green: {
+        light: {
+          primary: 'oklch(0.6 0.118 145.704)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.696 0.17 162.48)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      blue: {
+        light: {
+          primary: 'oklch(0.488 0.243 264.376)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.488 0.243 264.376)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      yellow: {
+        light: {
+          primary: 'oklch(0.828 0.189 84.429)',
+          'primary-foreground': 'oklch(0.243 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.769 0.188 70.08)',
+          'primary-foreground': 'oklch(0.243 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
+      },
+      violet: {
+        light: {
+          primary: 'oklch(0.627 0.265 303.9)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.97 0 0)',
+          'secondary-foreground': 'oklch(0.145 0 0)',
+          accent: 'oklch(0.97 0 0)',
+          'accent-foreground': 'oklch(0.145 0 0)',
+          muted: 'oklch(0.97 0 0)',
+          'muted-foreground': 'oklch(0.556 0 0)'
+        },
+        dark: {
+          primary: 'oklch(0.627 0.265 303.9)',
+          'primary-foreground': 'oklch(0.985 0 0)',
+          secondary: 'oklch(0.269 0 0)',
+          'secondary-foreground': 'oklch(0.985 0 0)',
+          accent: 'oklch(0.269 0 0)',
+          'accent-foreground': 'oklch(0.985 0 0)',
+          muted: 'oklch(0.269 0 0)',
+          'muted-foreground': 'oklch(0.708 0 0)'
+        }
       }
-      // ... 其他颜色主题配置 ...
     }
 
     // 颜色选项
