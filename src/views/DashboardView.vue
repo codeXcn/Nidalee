@@ -5,9 +5,7 @@
 
     <!-- 顶部统计卡片 -->
     <StatisticsCards
-      :connection-status="connectionStatus"
       :is-connected="isConnected"
-      :is-connecting="isConnecting"
       :today-matches="todayMatches"
       :win-rate="winRate"
       :enabled-functions-count="enabledFunctionsCount"
@@ -79,12 +77,10 @@ const { attemptConnection } = useGameMonitor()
 // 从store中解构响应式状态
 const {
   isConnected,
-  isConnecting,
   summonerInfo,
   todayMatches,
   activities,
   autoFunctions,
-  connectionStatus,
   winRate,
   enabledFunctionsCount,
   sessionDuration,

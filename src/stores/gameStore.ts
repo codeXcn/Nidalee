@@ -2,146 +2,37 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
 import { now } from '@vueuse/core'
-
-// 定义接口类型
-export interface GameSession {
-  startTime: number
-  duration: number
-}
-
-export interface Activity {
-  id: string
-  type: 'success' | 'info' | 'warning' | 'error'
-  message: string
-  timestamp: number
-}
-
-export interface GameStatus {
-  phase: string
-  queue: string | null
-  isInGame: boolean
-}
-
-export interface MatchStatistics {
-  total_games: number
-  wins: number
-  losses: number
-  win_rate: number
-  avg_kills: number
-  avg_deaths: number
-  avg_assists: number
-  avg_kda: number
-  favorite_champions: ChampionStats[]
-  recent_performance: RecentGame[]
-}
-
-export interface ChampionStats {
-  champion_name: string
-  games_played: number
-  wins: number
-  win_rate: number
-}
-
-export interface RecentGame {
-  game_id: number
-  champion_name: string
-  game_mode: string
-  win: boolean
-  kills: number
-  deaths: number
-  assists: number
-  game_duration: number
-  game_creation: number
-}
-
-export interface LcuAuthInfo {
-  app_port: number
-  remoting_auth_token: string
-}
-
-export interface SummonerInfo {
-  // 基本信息
-  displayName: string
-  gameName?: string
-  tagLine?: string
-  summonerLevel: number
-  profileIconId: number
-  puuid: string
-  accountId: number
-  summonerId: number
-
-  // 经验信息
-  xpSinceLastLevel: number
-  xpUntilNextLevel: number
-  percentCompleteForNextLevel?: number
-
-  // 游戏状态
-  gameStatus?: string
-  availability?: string
-
-  // 挑战系统
-  challengePoints?: string
-  challengeCrystalLevel?: string
-
-  // 排位信息 - 单人排位
-  soloRankTier?: string
-  soloRankDivision?: string
-  soloRankWins?: number
-  soloRankLosses?: number
-  soloRankLP?: number
-
-  // 排位信息 - 灵活排位
-  flexRankTier?: string
-  flexRankDivision?: string
-  flexRankWins?: number
-  flexRankLosses?: number
-  flexRankLP?: number
-
-  // 历史最高排位
-  highestRankThisSeason?: string
-
-  // 天赋信息
-  currentPerkPage?: string
-  primaryStyleId?: number
-  subStyleId?: number
-  selectedPerkIds?: number[]
-}
-
-// 游戏阶段信息
-export interface GamePhase {
-  phase: string
-}
-
-// 房间信息
-export interface LobbyInfo {
-  id: string
-  partyType: string
-  members: LobbyMember[]
-}
-
-export interface LobbyMember {
-  summonerId: number
-  displayName: string
-}
+import type {
+  LcuAuthInfo,
+  SummonerInfo,
+  GameStatus,
+  GameSession,
+  Activity,
+  MatchStatistics,
+  GamePhase,
+  LobbyInfo,
+  ChampSelectSession,
+  MatchmakingState,
+  MatchInfo
+} from 'types/global'
+import { useMatchmaking } from '@/components/game-helper/composables/useMatchmaking'
 
 export const useGameStore = defineStore(
   'game',
   () => {
     // 基础状态
     const isConnected = ref(false)
-    const isConnecting = ref(false)
-    const connectionError = ref<string | null>(null)
     const authInfo = ref<LcuAuthInfo | null>(null)
-
     // 用户信息
     const summonerInfo = ref<SummonerInfo | null>(null)
-
     // 游戏状态
     const gameStatus = ref<GameStatus>({
       phase: 'None',
       queue: null,
       isInGame: false
     })
+    // 选人阶段信息
+    const currentChampSelectSession = ref<ChampSelectSession | null>(null)
 
     // 会话信息
     const session = ref<GameSession>({
@@ -168,23 +59,15 @@ export const useGameStore = defineStore(
 
     // 自动功能状态
     const autoFunctions = ref({
-      acceptMatch: true,
+      acceptMatch: false,
       selectChampion: false,
-      runeConfig: true,
+      runeConfig: false,
       banChampion: false
     })
 
     // 对局历史统计
     const matchStatistics = ref<MatchStatistics | null>(null)
     const matchHistoryLoading = ref(false)
-
-    // 计算属性
-    const connectionStatus = computed(() => {
-      if (isConnecting.value) return 'connecting'
-      if (isConnected.value) return 'connected'
-      return 'disconnected'
-    })
-
     const winRate = computed(() => {
       const total = todayMatches.value.total
       if (total === 0) return 0
@@ -223,29 +106,34 @@ export const useGameStore = defineStore(
       }
     }
 
+    // 设置认证信息
+    const setAuthInfo = (info: LcuAuthInfo | null) => {
+      if (info) {
+        isConnected.value = true
+        authInfo.value = info
+        addActivity('success', 'LCU 认证信息已更新')
+      } else {
+        isConnected.value = false
+        authInfo.value = null
+        summonerInfo.value = null
+        addActivity('warning', 'LCU 认证信息已清除')
+      }
+    }
+
     // 检查LCU连接
     const checkConnection = async () => {
       try {
-        const connected = await invoke<boolean>('check_lcu_connection')
+        const connected = await invoke<LcuAuthInfo>('get_auth_info')
+        setAuthInfo(connected)
 
-        if (connected && !isConnected.value) {
-          isConnected.value = true
-          addActivity('success', 'LCU连接已建立')
-
+        if (connected) {
           // 获取召唤师信息
           await fetchSummonerInfo()
-        } else if (!connected && isConnected.value) {
-          isConnected.value = false
-          summonerInfo.value = null
-          addActivity('warning', 'LCU连接已断开')
         }
       } catch (error) {
         console.error('检查连接失败:', error)
-        if (isConnected.value) {
-          isConnected.value = false
-          summonerInfo.value = null
-          addActivity('error', '连接检查失败')
-        }
+        setAuthInfo(null)
+        addActivity('error', '连接检查失败')
       }
     }
 
@@ -258,25 +146,6 @@ export const useGameStore = defineStore(
       } catch (error) {
         console.error('获取召唤师信息失败:', error)
         addActivity('error', '获取召唤师信息失败')
-      }
-    }
-
-    // 尝试连接
-    const connect = async () => {
-      if (isConnecting.value) return
-
-      isConnecting.value = true
-      connectionError.value = null
-      addActivity('info', '正在尝试连接LCU...')
-
-      try {
-        await invoke('connect_to_lcu')
-        await checkConnection()
-      } catch (error) {
-        connectionError.value = error as string
-        addActivity('error', `连接失败: ${error}`)
-      } finally {
-        isConnecting.value = false
       }
     }
 
@@ -299,6 +168,7 @@ export const useGameStore = defineStore(
     // 切换自动功能
     const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {
       autoFunctions.value[key] = !autoFunctions.value[key]
+      console.log(autoFunctions.value)
       const status = autoFunctions.value[key] ? '已启用' : '已禁用'
       addActivity('info', `自动${getFunctionName(key)}${status}`)
     }
@@ -371,18 +241,6 @@ export const useGameStore = defineStore(
       }
     }
 
-    // 设置认证信息
-    const setAuthInfo = (info: LcuAuthInfo) => {
-      authInfo.value = info
-      addActivity('success', 'LCU 认证信息已更新')
-    }
-
-    // 清除认证信息
-    const clearAuthInfo = () => {
-      authInfo.value = null
-      addActivity('info', 'LCU 认证信息已清除')
-    }
-
     // 更新游戏阶段
     const updateGamePhase = (phase: GamePhase | null) => {
       if (phase) {
@@ -444,33 +302,62 @@ export const useGameStore = defineStore(
       }
       addActivity('success', `更新对局历史: ${stats.total_games} 场对局`)
     }
+    const teamsStates = ref<any>(null)
+    // 更新选人阶段信息
+    const updateChampSelectSession = async (session: ChampSelectSession | null) => {
+      currentChampSelectSession.value = session
+      if (session) {
+        addActivity('info', '进入英雄选择阶段')
+        if (teamsStates.value) return
+        const states = await invoke<any>('get_champselect_team_players_info')
+        console.log(states)
+        teamsStates.value = states
+      } else {
+        addActivity('info', '离开英雄选择阶段')
+        teamsStates.value = null
+      }
+    }
+    // 清除认证信息
+    const clearAuthInfo = () => {
+      setAuthInfo(null)
+    }
+    const { matchmakingState, matchInfo, handleMatchmaking, handleAcceptMatch, handleDeclineMatch } = useMatchmaking()
+
+    watch(
+      () => matchmakingState.value?.searchState,
+      (val) => {
+        console.log(val, autoFunctions.value.acceptMatch)
+        val === 'Found' && autoFunctions.value.acceptMatch && handleAcceptMatch()
+      }
+    )
 
     return {
       // 状态
       isConnected,
-      isConnecting,
-      connectionError,
       authInfo,
       summonerInfo,
       gameStatus,
+      currentChampSelectSession,
       session,
       todayMatches,
       activities,
       autoFunctions,
       matchStatistics,
       matchHistoryLoading,
-
+      matchmakingState,
+      matchInfo,
       // 计算属性
-      connectionStatus,
       winRate,
       enabledFunctionsCount,
       sessionDuration,
 
       // 方法
+      handleMatchmaking,
+      handleAcceptMatch,
+      handleDeclineMatch,
       addActivity,
       checkConnection,
       fetchSummonerInfo,
-      connect,
       updateSessionDuration,
       resetSession,
       toggleAutoFunction,
@@ -483,6 +370,7 @@ export const useGameStore = defineStore(
       clearAuthInfo,
       updateGamePhase,
       updateLobbyInfo,
+      updateChampSelectSession,
       updateMatchStatistics
     }
   },

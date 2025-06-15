@@ -118,7 +118,7 @@ pub struct ParticipantStats {
     pub item6: Option<i32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct TeamStats {
     pub kills: i32,
     pub gold_earned: i32,
@@ -241,6 +241,7 @@ pub struct ChampSelectPlayer {
     pub tag_line: Option<String>,
     pub profile_icon_id: Option<i64>,
     pub tier: Option<String>,
+    pub recent_matches: Option<Vec<SimpleMatchInfo>>, // 新增
 }
 
 impl ChampSelectPlayer {
@@ -305,11 +306,22 @@ pub struct ChampSelectBans {
 pub struct ChampSelectTimer {
     pub phase: String,
 }
-
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+pub struct RankInfo {
+   pub solo_tier: Option<String>,
+   pub solo_division: Option<String>,
+   pub solo_lp: Option<i32>,
+   pub solo_wins: Option<i32>,
+   pub solo_losses: Option<i32>,
+   pub flex_tier: Option<String>,
+   pub flex_division: Option<String>,
+   pub flex_lp: Option<i32>,
+   pub flex_wins: Option<i32>,
+   pub flex_losses: Option<i32>,
+}
 // 轮询状态结构体
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PollState {
-    pub is_lcu_running: bool,
     pub auth_info: Option<LcuAuthInfo>,
     pub current_summoner: Option<SummonerInfo>,
     pub gameflow_phase: Option<String>,
@@ -370,4 +382,67 @@ pub struct CurrentChampion {
     pub selected_skin_id: i32,
     /// 是否已锁定
     pub is_locked: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct SimpleMatchInfo {
+    pub game_id: u64,
+    pub champion_id: i32,
+    pub win: bool,
+    pub kills: i32,
+    pub deaths: i32,
+    pub assists: i32,
+    pub game_creation: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MatchStatistics {
+    pub total_games: i32,
+    pub wins: i32,
+    pub losses: i32,
+    pub win_rate: f32,
+    pub avg_kills: f32,
+    pub avg_deaths: f32,
+    pub avg_assists: f32,
+    pub avg_kda: f32,
+    pub favorite_champions: Vec<ChampionStats>,
+    pub recent_performance: Vec<RecentGame>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ChampionStats {
+    pub champion_id: i32,
+    pub games_played: i32,
+    pub wins: i32,
+    pub win_rate: f32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RecentGame {
+    pub game_id: u64,
+    pub champion_id: i32,
+    pub game_mode: String,
+    pub win: bool,
+    pub kills: i32,
+    pub deaths: i32,
+    pub assists: i32,
+    pub game_duration: i32,
+    pub game_creation: i64,
+    pub queue_id: i64,
+    pub performance_rating: String,
+}
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ChampSelectPlayerInfo {
+    pub summoner_id: String,
+    pub display_name: String,
+    pub tag_line: Option<String>,
+    pub profile_icon_id: i64,
+    pub tier: Option<String>,
+    pub puuid: String,
+    pub recent_matches: Vec<SimpleMatchInfo>,
+}
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ChampSelectTeamInfo {
+    pub my_team: Vec<ChampSelectPlayerInfo>,
+    pub their_team: Vec<ChampSelectPlayerInfo>,
 }

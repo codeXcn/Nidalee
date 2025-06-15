@@ -1,5 +1,4 @@
 mod lcu;
-
 use tauri::{
     tray::{
         TrayIconBuilder,
@@ -10,24 +9,9 @@ use tauri::{
     menu::{
         Menu,
         MenuItem,
-        MenuEvent
     },
     Manager,
-    Window
 };
-use std::sync::Arc;
-
-#[tauri::command]
-async fn check_lcu_connection() -> Result<bool, String> {
-    Ok(lcu::auth::check_lcu_running())
-}
-
-#[tauri::command]
-async fn get_lcu_auth_info() -> Result<lcu::types::LcuAuthInfo, String> {
-    tokio::task::spawn_blocking(|| lcu::auth::get_lcu_auth_info())
-        .await
-        .map_err(|e| format!("获取认证信息失败: {}", e))?
-}
 
 #[tauri::command]
 async fn get_game_version() -> Result<String, String> {
@@ -57,59 +41,96 @@ async fn get_game_version() -> Result<String, String> {
 }
 
 #[tauri::command]
-async fn get_match_history() -> Result<lcu::match_history::MatchStatistics, String> {
-    lcu::match_history::get_match_history().await
+async fn get_match_history() -> Result<lcu::types::MatchStatistics, String> {
+      let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+    lcu::match_history::get_match_history(&client).await
 }
-
-
 #[tauri::command]
 async fn get_game_detail(game_id: u64) -> Result<serde_json::Value, String> {
-    lcu::match_history::get_game_detail(game_id).await
+      let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
+    lcu::match_history::get_game_detail(&client, game_id).await
 }
 #[tauri::command]
 async fn start_matchmaking() -> Result<(), String> {
-    let auth_info = get_lcu_auth_info().await?;
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
 
-    lcu::matchmaking::start_matchmaking(&client, &auth_info).await
+    lcu::matchmaking::start_matchmaking(&client).await
 }
 
 #[tauri::command]
 async fn stop_matchmaking() -> Result<(), String> {
-    let auth_info = get_lcu_auth_info().await?;
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
 
-    lcu::matchmaking::stop_matchmaking(&client, &auth_info).await
+    lcu::matchmaking::stop_matchmaking(&client).await
 }
 
 #[tauri::command]
 async fn accept_match() -> Result<(), String> {
-    let auth_info = get_lcu_auth_info().await?;
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
 
-    lcu::matchmaking::accept_match(&client, &auth_info).await
+    lcu::matchmaking::accept_match(&client).await
 }
 
 #[tauri::command]
 async fn decline_match() -> Result<(), String> {
-    let auth_info = get_lcu_auth_info().await?;
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
 
-    lcu::matchmaking::decline_match(&client, &auth_info).await
+    lcu::matchmaking::decline_match(&client).await
 }
+#[tauri::command]
+async fn get_current_summoner() -> Result<(lcu::types::SummonerInfo), String> {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .expect("Failed to create HTTP client");
 
+    lcu::summoner::get_current_summoner(&client).await
+}
+#[tauri::command]
+async fn get_summoner_by_id(id: u64) -> Result<Option<lcu::types::SummonerInfo>, String> {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
+
+    match crate::lcu::summoner::get_summoner_by_id(&client, id).await {
+        Ok(info) => Ok(Some(info)),
+        Err(e) => {
+            if e.contains("404") {
+                Ok(None)
+            } else {
+                Err(e)
+            }
+        }
+    }
+}
+#[tauri::command]
+async fn get_champselect_team_players_info() -> Result<lcu::types::ChampSelectTeamInfo, String> {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
+
+    lcu::champ_select::get_champselect_team_players_info(&client).await
+}
 #[tokio::main]
 async fn main() {
     env_logger::init();
@@ -187,8 +208,8 @@ async fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            check_lcu_connection,
-            get_lcu_auth_info,
+            lcu::auth::get_auth_info,
+            get_current_summoner,
             get_game_version,
             get_match_history,
             get_game_detail,
@@ -196,6 +217,8 @@ async fn main() {
             stop_matchmaking,
             accept_match,
             decline_match,
+            get_summoner_by_id,
+            get_champselect_team_players_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

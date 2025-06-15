@@ -1,132 +1,45 @@
-use base64::{engine::general_purpose, Engine as _};
 use reqwest::Client;
-use crate::lcu::types::{LcuAuthInfo, MatchmakingState, MatchInfo, PlayerInfo};
+use crate::lcu::types::{MatchmakingState, MatchInfo, PlayerInfo};
+use crate::lcu::request::{lcu_get, lcu_post, lcu_delete};
+use serde_json::Value;
 
-pub async fn start_matchmaking(client: &Client, auth_info: &LcuAuthInfo) -> Result<(), String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-lobby/v2/lobby/matchmaking/search",
-        auth_info.app_port
-    );
-
-    client
-        .post(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to start matchmaking: {}", e))?;
-
+/// 开始匹配
+pub async fn start_matchmaking(client: &Client) -> Result<(), String> {
+    lcu_post::<Value>(client, "/lol-lobby/v2/lobby/matchmaking/search", Value::Null).await?;
     Ok(())
 }
 
-pub async fn stop_matchmaking(client: &Client, auth_info: &LcuAuthInfo) -> Result<(), String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-lobby/v2/lobby/matchmaking/search",
-        auth_info.app_port
-    );
-
-    client
-        .delete(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to stop matchmaking: {}", e))?;
-
+/// 停止匹配
+pub async fn stop_matchmaking(client: &Client) -> Result<(), String> {
+    lcu_delete::<Value>(client, "/lol-lobby/v2/lobby/matchmaking/search").await?;
     Ok(())
 }
 
-pub async fn accept_match(client: &Client, auth_info: &LcuAuthInfo) -> Result<(), String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-matchmaking/v1/ready-check/accept",
-        auth_info.app_port
-    );
-
-    client
-        .post(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to accept match: {}", e))?;
-
+/// 接受匹配
+pub async fn accept_match(client: &Client) -> Result<(), String> {
+    lcu_post::<Value>(client, "/lol-matchmaking/v1/ready-check/accept", Value::Null).await?;
     Ok(())
 }
 
-pub async fn decline_match(client: &Client, auth_info: &LcuAuthInfo) -> Result<(), String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-matchmaking/v1/ready-check/decline",
-        auth_info.app_port
-    );
-
-    client
-        .post(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to decline match: {}", e))?;
-
+/// 拒绝匹配
+pub async fn decline_match(client: &Client) -> Result<(), String> {
+    lcu_post::<Value>(client, "/lol-matchmaking/v1/ready-check/decline", Value::Null).await?;
     Ok(())
 }
 
-pub async fn get_matchmaking_state(client: &Client, auth_info: &LcuAuthInfo) -> Result<MatchmakingState, String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-lobby/v2/lobby/matchmaking/search-state",
-        auth_info.app_port
-    );
-
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to get matchmaking state: {}", e))?;
-
-    let state: MatchmakingState = response
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse matchmaking state: {}", e))?;
-
-    Ok(state)
+/// 获取当前匹配状态
+pub async fn get_matchmaking_state(client: &Client) -> Result<MatchmakingState, String> {
+    lcu_get(client, "/lol-lobby/v2/lobby/matchmaking/search-state").await
 }
 
-pub async fn get_match_info(client: &Client, auth_info: &LcuAuthInfo) -> Result<MatchInfo, String> {
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-champ-select/v1/session",
-        auth_info.app_port
-    );
-
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("Failed to get match info: {}", e))?;
-
-    let session: serde_json::Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse match info: {}", e))?;
+/// 获取当前对局信息
+pub async fn get_match_info(client: &Client) -> Result<MatchInfo, String> {
+    let session: serde_json::Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
 
     // 解析对局信息
     let match_id = session["gameId"]
         .as_str()
-        .ok_or_else(|| "No game ID found".to_string())?
+        .unwrap_or("unknown")
         .to_string();
 
     let mut players = Vec::new();

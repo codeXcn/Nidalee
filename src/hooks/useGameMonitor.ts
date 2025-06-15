@@ -60,9 +60,9 @@ export function useGameMonitor() {
   }
 
   // 组件挂载时自动开始监控
-  onMounted(() => {
-    startMonitoring()
-  })
+  // onMounted(() => {
+  //   startMonitoring()
+  // })
 
   // 组件卸载时清理
   onUnmounted(() => {

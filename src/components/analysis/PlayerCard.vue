@@ -80,9 +80,9 @@
 
 <script setup lang="ts">
 import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
-import type { ChampSelectPlayer } from '@/components/analysis/types/champSelect'
 import { computed, defineEmits } from 'vue'
 import { Badge } from '@/components/ui/badge'
+import { ChampSelectPlayer } from 'types/global';
 
 const props = defineProps<{
   player: ChampSelectPlayer
@@ -92,7 +92,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['select'])
 
-const summonerId = computed(() => (props.player.summonerId ? String(props.player.summonerId) : ''))
 
 // 位置与颜色映射
 const positionColorMap: Record<string, string> = {

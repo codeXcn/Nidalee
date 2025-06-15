@@ -117,6 +117,7 @@ declare module 'vue' {
     StatisticsCards: typeof import('./../src/components/dashboard/StatisticsCards.vue')['default']
     SuggestionPanel: typeof import('./../src/components/analysis/SuggestionPanel.vue')['default']
     SummonerCard: typeof import('./../src/components/dashboard/SummonerCard.vue')['default']
+    SummonerSearchBox: typeof import('./../src/components/common/SummonerSearchBox.vue')['default']
     Switch: typeof import('./../src/components/ui/switch/Switch.vue')['default']
     Table: typeof import('./../src/components/ui/table/Table.vue')['default']
     TableBody: typeof import('./../src/components/ui/table/TableBody.vue')['default']

@@ -194,3 +194,187 @@ interface PerkInfo {
   iconPath: string
   name: string
 }
+// 定义接口类型
+export interface GameSession {
+  startTime: number
+  duration: number
+}
+
+export interface Activity {
+  id: string
+  type: 'success' | 'info' | 'warning' | 'error'
+  message: string
+  timestamp: number
+}
+
+export interface GameStatus {
+  phase: string
+  queue: string | null
+  isInGame: boolean
+}
+
+export interface MatchStatistics {
+  total_games: number
+  wins: number
+  losses: number
+  win_rate: number
+  avg_kills: number
+  avg_deaths: number
+  avg_assists: number
+  avg_kda: number
+  favorite_champions: ChampionStats[]
+  recent_performance: RecentGame[]
+}
+
+export interface ChampionStats {
+  champion_name: string
+  games_played: number
+  wins: number
+  win_rate: number
+}
+
+export interface RecentGame {
+  game_id: number
+  champion_name: string
+  game_mode: string
+  win: boolean
+  kills: number
+  deaths: number
+  assists: number
+  game_duration: number
+  game_creation: number
+}
+
+export interface LcuAuthInfo {
+  app_port: number
+  remoting_auth_token: string
+}
+
+export interface SummonerInfo {
+  // 基本信息
+  displayName: string
+  gameName?: string
+  tagLine?: string
+  summonerLevel: number
+  profileIconId: number
+  puuid: string
+  accountId: number
+  summonerId: number
+
+  // 经验信息
+  xpSinceLastLevel: number
+  xpUntilNextLevel: number
+  percentCompleteForNextLevel?: number
+
+  // 游戏状态
+  gameStatus?: string
+  availability?: string
+
+  // 挑战系统
+  challengePoints?: string
+  challengeCrystalLevel?: string
+
+  // 排位信息 - 单人排位
+  soloRankTier?: string
+  soloRankDivision?: string
+  soloRankWins?: number
+  soloRankLosses?: number
+  soloRankLP?: number
+
+  // 排位信息 - 灵活排位
+  flexRankTier?: string
+  flexRankDivision?: string
+  flexRankWins?: number
+  flexRankLosses?: number
+  flexRankLP?: number
+
+  // 历史最高排位
+  highestRankThisSeason?: string
+
+  // 天赋信息
+  currentPerkPage?: string
+  primaryStyleId?: number
+  subStyleId?: number
+  selectedPerkIds?: number[]
+}
+
+// 游戏阶段信息
+export interface GamePhase {
+  phase: string
+}
+
+// 房间信息
+export interface LobbyInfo {
+  id: string
+  partyType: string
+  members: LobbyMember[]
+}
+
+export interface LobbyMember {
+  summonerId: number
+  displayName: string
+}
+export interface ChampSelectPlayer {
+  cellId: number
+  summonerId?: string
+  championId: number
+  championPickIntent?: number
+  selectedSkinId?: number
+  spell1Id?: number
+  spell2Id?: number
+  assignedPosition?: string
+  // 可扩展：段位、胜率等
+  displayName?: string
+  tier?: string
+  winRate?: number
+}
+
+export interface ChampSelectBans {
+  myTeamBans: number[]
+  theirTeamBans: number[]
+}
+
+export interface ChampSelectSession {
+  localPlayerCellId: number
+  myTeam: ChampSelectPlayer[]
+  theirTeam: ChampSelectPlayer[]
+  bans: ChampSelectBans
+  timer: { phase: string }
+  // 可扩展：双方分数、建议等
+  myScore?: number
+  theirScore?: number
+  suggestions?: string[]
+  warnings?: string[]
+}
+export interface MatchmakingError {
+  errorType: string
+  id: number
+  message: string
+  penalizedSummonerId: number
+  penaltyTimeRemaining: number
+}
+
+export interface LowPriorityData {
+  bustedLeaverAccessToken: string
+  penalizedSummonerIds: number[]
+  penaltyTime: number
+  penaltyTimeRemaining: number
+  reason: string
+}
+
+export interface MatchmakingState {
+  errors: MatchmakingError[]
+  lowPriorityData: LowPriorityData
+  searchState: string
+}
+
+export interface PlayerInfo {
+  summonerName: string
+  championId: number
+  teamId: number
+}
+
+export interface MatchInfo {
+  matchId: string
+  players: PlayerInfo[]
+}

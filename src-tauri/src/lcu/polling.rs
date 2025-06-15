@@ -1,22 +1,23 @@
 use std::sync::Arc;
 use std::time::Duration;
+use futures_util::FutureExt;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
 use crate::lcu::{
-    auth::{check_lcu_running, get_lcu_auth_info},
+    auth::{ ensure_valid_auth_info},
+    champ_select::get_champ_select_session,
     gameflow::get_gameflow_phase,
     lobby::get_lobby_info,
+    matchmaking::{get_match_info, get_matchmaking_state},
     summoner::get_current_summoner,
-    matchmaking::{get_matchmaking_state, get_match_info},
-    champ_select::{get_champ_select_session, get_current_champion},
-    types::{LcuAuthInfo, PollState, SummonerInfo, ChampSelectSession, MatchmakingState, MatchInfo},
+    types::{ChampSelectSession, LcuAuthInfo, MatchInfo, MatchmakingState, PollState, SummonerInfo}
 };
 use log::{info, warn};
 
 // 防抖缓存
 #[derive(Clone, Default)]
 struct EmitCache {
-    is_lcu_running: Option<bool>,
+    // is_lcu_running: Option<bool>,
     auth_info: Option<LcuAuthInfo>,
     current_summoner: Option<SummonerInfo>,
     pub gameflow_phase: Option<String>,
@@ -30,7 +31,6 @@ struct EmitCache {
 impl Default for PollState {
     fn default() -> Self {
         PollState {
-            is_lcu_running: false,
             auth_info: None,
             current_summoner: None,
             gameflow_phase: None,
@@ -43,6 +43,7 @@ impl Default for PollState {
 }
 
 pub async fn start_polling(app: AppHandle) {
+    info!("开始启动轮询服务...");
     let state = Arc::new(RwLock::new(PollState::default()));
     let emit_cache = Arc::new(RwLock::new(EmitCache::default()));
     let client = reqwest::Client::builder()
@@ -50,289 +51,303 @@ pub async fn start_polling(app: AppHandle) {
         .build()
         .expect("Failed to create HTTP client");
 
-    tokio::spawn(polling_task(app, state, emit_cache, client));
+    // 启动时主动拉取一次summoner info
+    let app1 = app.clone();
+    let state1 = state.clone();
+    let client1 = client.clone();
+    tokio::spawn(async move {
+        if let Err(e) = std::panic::AssertUnwindSafe(fetch_summoner_info_once(app1, state1, client1))
+            .catch_unwind()
+            .await
+        {
+            log::error!("fetch_summoner_info_once 协程 panic: {:?}", e);
+        }
+    });
+
+    // 其它轮询...
+    info!("启动LCU进程检测轮询");
+    let app2 = app.clone();
+    let state2 = state.clone();
+    let emit_cache2 = emit_cache.clone();
+    tokio::spawn(async move {
+        if let Err(e) = std::panic::AssertUnwindSafe(poll_auth_info(app2, state2, emit_cache2))
+            .catch_unwind()
+            .await
+        {
+            log::error!("poll_auth_info 协程 panic: {:?}", e);
+        }
+    });
+
+    info!("启动游戏流程状态轮询");
+    let app3 = app.clone();
+    let state3 = state.clone();
+    let emit_cache3 = emit_cache.clone();
+    let client3 = client.clone();
+    tokio::spawn(async move {
+        if let Err(e) = std::panic::AssertUnwindSafe(poll_gameflow_phase(app3, state3, emit_cache3, client3))
+            .catch_unwind()
+            .await
+        {
+            log::error!("poll_gameflow_phase 协程 panic: {:?}", e);
+        }
+    });
+
+    info!("启动游戏业务轮询");
+    let app4 = app.clone();
+    let state4 = state.clone();
+    let emit_cache4 = emit_cache.clone();
+    let client4 = client.clone();
+    tokio::spawn(async move {
+        if let Err(e) = std::panic::AssertUnwindSafe(poll_game_business(app4, state4, emit_cache4, client4))
+            .catch_unwind()
+            .await
+        {
+            log::error!("poll_game_business 协程 panic: {:?}", e);
+        }
+    });
+
+    info!("所有轮询服务已启动");
 }
 
-async fn polling_task(
-    app: AppHandle,
-    state: Arc<RwLock<PollState>>,
-    emit_cache: Arc<RwLock<EmitCache>>,
-    client: reqwest::Client,
-) {
-    let mut tick: u64 = 0;
-    loop {
-        // 1. 检查LCU进程（每10秒）
-        if tick % 10 == 0 {
-            match retry(|| async { Ok(check_lcu_running()) as Result<bool, String> }, 2, 200).await {
-                Ok(is_running) => {
-                    let mut s = state.write().await;
-                    if s.is_lcu_running != is_running {
-                        s.is_lcu_running = is_running;
-                    }
-                }
-                Err(_) => warn!("LCU进程检测多次失败"),
-            }
-        }
-
-        // 2. 检查 auth_info（每15秒）
-        if tick % 15 == 0 {
-            let is_running = { state.read().await.is_lcu_running };
-            if is_running {
-                match retry(|| async { get_lcu_auth_info() }, 2, 200).await {
-                    Ok(auth) => {
-                        let mut s = state.write().await;
-                        if s.auth_info.as_ref() != Some(&auth) {
-                            s.auth_info = Some(auth);
-                        }
-                    }
-                    Err(_) => {
-                        let mut s = state.write().await;
-                        if s.auth_info.is_some() {
-                            s.auth_info = None;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 3. 检查召唤师信息（每60秒）
-        if tick % 60 == 0 {
-            let auth_info = { state.read().await.auth_info.clone() };
-            if let Some(auth) = auth_info {
-                match retry(|| get_current_summoner(&client, &auth), 2, 200).await {
-                    Ok(summoner) => {
-                        let mut s = state.write().await;
-                        if s.current_summoner.as_ref() != Some(&summoner) {
-                            s.current_summoner = Some(summoner);
-                        }
-                    }
-                    Err(_) => {
-                        let mut s = state.write().await;
-                        if s.current_summoner.is_some() {
-                            s.current_summoner = None;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 4. 检查游戏阶段（每5秒）
-        if tick % 5 == 0 {
-            log::info!("[轮询] 检查游戏阶段");
-            let auth_info = { state.read().await.auth_info.clone() };
-            if let Some(auth) = auth_info {
-                log::info!("[轮询] auth_info 存在，尝试获取 gameflow_phase");
-                match retry(|| get_gameflow_phase(&client, &auth), 2, 200).await {
-                    Ok(phase) => {
-                        log::info!("[轮询] 获取到 gameflow_phase: {:?}", phase);
-                        let mut s = state.write().await;
-                        if s.gameflow_phase.as_ref() != Some(&phase) {
-                            s.gameflow_phase = Some(phase.clone());
-                        }
-                    }
-                    Err(_) => {
-                        log::warn!("[轮询] 获取 gameflow_phase 失败");
-                        let mut s = state.write().await;
-                        if s.gameflow_phase.is_some() {
-                            s.gameflow_phase = None;
-                        }
-                    }
-                }
-            } else {
-                log::warn!("[轮询] auth_info 不存在，无法获取 gameflow_phase");
-            }
-        }
-
-        // 5. 检查房间信息（每10秒）
-        if tick % 10 == 0 {
-            let auth_info = { state.read().await.auth_info.clone() };
-            if let Some(auth) = auth_info {
-                match retry(|| get_lobby_info(&client, &auth), 2, 200).await {
-                    Ok(_lobby) => {
-                        let mut s = state.write().await;
-                        if !s.in_lobby {
-                            s.in_lobby = true;
-                        }
-                    }
-                    Err(_) => {
-                        let mut s = state.write().await;
-                        if s.in_lobby {
-                            s.in_lobby = false;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 6. 检查匹配状态（每5秒）
-        if tick % 5 == 0 {
-            let auth_info = { state.read().await.auth_info.clone() };
-            if let Some(auth) = auth_info {
-                match retry(|| get_matchmaking_state(&client, &auth), 2, 200).await {
-                    Ok(matchmaking_state) => {
-                        let mut s = state.write().await;
-                        if s.matchmaking_state.as_ref() != Some(&matchmaking_state) {
-                            s.matchmaking_state = Some(matchmaking_state.clone());
-
-                            // 输出匹配状态变化
-                            if *s.matchmaking_state.as_ref().unwrap() != matchmaking_state {
-                                println!("匹配状态更新: {:?}", matchmaking_state);
-                            }
-
-                            match matchmaking_state.search_state.as_str() {
-                                "Found" => {
-                                    // 如果找到匹配，获取匹配信息
-                                    if let Ok(match_info) = get_match_info(&client, &auth).await {
-                                        if s.match_info.as_ref() != Some(&match_info) {
-                                            println!("找到匹配: {:?}", match_info);
-                                            let match_info_clone = match_info.clone();
-                                            s.match_info = Some(match_info);
-                                            let _ = app.emit("match-info-changed", match_info_clone);
-                                        }
-                                    }
-                                }
-                                "Searching" => {
-                                    println!("正在搜索匹配...");
-                                    s.match_info = None;
-                                }
-                                "Invalid" => {
-                                    println!("匹配状态无效，清除匹配信息");
-                                    s.match_info = None;
-                                }
-                                _ => {
-                                    println!("未知匹配状态: {}", matchmaking_state.search_state);
-                                }
-                            }
-
-                            // 发送匹配状态变化事件
-                            println!("匹配状态变化通知前端matchmaking-state-changed: {:?}", matchmaking_state);
-                            let _ = app.emit("matchmaking-state-changed", matchmaking_state.clone());
-                        }
-                    }
-                    Err(_) => {
-                        let mut s = state.write().await;
-                        if s.matchmaking_state.is_some() {
-                            s.matchmaking_state = None;
-                            s.match_info = None;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 7. 检查当前选人 session（每5秒）
-        if tick % 5 == 0 {
-            log::info!("[轮询] 检查选人 session");
-            let auth_info = { state.read().await.auth_info.clone() };
-            let gameflow_phase = { state.read().await.gameflow_phase.clone() };
-
-            log::info!("[轮询] 当前 gameflow_phase: {:?}", gameflow_phase);
-
-            // InProgress、WaitingForStats、EndOfGame 时停止轮询
-            if let Some(phase) = gameflow_phase.as_deref() {
-                match phase {
-                     "WaitingForStats" | "EndOfGame" => {
-                        log::info!("检测到 phase={}，停止轮询选人 session", phase);
-                        return;
-                    }
-                    _ => {}
-                }
-            }
-
-            // 只在英雄选择阶段检查
-            if let Some(auth) = auth_info {
-                log::info!("[轮询] auth_info 存在，准备判断是否进入英雄选择阶段");
-                if gameflow_phase.as_deref() == Some("ChampSelect") {
-                    log::info!("[轮询] 进入英雄选择阶段，尝试获取选人 session");
-                    match retry(|| get_champ_select_session(&client, &auth), 2, 200).await {
-                        Ok(session) => {
-                            log::info!("[轮询] 成功获取选人 session");
-                            let mut s = state.write().await;
-                            if s.current_champ_select_session.as_ref() != Some(&session) {
-                                log::info!("[轮询] 选人 session 变化，准备 emit");
-                                s.current_champ_select_session = Some(session.clone());
-                                // 直接发送事件，不使用防抖缓存
-                                let _ = app.emit("champ-select-session-changed", session);
-                            } else {
-                                log::info!("[轮询] 选人 session 未变化，不 emit");
-                            }
-                        }
-                        Err(e) => {
-                            log::warn!("[轮询] 获取选人 session 失败: {}", e);
-                            if e.contains("403") {
-                                log::info!("[轮询] 获取 session 403，尝试 fallback 到 current champion");
-                                match retry(|| get_current_champion(&client, &auth), 2, 200).await {
-                                    Ok(champion) => {
-                                        let _ = app.emit("current-champion-fallback", champion);
-                                    }
-                                    Err(_) => {}
-                                }
-                            }
-                            let mut s = state.write().await;
-                            if s.current_champ_select_session.is_some() {
-                                log::info!("[轮询] 选人 session 被清除，emit None");
-                                s.current_champ_select_session = None;
-                                // 当 session 被清除时也发送事件
-                                let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
-                            }
-                        }
-                    }
-                } else {
-                    log::info!("[轮询] 当前 phase 不是 ChampSelect，实际为: {:?}", gameflow_phase);
-                    let mut s = state.write().await;
-                    if s.current_champ_select_session.is_some() {
-                        log::info!("[轮询] 离开英雄选择阶段，选人 session 被清除，emit None");
-                        s.current_champ_select_session = None;
-                        // 当 session 被清除时也发送事件
-                        let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
-                    }
-                }
-            } else {
-                log::warn!("[轮询] auth_info 不存在，无法获取选人 session");
-            }
-        }
-
-        // === 事件防抖，只有变化才 emit ===
-        {
-            let s = state.read().await;
-            let mut c = emit_cache.write().await;
-
-            if c.is_lcu_running != Some(s.is_lcu_running) {
-                let _ = app.emit("lcu-status-change", s.is_lcu_running);
-                c.is_lcu_running = Some(s.is_lcu_running);
-            }
-            if c.auth_info.as_ref() != s.auth_info.as_ref() {
-                let _ = app.emit("auth-info-change", &s.auth_info);
-                c.auth_info = s.auth_info.clone();
-            }
-            if c.current_summoner.as_ref() != s.current_summoner.as_ref() {
-                let _ = app.emit("summoner-change", &s.current_summoner);
-                c.current_summoner = s.current_summoner.clone();
-            }
-            if c.gameflow_phase.as_ref() != s.gameflow_phase.as_ref() {
-                let _ = app.emit("gameflow-phase-change", &s.gameflow_phase);
-                c.gameflow_phase = s.gameflow_phase.clone();
-            }
-            if c.in_lobby != Some(s.in_lobby) {
-                let _ = app.emit("lobby-change", s.in_lobby);
-                c.in_lobby = Some(s.in_lobby);
-            }
-            if c.match_info.as_ref() != s.match_info.as_ref() {
-                let _ = app.emit("match-info-change", &s.match_info);
-                c.match_info = s.match_info.clone();
-            }
-            // 移除这里的 session 变化事件，因为我们已经在上面直接发送了
-            if c.current_champ_select_session.as_ref() != s.current_champ_select_session.as_ref() {
-                c.current_champ_select_session = s.current_champ_select_session.clone();
-            }
-        }
-
-        tick = tick.wrapping_add(1);
-        tokio::time::sleep(Duration::from_secs(1)).await;
+// 只在需要时调用
+async fn fetch_summoner_info_once(app: AppHandle, state: Arc<RwLock<PollState>>, client: reqwest::Client) {
+    if let Ok(summoner) = get_current_summoner(&client).await {
+        let mut s = state.write().await;
+        s.current_summoner = Some(summoner.clone());
+        let _ = app.emit("summoner-change", &Some(summoner));
     }
 }
 
-// 简单重试工具
+// auth检测（始终运行）
+async fn poll_auth_info(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cache: Arc<RwLock<EmitCache>>) {
+    loop {
+        // 定期刷新认证信息
+        let auth_info = ensure_valid_auth_info();
+        {
+            let mut s = state.write().await;
+            let old = s.auth_info.clone();
+            s.auth_info = auth_info.clone();
+            // 判断是否由无变有、变无、token变化等，变化时emit
+            if old != s.auth_info {
+                if s.auth_info.is_some() {
+                    info!("[LCU] 认证信息已获取");
+                } else {
+                    warn!("[LCU] 认证信息丢失（LOL可能已关闭）");
+                }
+                let _ = app.emit("auth-info-change", &s.auth_info);
+            }
+        }
+        emit_if_change(&app, &state, &emit_cache).await;
+        tokio::time::sleep(Duration::from_secs(2)).await; // 这个间隔可以根据需要调整
+    }
+}
+
+// gameflow_phase 轮询，监听游戏结束后自动拉取summoner info
+async fn poll_gameflow_phase(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cache: Arc<RwLock<EmitCache>>, client: reqwest::Client) {
+    let mut last_phase: Option<String> = None;
+    loop {
+        if ensure_valid_auth_info().is_some() {
+            match retry(|| get_gameflow_phase(&client), 2, 200).await {
+                Ok(phase) => {
+                    let mut s = state.write().await;
+                    if s.gameflow_phase.as_ref() != Some(&phase) {
+                        info!("游戏流程状态变化: {:?} -> {:?}", s.gameflow_phase, phase);
+                        // 如果游戏刚结束（InProgress -> 非InProgress），触发summoner info刷新
+                        if s.gameflow_phase.as_deref() == Some("InProgress")
+                            && phase != "InProgress"
+                        {
+                            let app_cloned = app.clone();
+                            let state_cloned = state.clone();
+                            let client_cloned = client.clone();
+                            tokio::spawn(async move {
+                                if let Err(e) = std::panic::AssertUnwindSafe(fetch_summoner_info_once(app_cloned, state_cloned, client_cloned))
+                                    .catch_unwind()
+                                    .await
+                                {
+                                    log::error!("fetch_summoner_info_once 协程 panic: {:?}", e);
+                                }
+                            });
+                        }
+                        s.gameflow_phase = Some(phase.clone());
+                    }
+                    last_phase = Some(phase);
+                }
+                Err(e) => {
+                    let mut s = state.write().await;
+                    if s.gameflow_phase.is_some() {
+                        info!("游戏流程状态获取失败: {}, 清除状态", e);
+                        s.gameflow_phase = None;
+                    }
+                }
+            }
+        } else {
+            info!("等待获取认证信息...");
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            continue;
+        }
+        emit_if_change(&app, &state, &emit_cache).await;
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+}
+
+// 其它业务，只在不在游戏中时运行
+async fn poll_game_business(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cache: Arc<RwLock<EmitCache>>, client: reqwest::Client) {
+    loop {
+        let phase = { state.read().await.gameflow_phase.clone() };
+        let mut last_phase: Option<String> = None;
+        if phase.as_deref() == Some("InProgress") {
+            // 游戏中，暂停业务轮询
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            continue;
+        }
+        if ensure_valid_auth_info().is_some() {
+            // lobby
+            match retry(|| get_lobby_info(&client), 2, 200).await {
+                Ok(_lobby) => {
+                    let mut s = state.write().await;
+                    if !s.in_lobby {
+                        info!("进入游戏大厅");
+                        s.in_lobby = true;
+                    }
+                }
+                Err(_) => {
+                    let mut s = state.write().await;
+                    if s.in_lobby {
+                        info!("离开游戏大厅");
+                        s.in_lobby = false;
+                    }
+                }
+            }
+            // matchmaking
+            match retry(|| get_matchmaking_state(&client), 2, 200).await {
+                Ok(matchmaking_state) => {
+                    let mut s = state.write().await;
+                    if s.matchmaking_state.as_ref() != Some(&matchmaking_state) {
+                        info!("匹配状态更新: {:?}", matchmaking_state);
+
+                        match matchmaking_state.search_state.as_str() {
+                            "Found" => {
+                                // 如果找到匹配，获取匹配信息
+                                if let Ok(match_info) = get_match_info(&client).await {
+                                    if s.match_info.as_ref() != Some(&match_info) {
+                                        info!("找到匹配: {:?}", match_info);
+                                        let match_info_clone = match_info.clone();
+                                        s.match_info = Some(match_info);
+                                        let _ = app.emit("match-info-changed", match_info_clone);
+                                    }
+                                }
+                            }
+                            "Searching" => {
+                                info!("正在搜索匹配...");
+                                s.match_info = None;
+                            }
+                            "Invalid" => {
+                                info!("匹配状态无效，清除匹配信息");
+                                s.match_info = None;
+                            }
+                            _ => {
+                                info!("未知匹配状态: {}", matchmaking_state.search_state);
+                            }
+                        }
+
+                        // 发送匹配状态变化事件
+                        info!("匹配状态变化通知前端matchmaking-state-changed: {:?}", matchmaking_state);
+                        let _ = app.emit("matchmaking-state-changed", matchmaking_state.clone());
+                    }
+                }
+                Err(_) => {
+                    let mut s = state.write().await;
+                    if s.matchmaking_state.is_some() {
+                        info!("匹配状态获取失败，清除状态");
+                        s.matchmaking_state = None;
+                    }
+                }
+            }
+            // champ-select
+            if phase.as_deref() == Some("ChampSelect") {
+              // 持续轮询获取session
+              match retry(|| get_champ_select_session(&client), 2, 200).await {
+                  Ok(session) => {
+                      let mut s = state.write().await;
+                      if s.current_champ_select_session.as_ref() != Some(&session) {
+                          info!("进入英雄选择阶段");
+                          s.current_champ_select_session = Some(session.clone());
+                          let _ = app.emit("champ-select-session-changed", session);
+                      }
+                  }
+                  Err(e) => {
+                      let mut s = state.write().await;
+                      if s.current_champ_select_session.is_some() {
+                          info!("英雄选择阶段获取失败: {}, 清除状态", e);
+                          s.current_champ_select_session = None;
+                          let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
+                      }
+                  }
+              }
+          } else if phase.as_deref() == Some("InProgress") && last_phase.as_deref() != Some("InProgress") {
+            match retry(|| get_champ_select_session(&client), 2, 200).await {
+              Ok(session) => {
+                  let mut s = state.write().await;
+                  if s.current_champ_select_session.as_ref() != Some(&session) {
+                      info!("进入英雄选择阶段");
+                      s.current_champ_select_session = Some(session.clone());
+                      let _ = app.emit("champ-select-session-changed", session);
+                  }
+              }
+              Err(e) => {
+                  let mut s = state.write().await;
+                  if s.current_champ_select_session.is_some() {
+                      info!("英雄选择阶段获取失败: {}, 清除状态", e);
+                      s.current_champ_select_session = None;
+                      let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
+                  }
+              }
+          }
+          } else {
+                let mut s = state.write().await;
+                if s.current_champ_select_session.is_some() {
+                    info!("离开英雄选择阶段");
+                    s.current_champ_select_session = None;
+                    let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
+                }
+            }
+        }
+        last_phase = phase;
+        emit_if_change(&app, &state, &emit_cache).await;
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+}
+
+// 事件防抖，只在变化时emit
+async fn emit_if_change(app: &AppHandle, state: &Arc<RwLock<PollState>>, emit_cache: &Arc<RwLock<EmitCache>>) {
+    let s = state.read().await;
+    let mut c = emit_cache.write().await;
+    if c.auth_info.as_ref() != s.auth_info.as_ref() {
+        let _ = app.emit("auth-info-change", &s.auth_info);
+        c.auth_info = s.auth_info.clone();
+    }
+    if c.current_summoner.as_ref() != s.current_summoner.as_ref() {
+        let _ = app.emit("summoner-change", &s.current_summoner);
+        c.current_summoner = s.current_summoner.clone();
+    }
+    if c.gameflow_phase.as_ref() != s.gameflow_phase.as_ref() {
+        let _ = app.emit("gameflow-phase-change", &s.gameflow_phase);
+        c.gameflow_phase = s.gameflow_phase.clone();
+    }
+    if c.in_lobby != Some(s.in_lobby) {
+        let _ = app.emit("lobby-change", s.in_lobby);
+        c.in_lobby = Some(s.in_lobby);
+    }
+    if c.match_info.as_ref() != s.match_info.as_ref() {
+        let _ = app.emit("match-info-change", &s.match_info);
+        c.match_info = s.match_info.clone();
+    }
+    if c.current_champ_select_session.as_ref() != s.current_champ_select_session.as_ref() {
+        c.current_champ_select_session = s.current_champ_select_session.clone();
+    }
+}
+
+// 通用重试工具
 async fn retry<F, Fut, T, E>(mut f: F, retries: u32, delay_ms: u64) -> Result<T, E>
 where
     F: FnMut() -> Fut,

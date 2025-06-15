@@ -2,18 +2,9 @@
   <div class="flex items-center gap-3 px-4 py-2 rounded-lg border-2 bg-background/50 backdrop-blur-sm shadow-sm">
     <!-- 连接状态指示器 -->
     <div class="flex items-center gap-2">
-      <div
-        :class="[
-          'h-2 w-2 rounded-full shadow-sm',
-          connectionStatus === 'connected'
-            ? 'bg-green-500'
-            : connectionStatus === 'connecting'
-              ? 'bg-yellow-500 animate-pulse'
-              : 'bg-red-500'
-        ]"
-      />
+      <div :class="['h-2 w-2 rounded-full shadow-sm', isConnected ? 'bg-green-500' : 'bg-red-500']" />
       <span class="text-sm font-medium text-foreground">
-        {{ isConnected ? summonerInfo?.displayName || '未知召唤师' : statusText }}
+        {{ isConnected ? summonerInfo?.displayName || '未知召唤师' : '未连接' }}
       </span>
     </div>
 
@@ -28,7 +19,7 @@
 
     <!-- 连接按钮 -->
     <button
-      v-if="!isConnected && !isConnecting"
+      v-if="!isConnected"
       @click="attemptConnection"
       class="ml-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
     >
@@ -38,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useGameStore } from '@/stores/gameStore'
 import { useGameMonitor } from '@/hooks/useGameMonitor'
@@ -48,20 +38,7 @@ const gameStore = useGameStore()
 const { attemptConnection } = useGameMonitor()
 
 // 从store中解构响应式状态
-const { isConnected, isConnecting, summonerInfo, connectionStatus } = storeToRefs(gameStore)
-
-// 状态文本
-const statusText = computed(() => {
-  switch (connectionStatus.value) {
-    case 'connected':
-      return '已连接'
-    case 'connecting':
-      return '连接中...'
-    case 'disconnected':
-    default:
-      return '未连接'
-  }
-})
+const { isConnected, summonerInfo } = storeToRefs(gameStore)
 
 // 格式化段位
 const formatRankTier = (tier: string): string => {

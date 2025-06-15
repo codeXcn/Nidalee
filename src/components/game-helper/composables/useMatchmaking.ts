@@ -71,7 +71,7 @@ export function useMatchmaking() {
 
   onMounted(async () => {
     unlistenMatchmakingState = await listen('matchmaking-state-changed', (event) => {
-      console.log('matchmaking-state-changed', event.payload)
+      console.log('[Event] matchmaking-state-changed:', event.payload)
       matchmakingState.value = event.payload as MatchmakingState
     })
     unlistenMatchInfo = await listen('match-info-change', (event) => {

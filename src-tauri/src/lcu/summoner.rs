@@ -1,43 +1,14 @@
-use base64::{engine::general_purpose, Engine as _};
 use reqwest::Client;
-use crate::lcu::types::{LcuAuthInfo, SummonerInfo};
+use tauri::command;
+use crate::lcu::types::{SummonerInfo, RankInfo};
+use crate::lcu::request::lcu_get;
 use serde_json::Value;
 
-pub async fn get_current_summoner(client: &Client, auth_info: &LcuAuthInfo) -> Result<SummonerInfo, String> {
-    println!("[LCU] 开始获取当前召唤师信息...");
-
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-summoner/v1/current-summoner",
-        auth_info.app_port
-    );
-    println!("[LCU] 请求URL: {}", url);
-
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| {
-            println!("[LCU] ✗ 获取召唤师信息失败: {}", e);
-            format!("获取当前召唤师信息失败: {}", e)
-        })?;
-
-    if !response.status().is_success() {
-        let error_msg = format!("服务器返回错误: {}", response.status());
-        println!("[LCU] ✗ {}", error_msg);
-        return Err(error_msg);
-    }
-
-    let mut summoner_info: SummonerInfo = response.json().await.map_err(|e| {
-        println!("[LCU] ✗ 解析召唤师信息失败: {}", e);
-        format!("解析召唤师信息失败: {}", e)
-    })?;
+pub async fn get_current_summoner(client: &Client) -> Result<SummonerInfo, String> {
+    let mut summoner_info: SummonerInfo = lcu_get(client, "/lol-summoner/v1/current-summoner").await?;
 
     // 获取段位信息
-    if let Ok(rank_info) = get_rank_info(client, auth_info, &summoner_info.puuid).await {
+    if let Ok(rank_info) = get_rank_info(client, &summoner_info.puuid).await {
         summoner_info.solo_rank_tier = rank_info.solo_tier;
         summoner_info.solo_rank_division = rank_info.solo_division;
         summoner_info.solo_rank_lp = rank_info.solo_lp;
@@ -50,45 +21,18 @@ pub async fn get_current_summoner(client: &Client, auth_info: &LcuAuthInfo) -> R
         summoner_info.flex_rank_losses = rank_info.flex_losses;
     }
 
-    // 如果有 game_name 和 tag_line，则组合它们
     if let (Some(game_name), Some(tag_line)) = (summoner_info.game_name.clone(), summoner_info.tag_line.clone()) {
         summoner_info.display_name = format!("{}#{}", game_name, tag_line);
     }
 
-    println!("[LCU] ✓ 成功获取召唤师信息: {:?}", summoner_info.display_name);
     Ok(summoner_info)
 }
 
-// 获取段位信息
-async fn get_rank_info(client: &Client, auth_info: &LcuAuthInfo, puuid: &str) -> Result<RankInfo, String> {
-    println!("[LCU] 开始获取段位信息...");
-
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-ranked/v1/ranked-stats/{}",
-        auth_info.app_port,
-        puuid
-    );
-    println!("[LCU] 请求URL: {}", url);
-
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("获取段位信息失败: {}", e))?;
-
-    if !response.status().is_success() {
-        return Err(format!("服务器返回错误: {}", response.status()));
-    }
-
-    let rank_data: Value = response.json().await.map_err(|e| format!("解析段位信息失败: {}", e))?;
+pub async fn get_rank_info(client: &Client, puuid: &str) -> Result<RankInfo, String> {
+    let path = &format!("/lol-ranked/v1/ranked-stats/{}", puuid);
+    let rank_data: Value = lcu_get(client, path).await?;
 
     let mut rank_info = RankInfo::default();
-
-    // 解析单双排信息
     if let Some(queues) = rank_data.get("queues").and_then(|q| q.as_array()) {
         for queue in queues {
             let queue_type = queue.get("queueType").and_then(|q| q.as_str()).unwrap_or("");
@@ -111,63 +55,11 @@ async fn get_rank_info(client: &Client, auth_info: &LcuAuthInfo, puuid: &str) ->
             }
         }
     }
-
-    println!("[LCU] ✓ 成功获取段位信息: {:?}", rank_info);
     Ok(rank_info)
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone)]
-struct RankInfo {
-    solo_tier: Option<String>,
-    solo_division: Option<String>,
-    solo_lp: Option<i32>,
-    solo_wins: Option<i32>,
-    solo_losses: Option<i32>,
-
-    flex_tier: Option<String>,
-    flex_division: Option<String>,
-    flex_lp: Option<i32>,
-    flex_wins: Option<i32>,
-    flex_losses: Option<i32>,
-}
-
-pub async fn get_summoner_by_id(client: &Client, auth_info: &LcuAuthInfo, summoner_id: u64) -> Result<SummonerInfo, String> {
-    println!("[LCU] 开始获取召唤师信息 (ID: {})...", summoner_id);
-
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-summoner/v1/summoners/{}",
-        auth_info.app_port,
-        summoner_id
-    );
-    println!("[LCU] 请求URL: {}", url);
-
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| {
-            println!("[LCU] ✗ 获取召唤师信息失败: {}", e);
-            format!("获取召唤师信息失败: {}", e)
-        })?;
-
-    if !response.status().is_success() {
-        let error_msg = format!("服务器返回错误: {}", response.status());
-        println!("[LCU] ✗ {}", error_msg);
-        return Err(error_msg);
-    }
-
-    match response.json::<SummonerInfo>().await {
-        Ok(info) => {
-            println!("[LCU] ✓ 成功获取召唤师信息: {}", info.display_name);
-            Ok(info)
-        }
-        Err(e) => {
-            println!("[LCU] ✗ 解析召唤师信息失败: {}", e);
-            Err(format!("解析召唤师信息失败: {}", e))
-        }
-    }
+// 获取指定ID的召唤师
+pub async fn get_summoner_by_id(client: &Client, summoner_id: u64) -> Result<SummonerInfo, String> {
+    let path = &format!("/lol-summoner/v1/summoners/{}", summoner_id);
+    lcu_get(client, path).await
 }

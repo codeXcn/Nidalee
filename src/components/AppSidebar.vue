@@ -5,14 +5,13 @@
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <router-link to="/">
-              <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                <img src="../assets/logo.svg" alt="Nidalee" class="size-8" />
-              </div>
-              <div class="grid flex-1 text-left text-sm leading-tight">
-                <span class="truncate font-semibold">Nidalee</span>
-                <span class="truncate text-xs">LCU Helper</span>
+              <!-- 顶部Logo -->
+              <div class="flex items-center gap-3 px-2 py-2">
+                <img src="@/assets/logo.png" class="w-9 h-9 rounded-lg shadow" />
+                <div>
+                  <div class="font-bold text-lg leading-tight">Nidalee</div>
+                  <div class="text-xs text-gray-500">LCU Helper</div>
+                </div>
               </div>
             </router-link>
           </SidebarMenuButton>
@@ -25,7 +24,7 @@
         <SidebarGroupLabel>应用功能</SidebarGroupLabel>
         <SidebarMenu>
           <SidebarMenuItem v-for="item in menuItems" :key="item.title">
-            <SidebarMenuButton asChild :tooltip="item.title" :is-active="isActiveRoute(item.url)">
+            <SidebarMenuButton class="text-md" asChild :tooltip="item.title" :is-active="isActiveRoute(item.url)">
               <router-link :to="item.url">
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>

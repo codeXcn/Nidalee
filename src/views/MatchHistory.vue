@@ -204,18 +204,18 @@
         <div class="space-y-3">
           <div
             v-for="champion in statistics.favorite_champions"
-            :key="champion.champion_name"
+            :key="champion.champion_id"
             class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
           >
             <div class="flex items-center">
               <div
                 class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold"
               >
-                {{ champion.champion_name.charAt(0) }}
+                {{ getChampionName(champion.champion_id).charAt(0) }}
               </div>
               <div class="ml-3">
                 <p class="font-medium text-gray-900 dark:text-white">
-                  {{ champion.champion_name }}
+                  {{ getChampionName(champion.champion_id) }}
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">{{ champion.games_played }} 场游戏</p>
               </div>
@@ -259,11 +259,11 @@
                   <div class="flex items-center space-x-3">
                     <Avatar class="h-12 w-12">
                       <AvatarFallback class="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
-                        {{ game.champion_name.charAt(0) }}
+                        {{ getChampionName(game.champion_id).charAt(0) }}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 class="font-semibold">{{ game.champion_name }}</h4>
+                      <h4 class="font-semibold">{{ getChampionName(game.champion_id) }}</h4>
                       <p class="text-sm text-muted-foreground">
                         {{ formatGameMode(game.game_mode) }}
                       </p>
@@ -329,12 +329,12 @@
                   <div
                     class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold"
                   >
-                    {{ selectedGame?.champion_name?.charAt(0) || 'G' }}
+                    {{ selectedGame?.champion_id ? getChampionName(selectedGame.champion_id).charAt(0) : 'G' }}
                   </div>
                   游戏详细信息
                 </DialogTitle>
                 <DialogDescription v-if="selectedGame">
-                  {{ selectedGame.champion_name }} - {{ formatGameMode(selectedGame.game_mode) }} -
+                  {{ getChampionName(selectedGame?.champion_id) }} - {{ formatGameMode(selectedGame.game_mode) }} -
                   {{ formatRelativeTime(selectedGame.game_creation) }}
                 </DialogDescription>
               </DialogHeader>
@@ -816,7 +816,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
+import { getChampionName } from '@/lib'
 interface MatchStatistics {
   total_games: number
   wins: number
@@ -831,7 +831,7 @@ interface MatchStatistics {
 }
 
 interface ChampionStats {
-  champion_name: string
+  champion_id: string
   games_played: number
   wins: number
   win_rate: number
@@ -839,7 +839,7 @@ interface ChampionStats {
 
 interface RecentGame {
   game_id: number
-  champion_name: string
+  champion_id: string
   game_mode: string
   win: boolean
   kills: number
@@ -857,6 +857,7 @@ const searchedSummoner = ref('')
 const searchHistory = ref<string[]>([])
 
 onMounted(() => {
+  console.log(statistics.value)
   loadSearchHistory()
   loadMyMatchHistory()
 })
@@ -1033,12 +1034,7 @@ const getTeamParticipants = (teamId: string, gameDetail: Record<string, unknown>
   return participants.filter((p: Record<string, unknown>) => p.teamId?.toString() === teamId)
 }
 
-// 获取英雄名称 (暂时使用英雄ID，后续可以添加英雄名称映射)
-const getChampionName = (championId: number) => {
-  // 这里可以添加英雄ID到名称的映射
-  // 暂时返回格式化的ID
-  return `英雄${championId}`
-}
+
 
 // 获取玩家名称
 const getPlayerName = (participantId: number, gameDetail: Record<string, unknown>) => {

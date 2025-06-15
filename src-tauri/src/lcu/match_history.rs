@@ -1,123 +1,27 @@
-use base64::{engine::general_purpose, Engine as _};
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+use crate::lcu::request::lcu_get;
+use crate::lcu::types::{
+    ChampionStats, MatchStatistics, RecentGame, SimpleMatchInfo, TeamStats,
+};
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
-use crate::lcu::auth::get_lcu_auth_info;
-use crate::lcu::types::{LcuAuthInfo, GameDetail, TeamInfo, BanInfo, ParticipantInfo, ParticipantStats, TeamStats};
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MatchStatistics {
-    pub total_games: i32,
-    pub wins: i32,
-    pub losses: i32,
-    pub win_rate: f32,
-    pub avg_kills: f32,
-    pub avg_deaths: f32,
-    pub avg_assists: f32,
-    pub avg_kda: f32,
-    pub favorite_champions: Vec<ChampionStats>,
-    pub recent_performance: Vec<RecentGame>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ChampionStats {
-    pub champion_name: String,
-    pub games_played: i32,
-    pub wins: i32,
-    pub win_rate: f32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RecentGame {
-    pub game_id: u64,
-    pub champion_name: String,
-    pub game_mode: String,
-    pub win: bool,
-    pub kills: i32,
-    pub deaths: i32,
-    pub assists: i32,
-    pub game_duration: i32,
-    pub game_creation: i64,
-}
-
-pub async fn get_match_history() -> Result<MatchStatistics, String> {
+/// 获取当前玩家历史战绩统计（自动认证、统一请求、日志耗时）
+pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, String> {
     println!("\n🔍 ===== 开始获取我的战绩 =====");
-
-    let auth_info = get_lcu_auth_info()?;
-    println!("🔐 认证信息获取成功:");
-    println!("   - 端口: {}", auth_info.app_port);
-    println!("   - Token前缀: {}...", &auth_info.remoting_auth_token[0..8.min(auth_info.remoting_auth_token.len())]);
-
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-    println!("   - Base64认证: {}...", &base64_auth[0..20.min(base64_auth.len())]);
-
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .build()
-        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
     // 第1步：获取当前召唤师信息来得到PUUID
     println!("\n📍 第1步：获取当前召唤师信息");
-    let summoner_url = format!("https://127.0.0.1:{}/lol-summoner/v1/current-summoner", auth_info.app_port);
-    println!("🌐 请求URL: {}", summoner_url);
-
-    let summoner_response = client
-        .get(&summoner_url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| {
-            println!("❌ 获取召唤师信息失败: {}", e);
-            format!("获取召唤师信息失败: {}", e)
-        })?;
-
-    println!("📊 召唤师信息响应状态: {}", summoner_response.status());
-
-    let summoner_data: Value = summoner_response
-        .json()
-        .await
-        .map_err(|e| {
-            println!("❌ 解析召唤师信息失败: {}", e);
-            format!("解析召唤师信息失败: {}", e)
-        })?;
-
+    let summoner_data: Value = lcu_get(client, "/lol-summoner/v1/current-summoner").await?;
     let puuid = summoner_data
         .get("puuid")
         .and_then(|p| p.as_str())
-        .ok_or_else(|| {
-            println!("❌ 未找到PUUID");
-            "未找到PUUID".to_string()
-        })?;
-
+        .ok_or_else(|| "未找到PUUID".to_string())?;
     println!("🆔 提取到的PUUID: {}", puuid);
 
     // 第2步：使用PUUID获取对局列表
     println!("\n📍 第2步：使用PUUID获取对局列表");
-    let match_list_url = format!("https://127.0.0.1:{}/lol-match-history/v1/products/lol/{}/matches", auth_info.app_port, puuid);
-    println!("🌐 请求URL: {}", match_list_url);
-
-    let match_list_response = client
-        .get(&match_list_url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| {
-            println!("❌ 获取对局列表失败: {}", e);
-            format!("获取对局列表失败: {}", e)
-        })?;
-
-    println!("📊 对局列表响应状态: {}", match_list_response.status());
-
-    let match_list_data: Value = match_list_response
-        .json()
-        .await
-        .map_err(|e| {
-            println!("❌ 解析对局列表失败: {}", e);
-            format!("解析对局列表失败: {}", e)
-        })?;
+    let match_list_url = format!("/lol-match-history/v1/products/lol/{}/matches", puuid);
+    let match_list_data: Value = lcu_get(client, &match_list_url).await?;
 
     // 第3步：直接分析对局列表数据
     println!("\n📍 第3步：分析对局列表数据");
@@ -135,51 +39,17 @@ pub async fn get_match_history() -> Result<MatchStatistics, String> {
     Ok(statistics)
 }
 
-pub async fn get_game_detail(game_id: u64) -> Result<Value, String> {
+/// 获取游戏详细信息
+pub async fn get_game_detail(client: &Client, game_id: u64) -> Result<Value, String> {
     println!("\n🔍 ===== 获取游戏详细信息 =====");
     println!("🎮 游戏ID: {}", game_id);
 
-    let auth_info = get_lcu_auth_info()?;
-    let auth_string = format!("riot:{}", auth_info.remoting_auth_token);
-    let base64_auth = general_purpose::STANDARD.encode(auth_string.as_bytes());
-
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .build()
-        .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
-
-    // 获取游戏详细信息
-    let game_detail_url = format!("https://127.0.0.1:{}/lol-match-history/v1/games/{}", auth_info.app_port, game_id);
-    println!("🌐 请求URL: {}", game_detail_url);
-
-    let response = client
-        .get(&game_detail_url)
-        .header("Authorization", format!("Basic {}", base64_auth))
-        .send()
-        .await
-        .map_err(|e| format!("获取游戏详情失败: {}", e))?;
-
-    println!("📊 响应状态: {}", response.status());
-
-    let game_data: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("解析游戏详情JSON失败: {}", e))?;
+    let url = format!("/lol-match-history/v1/games/{}", game_id);
+    let game_data: Value = lcu_get(client, &url).await?;
 
     // 处理游戏数据
-    let mut blue_team_stats = TeamStats {
-        kills: 0,
-        gold_earned: 0,
-        total_damage_dealt_to_champions: 0,
-        vision_score: 0,
-    };
-
-    let mut red_team_stats = TeamStats {
-        kills: 0,
-        gold_earned: 0,
-        total_damage_dealt_to_champions: 0,
-        vision_score: 0,
-    };
+    let mut blue_team_stats = TeamStats::default();
+    let mut red_team_stats = TeamStats::default();
 
     let mut max_damage = 0;
     let mut best_player_champion_id = 0;
@@ -189,7 +59,9 @@ pub async fn get_game_detail(game_id: u64) -> Result<Value, String> {
     let mut max_streak_champion_id = 0;
 
     // 处理参与者数据
-    let participants = if let Some(participants_data) = game_data.get("participants").and_then(|p| p.as_array()) {
+    let participants = if let Some(participants_data) =
+        game_data.get("participants").and_then(|p| p.as_array())
+    {
         participants_data
             .iter()
             .map(|p| {
@@ -236,7 +108,6 @@ pub async fn get_game_detail(game_id: u64) -> Result<Value, String> {
                 json!({
                     "participantId": p.get("participantId").and_then(|id| id.as_i64()).unwrap_or(0) as i32,
                     "championId": champion_id,
-                    "championName": get_champion_name(champion_id as u64),
                     "teamId": team_id,
                     "rankTier": None::<String>,
                     "stats": {
@@ -263,7 +134,12 @@ pub async fn get_game_detail(game_id: u64) -> Result<Value, String> {
     } else {
         Vec::new()
     };
-       let participant_identities = game_data.get("participantIdentities").cloned().unwrap_or(Value::Null);
+
+    let participant_identities = game_data
+        .get("participantIdentities")
+        .cloned()
+        .unwrap_or(Value::Null);
+
     // 处理队伍数据
     let teams = if let Some(teams_data) = game_data.get("teams").and_then(|t| t.as_array()) {
         teams_data
@@ -326,11 +202,53 @@ pub async fn get_game_detail(game_id: u64) -> Result<Value, String> {
         "maxStreakChampionId": max_streak_champion_id,
         "maxStreak": max_streak,
         "participantIdentities": participant_identities,
-
     }))
 }
 
-fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Result<MatchStatistics, String> {
+/// 获取指定召唤师最近几场简单战绩
+pub async fn get_recent_matches_by_summoner_id(
+    client: &Client,
+    puuid: &str,
+    count: usize,
+) -> Result<Vec<SimpleMatchInfo>, String> {
+    let url = format!(
+        "/lol-match-history/v1/products/lol/{}/matches",
+        puuid
+    );
+    let json: Value = lcu_get(client, &url).await?;
+    let mut result = vec![];
+    if let Some(games) = json.get("games").and_then(|g| g.as_array()) {
+        for game in games {
+            let game_id = game.get("gameId").and_then(|v| v.as_u64()).unwrap_or(0);
+            let champion_id = game.get("championId").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+            let stats = game.get("stats").unwrap_or(&Value::Null);
+            let win = stats.get("win").and_then(|v| v.as_bool()).unwrap_or(false);
+            let kills = stats.get("kills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+            let deaths = stats.get("deaths").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+            let assists = stats.get("assists").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+            let game_creation = game
+                .get("gameCreation")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0);
+
+            result.push(SimpleMatchInfo {
+                game_id,
+                champion_id,
+                win,
+                kills,
+                deaths,
+                assists,
+                game_creation,
+            });
+        }
+    }
+    Ok(result)
+}
+
+fn analyze_match_list_data(
+    match_list_data: Value,
+    current_puuid: &str,
+) -> Result<MatchStatistics, String> {
     println!("📊 开始分析对局列表数据");
     println!("👤 目标玩家PUUID: {}", current_puuid);
 
@@ -359,7 +277,10 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
         total_games += 1;
 
         // 查找当前玩家的参与者信息
-        if let Some(participant_identities) = game.get("participantIdentities").and_then(|pi| pi.as_array()) {
+        if let Some(participant_identities) = game
+            .get("participantIdentities")
+            .and_then(|pi| pi.as_array())
+        {
             // 在participantIdentities中找到匹配PUUID的玩家
             let current_identity = participant_identities.iter().find(|identity| {
                 let player_puuid = identity
@@ -378,7 +299,10 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
                 // 在participants中找到对应participantId的参与者
                 if let Some(participants) = game.get("participants").and_then(|p| p.as_array()) {
                     let current_participant = participants.iter().find(|p| {
-                        let p_id = p.get("participantId").and_then(|id| id.as_u64()).unwrap_or(0);
+                        let p_id = p
+                            .get("participantId")
+                            .and_then(|id| id.as_u64())
+                            .unwrap_or(0);
                         p_id == participant_id
                     });
 
@@ -388,13 +312,14 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
                             .get("championId")
                             .and_then(|id| id.as_u64())
                             .unwrap_or(0);
-                        let champion_name = get_champion_name(champion_id);
                         let is_win = stats.get("win").and_then(|w| w.as_bool()).unwrap_or(false);
                         let kills = stats.get("kills").and_then(|k| k.as_i64()).unwrap_or(0) as i32;
-                        let deaths = stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                        let assists = stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
+                        let deaths =
+                            stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
+                        let assists =
+                            stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
 
-                        println!("🏆 英雄: {}", champion_name);
+                        println!("🏆 英雄: {}", champion_id);
                         println!("🎯 结果: {}", if is_win { "胜利" } else { "失败" });
                         println!("⚔️  KDA: {}/{}/{}", kills, deaths, assists);
 
@@ -407,19 +332,22 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
                         total_assists += assists;
 
                         // 统计英雄数据
-                        let entry = champion_stats.entry(champion_name.clone()).or_insert((0, 0));
+                        let entry = champion_stats
+                            .entry(champion_id.to_string())
+                            .or_insert((0, 0));
                         entry.0 += 1; // 游戏数
                         if is_win {
                             entry.1 += 1; // 胜场数
                         }
 
                         // 添加到最近游戏
+                        let penta_kills = stats.get("pentaKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                        let quadra_kills = stats.get("quadraKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                        let performance_rating = get_performance_rating(kills, deaths, assists, penta_kills, quadra_kills);
                         recent_performance.push(RecentGame {
-                            game_id: game
-                                .get("gameId")
-                                .and_then(|id| id.as_u64())
-                                .unwrap_or(0),
-                            champion_name,
+                            game_id: game.get("gameId").and_then(|id| id.as_u64()).unwrap_or(0),
+                            champion_id: champion_id as i32,
+                            queue_id:game.get("queueId").and_then(|id| id.as_i64()).unwrap_or(0),
                             game_mode: game
                                 .get("gameMode")
                                 .and_then(|gm| gm.as_str())
@@ -437,6 +365,7 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
                                 .get("gameCreation")
                                 .and_then(|gc| gc.as_i64())
                                 .unwrap_or(0),
+                            performance_rating: performance_rating.clone(),
                         });
                     }
                 }
@@ -479,7 +408,7 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
     let mut favorite_champions: Vec<ChampionStats> = champion_stats
         .into_iter()
         .map(|(name, (games, wins))| ChampionStats {
-            champion_name: name,
+            champion_id: name.parse::<i32>().unwrap(),
             games_played: games,
             wins,
             win_rate: if games > 0 {
@@ -508,170 +437,25 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
     })
 }
 
-// 英雄ID到名称的映射（部分常见英雄）
-fn get_champion_name(champion_id: u64) -> String {
-    match champion_id {
-        1 => "安妮".to_string(),
-        2 => "奥拉夫".to_string(),
-        3 => "加里奥".to_string(),
-        4 => "卡牌大师".to_string(),
-        5 => "赵信".to_string(),
-        6 => "厄加特".to_string(),
-        7 => "乐芙兰".to_string(),
-        8 => "弗拉基米尔".to_string(),
-        9 => "费德提克".to_string(),
-        10 => "凯尔".to_string(),
-        11 => "易大师".to_string(),
-        12 => "牛头酋长".to_string(),
-        13 => "瑞兹".to_string(),
-        14 => "塞恩".to_string(),
-        15 => "希维尔".to_string(),
-        16 => "索拉卡".to_string(),
-        17 => "提莫".to_string(),
-        18 => "崔斯塔娜".to_string(),
-        19 => "沃里克".to_string(),
-        20 => "努努和威朗普".to_string(),
-        21 => "赏金猎人".to_string(),
-        22 => "艾希".to_string(),
-        23 => "崔斯塔娜".to_string(),
-        24 => "贾克斯".to_string(),
-        25 => "莫甘娜".to_string(),
-        26 => "时光守护者".to_string(),
-        27 => "辛吉德".to_string(),
-        28 => "伊芙琳".to_string(),
-        29 => "图奇".to_string(),
-        30 => "卡尔萨斯".to_string(),
-        31 => "虚空恐惧".to_string(),
-        32 => "木乃伊".to_string(),
-        33 => "拉莫斯".to_string(),
-        34 => "冰晶凤凰".to_string(),
-        35 => "恶魔小丑".to_string(),
-        36 => "祖安狂人".to_string(),
-        37 => "琴女".to_string(),
-        38 => "虚空行者".to_string(),
-        39 => "刀锋舞者".to_string(),
-        40 => "风暴之怒".to_string(),
-        41 => "海盗船长".to_string(),
-        42 => "英勇投弹手".to_string(),
-        43 => "天启者".to_string(),
-        44 => "瓦洛兰之盾".to_string(),
-        45 => "邪恶小法师".to_string(),
-        48 => "巨魔之王".to_string(),
-        50 => "破败之王".to_string(),
-        51 => "皮城女警".to_string(),
-        53 => "蒸汽机器人".to_string(),
-        54 => "熔岩巨兽".to_string(),
-        55 => "不祥之刃".to_string(),
-        56 => "虚空遁地兽".to_string(),
-        57 => "扭曲树精".to_string(),
-        58 => "荒漠屠夫".to_string(),
-        59 => "德玛西亚皇子".to_string(),
-        60 => "蜘蛛女皇".to_string(),
-        61 => "发条魔灵".to_string(),
-        62 => "齐天大圣".to_string(),
-        63 => "复仇焰魂".to_string(),
-        64 => "盲僧".to_string(),
-        67 => "暗夜猎手".to_string(),
-        68 => "机械公敌".to_string(),
-        69 => "魅惑魔女".to_string(),
-        72 => "水晶先锋".to_string(),
-        74 => "大发明家".to_string(),
-        75 => "沙漠死神".to_string(),
-        76 => "狂野女猎手".to_string(),
-        77 => "兽灵行者".to_string(),
-        78 => "圣锤之毅".to_string(),
-        79 => "酒桶".to_string(),
-        80 => "不屈之枪".to_string(),
-        81 => "探险家".to_string(),
-        82 => "铁铠冥魂".to_string(),
-        83 => "牧魂人".to_string(),
-        84 => "离群之刺".to_string(),
-        85 => "狂电之心".to_string(),
-        86 => "德玛西亚之力".to_string(),
-        89 => "曙光女神".to_string(),
-        90 => "虚空先知".to_string(),
-        91 => "刀锋之影".to_string(),
-        92 => "放逐之刃".to_string(),
-        96 => "深渊巨口".to_string(),
-        98 => "暮光之眼".to_string(),
-        99 => "光辉女郎".to_string(),
-        101 => "远古巫灵".to_string(),
-        102 => "龙血武姬".to_string(),
-        103 => "九尾妖狐".to_string(),
-        104 => "法外狂徒".to_string(),
-        105 => "潮汐海灵".to_string(),
-        106 => "雷霆咆哮".to_string(),
-        107 => "傲之追猎者".to_string(),
-        110 => "惩戒之箭".to_string(),
-        111 => "深海泰坦".to_string(),
-        112 => "机械先驱".to_string(),
-        113 => "北地之怒".to_string(),
-        114 => "无双剑姬".to_string(),
-        115 => "爆破鬼才".to_string(),
-        117 => "仙灵女巫".to_string(),
-        119 => "荣耀行刑官".to_string(),
-        120 => "战争之影".to_string(),
-        121 => "虚空掠夺者".to_string(),
-        122 => "蛮族之王".to_string(),
-        126 => "未来守护者".to_string(),
-        127 => "冰霜女巫".to_string(),
-        131 => "皎月女神".to_string(),
-        133 => "德玛西亚之翼".to_string(),
-        134 => "暗黑元首".to_string(),
-        136 => "铸星龙王".to_string(),
-        141 => "影流之镰".to_string(),
-        142 => "暮光星灵".to_string(),
-        143 => "荆棘之兴".to_string(),
-        145 => "虚空之女".to_string(),
-        147 => "星籁歌姬".to_string(),
-        150 => "迷失之牙".to_string(),
-        154 => "生化魔人".to_string(),
-        157 => "疾风剑豪".to_string(),
-        161 => "虚空之眼".to_string(),
-        163 => "岩雀".to_string(),
-        164 => "青钢影".to_string(),
-        166 => "影哨".to_string(),
-        200 => "圣枪游侠".to_string(),
-        201 => "弗雷尔卓德之心".to_string(),
-        202 => "戏命师".to_string(),
-        203 => "永猎双子".to_string(),
-        222 => "暴走萝莉".to_string(),
-        223 => "河流之王".to_string(),
-        234 => "破败之王".to_string(),
-        235 => "涤魂圣枪".to_string(),
-        236 => "圣枪游侠".to_string(),
-        238 => "影流之主".to_string(),
-        240 => "暴怒骑士".to_string(),
-        245 => "时间刺客".to_string(),
-        246 => "元素女皇".to_string(),
-        254 => "皮城执法官".to_string(),
-        266 => "暗裔剑魔".to_string(),
-        267 => "唤潮鲛姬".to_string(),
-        268 => "沙漠皇帝".to_string(),
-        350 => "魔法猫咪".to_string(),
-        360 => "沙漠玫瑰".to_string(),
-        412 => "魂锁典狱长".to_string(),
-        420 => "海兽祭司".to_string(),
-        421 => "虚空遁地兽".to_string(),
-        427 => "翠神".to_string(),
-        429 => "复仇之矛".to_string(),
-        432 => "星界游神".to_string(),
-        518 => "万花通灵".to_string(),
-        523 => "残月之肃".to_string(),
-        526 => "山隐之焰".to_string(),
-        555 => "血港鬼影".to_string(),
-        711 => "愁云使者".to_string(),
-        777 => "封魔剑魂".to_string(),
-        875 => "腕豪".to_string(),
-        876 => "含羞蓓蕾".to_string(),
-        887 => "灵罗娃娃".to_string(),
-        888 => "祖安花火".to_string(),
-        895 => "不羁之悦".to_string(),
-        897 => "K'sante".to_string(),
-        901 => "永恒梦魇".to_string(),
-        902 => "明烛".to_string(),
-        950 => "百裂冥犬".to_string(),
-        _ => format!("英雄_{}", champion_id),
+fn get_performance_rating(kills: i32, deaths: i32, assists: i32, penta_kills: i32, quadra_kills: i32) -> String {
+    let kda = (kills + assists) as f32 / deaths.max(1) as f32;
+    if penta_kills > 0 {
+        return "五杀超神！".to_string();
     }
+    if quadra_kills > 0 {
+        return "四杀爆发！".to_string();
+    }
+    if kda >= 8.0 {
+        return "超神表现！".to_string();
+    }
+    if kda >= 5.0 {
+        return "表现亮眼".to_string();
+    }
+    if kda >= 3.0 {
+        return "发挥不错".to_string();
+    }
+    if kda >= 1.5 {
+        return "发挥一般".to_string();
+    }
+    "需要加油".to_string()
 }
-

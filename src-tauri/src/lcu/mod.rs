@@ -8,5 +8,5 @@ pub mod ranked;
 pub mod polling;
 pub mod matchmaking;
 pub mod champ_select;
+pub mod request;
 // Re-export
-pub use types::*;

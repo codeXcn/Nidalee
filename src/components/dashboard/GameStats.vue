@@ -128,10 +128,10 @@
               >
                 <div class="flex items-center space-x-2">
                   <div class="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <span class="text-xs font-bold">{{ champion.champion_name.charAt(0) }}</span>
+                    <span class="text-xs font-bold">{{ getChampionName(champion.champion_id).charAt(0) }}</span>
                   </div>
                   <div>
-                    <p class="font-medium text-sm">{{ champion.champion_name }}</p>
+                    <p class="font-medium text-sm">{{ getChampionName(champion.champion_id) }}</p>
                     <p class="text-xs text-muted-foreground">{{ champion.games_played }}场</p>
                   </div>
                 </div>
@@ -161,30 +161,56 @@
             <Calendar class="h-4 w-4 mr-2 text-blue-500" />
             最近对局
           </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
             <div
-              v-for="game in matchStatistics.recent_performance.slice(0, 6)"
+              v-for="game in matchStatistics.recent_performance.slice(0, 10)"
               :key="game.game_creation"
               :class="[
                 game.win
                   ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
                   : 'bg-red-500/10 border-red-500/30 hover:border-red-500/50'
               ]"
-              class="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
+              class="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] relative"
               @click="openGameDetail(game)"
             >
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium">{{ game.champion_name }}</span>
+                <span class="text-sm font-medium">{{ getChampionName(game.champion_id) }}</span>
                 <Badge :variant="game.win ? 'default' : 'destructive'" class="text-xs">
                   {{ game.win ? '胜利' : '失败' }}
                 </Badge>
               </div>
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-muted-foreground">{{ formatGameMode(game.game_mode) }}</span>
+              <div class="flex items-center justify-between text-sm mb-1">
                 <span class="font-mono">{{ game.kills }}/{{ game.deaths }}/{{ game.assists }}</span>
+                <span class="text-muted-foreground">{{ formatGameTime(game.game_duration) }}</span>
+              </div>
+              <div class="flex items-center text-xs text-gray-400 mt-1">
+                <Clock class="w-3 h-3 mr-1" />
+                <span>{{ formatRelativeTime(game.game_creation) }}</span>
               </div>
               <div class="text-xs text-muted-foreground mt-1">
-                {{ formatGameTime(game.game_duration) }}
+                {{ getQueueName(game.queue_id) }}
+              </div>
+              <div
+                class="absolute right-2 bottom-2 rotate-12 px-3 py-0.5 rounded-full shadow text-xs font-bold select-none flex items-center gap-1"
+                :class="{
+                  'bg-green-500 text-white':
+                    game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼'),
+                  'bg-yellow-400 text-white': game.performance_rating.includes('不错'),
+                  'bg-red-500 text-white': game.performance_rating.includes('需要加油'),
+                  'bg-purple-500 text-white':
+                    game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')
+                }"
+              >
+                <Award v-if="game.performance_rating.includes('超神')" class="w-4 h-4" />
+                <Star v-else-if="game.performance_rating.includes('亮眼')" class="w-4 h-4" />
+                <Flame
+                  v-else-if="game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')"
+                  class="w-4 h-4"
+                />
+                <Smile v-else-if="game.performance_rating.includes('不错')" class="w-4 h-4" />
+                <Meh v-else-if="game.performance_rating.includes('一般')" class="w-4 h-4" />
+                <AlertCircle v-else-if="game.performance_rating.includes('需要加油')" class="w-4 h-4" />
+                <span>{{ game.performance_rating }}</span>
               </div>
             </div>
           </div>
@@ -214,9 +240,15 @@ import {
   Swords,
   Star,
   Calendar,
-  Award
+  Award,
+  Clock,
+  Flame,
+  Smile,
+  Meh,
+  AlertCircle
 } from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
+import { getChampionName } from '@/lib'
 const dialogOpen = ref(false)
 const selectedGame = ref(null)
 
@@ -236,5 +268,22 @@ const emit = defineEmits<{
   (e: 'open-game-detail', game: any): void
 }>()
 
-const { formatGameMode, formatGameTime } = useFormatters()
+const { formatGameMode, formatGameTime, formatRelativeTime } = useFormatters()
+
+const queueMap: Record<number, string> = {
+  420: '单双排', // 峡谷之巅/召唤师峡谷Ranked Solo/Duo
+  430: '匹配模式', // 召唤师峡谷普通匹配
+  440: '灵活组排', // 召唤师峡谷Ranked Flex
+  450: '极地大乱斗', // ARAM
+  400: '灵活匹配', // 召唤师峡谷团队匹配
+  700: '克隆模式', // Clash/Clones
+  900: '无限火力', // URF
+  1020: '奥德赛：浩劫', // Odyssey
+  830: '新手人机', // Co-op vs. AI Intro
+  840: '初级人机', // Co-op vs. AI Beginner
+  850: '中级人机', // Co-op vs. AI Intermediate
+  2020: '灵能特工', // Arena
+  1700: '斗魂竞技场' // Arena 2v2v2v2
+}
+const getQueueName = (queueId: number) => queueMap[queueId] || '其它模式'
 </script>

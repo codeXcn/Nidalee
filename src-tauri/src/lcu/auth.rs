@@ -1,57 +1,62 @@
-use regex::Regex;
-use crate::lcu::types::LcuAuthInfo;
-use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use regex::Regex;
+use std::sync::{RwLock, Mutex};
+use sysinfo::{ProcessRefreshKind, RefreshKind, System};
+use crate::lcu::types::LcuAuthInfo;
+use std::time::{Duration, Instant};
 
-// 全局缓存 System 实例
 static SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
-
-/// 检查 LCU 是否正在运行
-pub fn check_lcu_running() -> bool {
-    let mut system = SYSTEM.lock().unwrap();
-    system.refresh_specifics(
-        RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
-    );
-
-    for (_pid, process) in system.processes() {
-        if process.name().to_string_lossy().to_lowercase().contains("leagueclientux") {
-            // 只输出关键：发现进程
-            println!("[LCU] 检测到 LeagueClientUx 进程正在运行");
-            return true;
-        }
-    }
-
-    // 关键：未发现
-    println!("[LCU] 未检测到 LeagueClientUx 进程");
-    false
+static AUTH_INFO: Lazy<RwLock<Option<LcuAuthInfo>>> = Lazy::new(|| RwLock::new(None));
+static AUTH_TIMESTAMP: Lazy<RwLock<Option<Instant>>> = Lazy::new(|| RwLock::new(None));
+// 配置：token 最多允许缓存多久，超时自动刷新
+const AUTH_REFRESH_INTERVAL: Duration = Duration::from_secs(60);
+#[tauri::command]
+pub fn get_auth_info() -> Option<LcuAuthInfo> {
+    let auth = AUTH_INFO.read().unwrap();
+    auth.as_ref().cloned()
 }
 
-/// 获取 LeagueClientUx.exe 启动参数命令行（拼接成 String）
-fn get_lcu_cmdline() -> Option<String> {
-    let mut system = SYSTEM.lock().unwrap();
-    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
-
-    for (_pid, process) in system.processes() {
-        if process.name().eq_ignore_ascii_case("LeagueClientUx.exe") {
-            // 不再输出全部命令行
-            println!("[LCU] 已获取 LeagueClientUx.exe 启动参数");
-            let cmdline = process.cmd()
-                .iter()
-                .map(|s| s.to_string_lossy())
-                .collect::<Vec<_>>()
-                .join(" ");
-            return Some(cmdline);
+/// 获取（并自动刷新）最新有效的 LCU AuthInfo
+pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
+    // 1. 先检测缓存是否存在且未超时
+    {
+        let auth = AUTH_INFO.read().unwrap();
+        let ts = AUTH_TIMESTAMP.read().unwrap();
+        if let (Some(a), Some(t)) = (auth.as_ref(), ts.as_ref()) {
+            if t.elapsed() < AUTH_REFRESH_INTERVAL {
+                log::debug!("[LCU] 使用缓存的 AuthInfo，距离上次刷新: {:?}秒", t.elapsed().as_secs());
+                return Some(a.clone());
+            } else {
+                log::info!("[LCU] AuthInfo 缓存已过期，准备刷新");
+            }
+        } else {
+            log::info!("[LCU] 当前无有效缓存，准备刷新");
         }
     }
-    println!("[LCU] 未找到 LeagueClientUx.exe 进程参数");
-    None
+    // 2. 自动刷新
+    match refresh_auth_info() {
+        Ok(auth) => {
+            log::info!("[LCU] 自动刷新 AuthInfo 成功");
+            Some(auth)
+        }
+        Err(e) => {
+            log::error!("[LCU] 自动刷新 AuthInfo 失败: {}", e);
+            None
+        }
+    }
 }
 
-/// 提取授权信息
-pub fn get_lcu_auth_info() -> Result<LcuAuthInfo, String> {
-    let cmdline = get_lcu_cmdline().ok_or("LeagueClientUx.exe not found")?;
-
+/// 手动强制刷新 AuthInfo（一般不直接用，内部自动调用）
+pub fn refresh_auth_info() -> Result<LcuAuthInfo, String> {
+    log::info!("[LCU] 开始强制刷新 AuthInfo");
+    let cmdline = match get_lcu_cmdline() {
+        Some(cmd) => cmd,
+        None => {
+            log::error!("[LCU] LeagueClientUx.exe 进程未找到，无法刷新 AuthInfo");
+            invalidate_auth_info();
+            return Err("LeagueClientUx.exe not found".into());
+        }
+    };
     let riotclient_token_re = Regex::new(r"--riotclient-auth-token=([^\s]+)").unwrap();
     let riotclient_port_re = Regex::new(r"--riotclient-app-port=([^\s]+)").unwrap();
     let remoting_token_re = Regex::new(r"--remoting-auth-token=([^\s]+)").unwrap();
@@ -73,22 +78,60 @@ pub fn get_lcu_auth_info() -> Result<LcuAuthInfo, String> {
         .captures(&cmdline)
         .and_then(|c| c.get(1))
         .and_then(|m| m.as_str().parse::<u16>().ok());
-
     if let (Some(r_token), Some(r_port), Some(m_token), Some(a_port)) = (
         riotclient_auth_token,
         riotclient_app_port,
         remoting_auth_token,
         app_port,
     ) {
-        println!("[LCU] 授权参数解析成功");
-        Ok(LcuAuthInfo {
+        let auth = LcuAuthInfo {
             riotclient_auth_token: r_token,
             riotclient_app_port: r_port,
             remoting_auth_token: m_token,
             app_port: a_port,
-        })
+        };
+        {
+            let mut info = AUTH_INFO.write().unwrap();
+            *info = Some(auth.clone());
+        }
+        {
+            let mut ts = AUTH_TIMESTAMP.write().unwrap();
+            *ts = Some(Instant::now());
+        }
+        log::info!(
+            "[LCU] AuthInfo 刷新成功，端口: {}, token: {}... (已隐藏)",
+            auth.app_port,
+            &auth.remoting_auth_token[..8.min(auth.remoting_auth_token.len())]
+        );
+        Ok(auth)
     } else {
-        println!("[LCU] 授权参数解析失败");
+        log::error!("[LCU] 解析 LeagueClientUx.exe 启动参数失败，清空缓存");
+        invalidate_auth_info();
         Err("Failed to parse LeagueClientUx command line".into())
     }
+}
+
+fn get_lcu_cmdline() -> Option<String> {
+    let mut system = SYSTEM.lock().unwrap();
+    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
+    for (_pid, process) in system.processes() {
+        if process.name().eq_ignore_ascii_case("LeagueClientUx.exe") {
+            let cmdline = process.cmd()
+                .iter()
+                .map(|s| s.to_string_lossy())
+                .collect::<Vec<_>>()
+                .join(" ");
+            log::debug!("[LCU] 获取 LeagueClientUx.exe 启动参数: {}", cmdline);
+            return Some(cmdline);
+        }
+    }
+    log::warn!("[LCU] 未找到 LeagueClientUx.exe 进程参数");
+    None
+}
+
+fn invalidate_auth_info() {
+    let mut info = AUTH_INFO.write().unwrap();
+    *info = None;
+    let mut ts = AUTH_TIMESTAMP.write().unwrap();
+    *ts = None;
 }

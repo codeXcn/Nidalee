@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-4 space-y-4">
+  <div class="min-h-screen flex flex-col justify-center items-center bg-white">
     <!-- 加载状态 -->
     <div v-if="loading" class="flex items-center justify-center h-64">
       <div class="text-center">
@@ -8,43 +8,34 @@
       </div>
     </div>
 
-    <!-- 错误状态 -->
-    <div v-else-if="error" class="flex items-center justify-center h-64">
-      <div class="text-center">
-        <AlertCircle class="h-12 w-12 text-destructive mx-auto" />
-        <p class="mt-4 text-destructive">{{ error }}</p>
-        <Button @click="retry" class="mt-4">重试</Button>
-      </div>
-    </div>
-
     <!-- 主要内容 -->
-    <div v-else-if="session" class="space-y-4">
+    <div v-else-if="session" class="w-full max-w-5xl space-y-8">
       <!-- 比分面板 -->
       <ScorePanel :my-score="session.myScore" :their-score="session.theirScore" />
 
       <!-- 队伍对称分布 -->
-      <div class="flex justify-center items-start gap-8 mt-8">
+      <div class="flex justify-center items-center gap-16 mt-8">
         <!-- 我方队伍 -->
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-6">
           <PlayerCard
             v-for="player in session.myTeam"
             :key="player.summonerId + '-' + player.cellId"
             :player="player"
             :is-local="player.cellId === session.localPlayerCellId"
-            class="w-60 min-w-[240px]"
+            class="w-64"
           />
         </div>
         <!-- VS分割 -->
         <div class="flex flex-col items-center justify-center">
-          <span class="text-2xl font-bold text-gray-400">VS</span>
+          <span class="text-4xl font-extrabold text-gray-300 tracking-widest mb-2">VS</span>
         </div>
         <!-- 敌方队伍 -->
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-6">
           <PlayerCard
             v-for="player in session.theirTeam"
             :key="player.summonerId + '-' + player.cellId"
             :player="player"
-            class="w-60 min-w-[240px]"
+            class="w-64"
           />
         </div>
       </div>
@@ -68,31 +59,15 @@
 </template>
 
 <script setup lang="ts">
-import { AlertCircle, Info } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { Info } from 'lucide-vue-next'
 import ScorePanel from '@/components/analysis/ScorePanel.vue'
-import TeamPanel from '@/components/analysis/TeamPanel.vue'
-import SuggestionPanel from '@/components/analysis/SuggestionPanel.vue'
 import { useChampSelectSession } from '@/components/analysis/composables/useChampSelectSession'
-import { computed } from 'vue'
 import PlayerCard from '@/components/analysis/PlayerCard.vue'
 
-const { session, loading, error, retry } = useChampSelectSession()
-
-// 判断 theirTeam 是否有真实玩家（summonerId 不是 '0'）
-const hasRealEnemy = computed(() => {
-  if (!session.value) return false
-  return session.value.theirTeam.some((p) => p.summonerId && p.summonerId !== '0')
-})
+const { session, loading } = useChampSelectSession()
+watchEffect(() => console.log(session.value))
 </script>
 
 <style scoped>
-.duel-analysis {
-  padding: 20px;
-}
-.teams-row {
-  display: flex;
-  gap: 16px;
-  margin-top: 20px;
-}
+/* 你可以根据需要微调间距和宽度 */
 </style>

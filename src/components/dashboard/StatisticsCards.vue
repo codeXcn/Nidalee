@@ -3,12 +3,10 @@
     <!-- 游戏连接状态 -->
     <Card
       :class="[
-        'relative p-6  transition-all duration-300',
-        connectionStatus === 'connected'
+        'relative p-6 transition-all duration-300',
+        isConnected
           ? 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20'
-          : connectionStatus === 'connecting'
-            ? 'border-l-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20'
-            : 'border-l-red-500 bg-red-50/50 dark:bg-red-950/20'
+          : 'border-l-red-500 bg-red-50/50 dark:bg-red-950/20'
       ]"
     >
       <div class="flex items-center justify-between">
@@ -17,53 +15,24 @@
           <h2
             :class="[
               'text-2xl font-bold',
-              connectionStatus === 'connected'
-                ? 'text-green-600 dark:text-green-400'
-                : connectionStatus === 'connecting'
-                  ? 'text-yellow-600 dark:text-yellow-400'
-                  : 'text-red-600 dark:text-red-400'
+              isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             ]"
           >
-            {{ connectionStatus === 'connected' ? '已连接' : connectionStatus === 'connecting' ? '连接中' : '离线' }}
+            {{ isConnected ? '已连接' : '离线' }}
           </h2>
           <p class="text-xs text-muted-foreground mt-1">
-            {{
-              connectionStatus === 'connected'
-                ? '客户端已就绪'
-                : connectionStatus === 'connecting'
-                  ? '正在连接...'
-                  : '等待连接至League客户端'
-            }}
+            {{ isConnected ? '客户端已就绪' : '等待连接至League客户端' }}
           </p>
         </div>
         <div class="absolute top-4 right-4">
-          <div
-            :class="[
-              'h-2 w-2 rounded-full',
-              connectionStatus === 'connected'
-                ? 'bg-green-500'
-                : connectionStatus === 'connecting'
-                  ? 'bg-yellow-500 animate-pulse'
-                  : 'bg-red-500 animate-pulse'
-            ]"
-          ></div>
+          <div :class="['h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse']"></div>
         </div>
       </div>
       <div class="mt-4">
-        <Button
-          v-if="!isConnected && !isConnecting"
-          size="sm"
-          variant="outline"
-          class="text-xs"
-          @click="attemptConnection"
-        >
+        <Button v-if="!isConnected" size="sm" variant="outline" class="text-xs" @click="attemptConnection">
           <RefreshCw class="h-3 w-3 mr-1" />
           重新连接
         </Button>
-        <div v-else-if="isConnecting" class="flex items-center text-sm text-yellow-600 dark:text-yellow-400">
-          <Loader2 class="h-3 w-3 mr-1 animate-spin" />
-          连接中...
-        </div>
         <div v-else class="text-sm text-green-600 dark:text-green-400">
           <Wifi class="h-3 w-3 inline mr-1" />
           连接正常
@@ -142,13 +111,11 @@
 <script setup lang="ts">
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Settings, Clock, TrendingUp, RefreshCw, Loader2, Wifi, Play } from 'lucide-vue-next'
+import { Settings, Clock, TrendingUp, RefreshCw, Wifi, Play } from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
 
 const props = defineProps<{
-  connectionStatus: string
   isConnected: boolean
-  isConnecting: boolean
   todayMatches: {
     total: number
     wins: number

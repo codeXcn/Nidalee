@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+
 @plugin 'tailwind-scrollbar' {
     nocompatible: true;
     preferredStrategy: 'pseudoelements';
@@ -13,6 +14,7 @@
 
 /* Light theme variables */
 :root {
+  --font-display: "Satoshi", "sans-serif";
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -50,6 +52,7 @@
 
 /* Dark theme variables */
 .dark {
+  --font-display: "Satoshi", "sans-serif";
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
@@ -96,7 +99,7 @@ body {
     'rlig' 1,
     'calt' 1;
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-display);
 }
 
 #app {
@@ -172,4 +175,51 @@ body {
     --sidebar-border: var(--border);
     --sidebar-ring: var(--ring);
   }
+}
+/* 淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动淡入淡出 */
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* 缩放 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.2s ease;
+}
+.scale-enter-from,
+.scale-leave-to {
+  transform: scale(0.98);
+  opacity: 0;
+}
+
+/* 向上滑动 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.2s ease;
+}
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
 }
