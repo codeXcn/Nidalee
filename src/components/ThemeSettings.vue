@@ -12,15 +12,5 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Settings } from 'lucide-vue-next'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import ThemeCustomizer from '@/components/ThemeCustomizer.vue'
-
-const theme = ref('system')
-
-const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
-  theme.value = newTheme
-  // 这里可以添加切换主题的逻辑
-}
 </script>

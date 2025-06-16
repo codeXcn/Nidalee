@@ -1,12 +1,7 @@
 <template>
   <Card class="w-full max-w-md mx-auto p-6">
     <form @submit.prevent="onSearch" class="flex items-center gap-2">
-      <Input
-        v-model="summonerName"
-        placeholder="输入召唤师名称"
-        class="flex-1"
-        @keyup.enter="onSearch"
-      />
+      <Input v-model="summonerName" placeholder="输入召唤师名称" class="flex-1" @keyup.enter="onSearch" />
       <Button type="submit" :disabled="loading || !summonerName.trim()" class="shrink-0">
         <Search class="w-4 h-4 mr-1" />
         查询
@@ -29,10 +24,9 @@
           <li v-for="(match, idx) in result.matches" :key="idx" class="flex items-center gap-2">
             <span class="font-medium">{{ match.champion }}</span>
             <span class="text-xs text-muted-foreground">KDA: {{ match.kda }}</span>
-            <span
-              :class="match.win ? 'text-success' : 'text-destructive'"
-              class="text-xs"
-            >{{ match.win ? '胜利' : '失败' }}</span>
+            <span :class="match.win ? 'text-success' : 'text-destructive'" class="text-xs">{{
+              match.win ? '胜利' : '失败'
+            }}</span>
           </li>
         </ul>
       </div>
@@ -41,10 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-vue-next'
 
 // 组件内部状态
@@ -61,7 +51,7 @@ const result = ref<null | {
 // 查询逻辑（请替换为实际API调用）
 async function fetchSummonerInfo(name: string) {
   // 这里用模拟数据，实际请替换为后端接口
-  await new Promise(r => setTimeout(r, 1000))
+  await new Promise((r) => setTimeout(r, 1000))
   if (name === 'notfound') throw new Error('未找到该召唤师')
   return {
     name,

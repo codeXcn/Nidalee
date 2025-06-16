@@ -1,5 +1,3 @@
-import { computed } from 'vue'
-
 export function useFormatters() {
   const formatRelativeTime = (timestamp: number) => {
     const date = new Date(timestamp)

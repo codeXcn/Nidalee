@@ -161,7 +161,7 @@
             <Calendar class="h-4 w-4 mr-2 text-blue-500" />
             最近对局
           </h4>
-          <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))">
             <div
               v-for="game in matchStatistics.recent_performance.slice(0, 10)"
               :key="game.game_creation"
@@ -226,29 +226,26 @@
 </template>
 
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  BarChart,
-  TrendingUp,
-  RefreshCw,
-  Loader2,
-  Wifi,
-  Trophy,
-  Target,
-  Swords,
-  Star,
-  Calendar,
-  Award,
-  Clock,
-  Flame,
-  Smile,
-  Meh,
-  AlertCircle
-} from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getChampionName } from '@/lib'
+import {
+  AlertCircle,
+  Award,
+  BarChart,
+  Calendar,
+  Clock,
+  Flame,
+  Loader2,
+  Meh,
+  RefreshCw,
+  Smile,
+  Star,
+  Swords,
+  Target,
+  TrendingUp,
+  Trophy,
+  Wifi
+} from 'lucide-vue-next'
 const dialogOpen = ref(false)
 const selectedGame = ref(null)
 

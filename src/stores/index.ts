@@ -1,6 +1,6 @@
-import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-
+export * from './gameStore'
+export * from './themeStore'
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 

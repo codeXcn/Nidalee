@@ -1,5 +1,3 @@
-import { ref } from 'vue'
-
 export function useDeepseekSuggestion() {
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -18,15 +16,19 @@ export function useDeepseekSuggestion() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`,
+          Authorization: `Bearer ${process.env.VITE_DEEPSEEK_API_KEY}`
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
           messages: [
-            { role: 'system', content: '你是一个英雄联盟数据分析师，请根据用户提供的对局信息，给出详细的对局分析、英雄推荐和战术建议，内容简明扼要，适合直接展示在前端卡片。' },
+            {
+              role: 'system',
+              content:
+                '你是一个英雄联盟数据分析师，请根据用户提供的对局信息，给出详细的对局分析、英雄推荐和战术建议，内容简明扼要，适合直接展示在前端卡片。'
+            },
             { role: 'user', content: context }
           ],
-          stream: false,
+          stream: false
         })
       })
       if (!res.ok) throw new Error('API 请求失败')
@@ -43,6 +45,6 @@ export function useDeepseekSuggestion() {
     loading,
     error,
     data,
-    fetchSuggestion,
+    fetchSuggestion
   }
 }

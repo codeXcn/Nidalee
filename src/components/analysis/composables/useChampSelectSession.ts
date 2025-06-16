@@ -1,7 +1,5 @@
-import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/gameStore'
 import { useGameAssets } from '@/hooks/useGameAssets'
-import type { ChampSelectPlayer } from 'types/global'
+import { useGameStore } from '@/stores'
 
 export function useChampSelectSession() {
   const gameStore = useGameStore()
@@ -47,7 +45,7 @@ export function useChampSelectSession() {
       championIcon: player.championId ? getChampionIconUrl(player.championId) : undefined,
       rankIcon:
         summonerInfo?.soloRankTier || player.tier
-          ? getRankIconUrl(summonerInfo?.soloRankTier || player.tier)
+          ? getRankIconUrl(summonerInfo?.soloRankTier || player?.tier || '')
           : undefined
     }
   }

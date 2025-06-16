@@ -57,18 +57,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { useGameStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useGameStore } from '@/stores/gameStore'
-import { useGameMonitor } from '@/hooks/useGameMonitor'
-import SummonerCard from '@/components/dashboard/SummonerCard.vue'
-import StatisticsCards from '@/components/dashboard/StatisticsCards.vue'
-import QuickActions from '@/components/dashboard/QuickActions.vue'
-import ActivityLog from '@/components/dashboard/ActivityLog.vue'
-import GameStats from '@/components/dashboard/GameStats.vue'
 
 // 使用store和监控
 const gameStore = useGameStore()

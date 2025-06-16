@@ -1,21 +1,6 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+import { useMatchmaking } from '@/components/game-helper/composables/useMatchmaking'
 import { invoke } from '@tauri-apps/api/core'
 import { now } from '@vueuse/core'
-import type {
-  LcuAuthInfo,
-  SummonerInfo,
-  GameStatus,
-  GameSession,
-  Activity,
-  MatchStatistics,
-  GamePhase,
-  LobbyInfo,
-  ChampSelectSession,
-  MatchmakingState,
-  MatchInfo
-} from 'types/global'
-import { useMatchmaking } from '@/components/game-helper/composables/useMatchmaking'
 
 export const useGameStore = defineStore(
   'game',

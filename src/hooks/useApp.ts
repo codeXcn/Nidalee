@@ -1,8 +1,6 @@
-import { useThemeStore } from '@/stores/themeStore'
-import { useGameStore } from '@/stores/gameStore'
-import { listen } from '@tauri-apps/api/event'
+import { useGameStore, useThemeStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
-import { MatchStatistics, SummonerInfo, LcuAuthInfo, GamePhase, LobbyInfo, ChampSelectSession } from 'types/global'
+import { listen } from '@tauri-apps/api/event'
 
 export function useApp() {
   const themeStore = useThemeStore()

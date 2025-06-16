@@ -136,10 +136,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Card } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import SimpleSlider from '@/components/ui/slider/SimpleSlider.vue'
 import { Shield } from 'lucide-vue-next'
 
 // 安全设置状态

@@ -29,9 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { useGameStore } from '@/stores'
 import { storeToRefs } from 'pinia'
-import { useGameStore } from '@/stores/gameStore'
-import { useGameMonitor } from '@/hooks/useGameMonitor'
 
 // 使用store和监控
 const gameStore = useGameStore()

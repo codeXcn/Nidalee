@@ -215,11 +215,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { RefreshCw, Power, Zap } from 'lucide-vue-next'
+import { Power, RefreshCw, Zap } from 'lucide-vue-next'
 
 // 状态管理
 const autoAcceptMatch = ref(true)

@@ -58,7 +58,7 @@
 
     <!-- 技能 -->
     <div class="flex flex-col gap-1 ml-1">
-      <template v-for="(spellId, idx) in [(player.spell1Id ?? null), (player.spell2Id ?? null)]" :key="idx">
+      <template v-for="(spellId, idx) in [player.spell1Id ?? null, player.spell2Id ?? null]" :key="idx">
         <template v-if="getSpellMeta(spellId).icon">
           <img
             :src="getSpellMeta(spellId).icon"
@@ -82,7 +82,7 @@
 import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
 import { computed, defineEmits } from 'vue'
 import { Badge } from '@/components/ui/badge'
-import { ChampSelectPlayer } from 'types/global';
+import { ChampSelectPlayer } from '@/types/global'
 
 const props = defineProps<{
   player: ChampSelectPlayer
@@ -91,7 +91,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['select'])
-
 
 // 位置与颜色映射
 const positionColorMap: Record<string, string> = {

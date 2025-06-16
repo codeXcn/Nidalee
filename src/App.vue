@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import AppSidebar from '@/components/AppSidebar.vue'
-import ConnectionStatus from '@/components/ConnectionStatus.vue'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
-import ThemeSettings from '@/components/ThemeSettings.vue'
-import TitleBar from './components/TitleBar.vue'
 import { useApp } from '@/hooks/useApp'
 const { isDark } = useApp()
 
@@ -22,7 +17,7 @@ const handleRouteChange = () => {
   <div id="app" :class="{ dark: isDark }">
     <TitleBar />
     <SidebarProvider class="mt-8">
-      <AppSidebar/>
+      <AppSidebar />
       <SidebarInset>
         <header
           class="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border/40"

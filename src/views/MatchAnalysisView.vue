@@ -59,10 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import { Info } from 'lucide-vue-next'
-import ScorePanel from '@/components/analysis/ScorePanel.vue'
 import { useChampSelectSession } from '@/components/analysis/composables/useChampSelectSession'
-import PlayerCard from '@/components/analysis/PlayerCard.vue'
+import { Info } from 'lucide-vue-next'
 
 const { session, loading } = useChampSelectSession()
 watchEffect(() => console.log(session.value))

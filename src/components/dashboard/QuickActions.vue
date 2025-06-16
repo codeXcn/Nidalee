@@ -7,7 +7,7 @@
           <p class="text-sm text-muted-foreground">常用功能的快速访问</p>
         </div>
       </div>
-        <MatchmakingPanel />
+      <!-- <MatchmakingPanel /> -->
 
       <div class="space-y-4">
         <!-- 自动接受对局 -->
@@ -79,11 +79,8 @@
 </template>
 
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { User, Settings, Bookmark, Shield, Zap, Play } from 'lucide-vue-next'
-import { useGameStore } from '@/stores/gameStore'
-import { storeToRefs } from 'pinia'
+import { useGameStore } from '@/stores'
+import { Bookmark, Shield, User, Zap } from 'lucide-vue-next'
 
 const { autoFunctions } = storeToRefs(useGameStore())
 </script>

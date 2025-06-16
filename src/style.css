@@ -2,8 +2,8 @@
 @import 'tw-animate-css';
 
 @plugin 'tailwind-scrollbar' {
-    nocompatible: true;
-    preferredStrategy: 'pseudoelements';
+  nocompatible: true;
+  preferredstrategy: 'pseudoelements';
 }
 @custom-variant dark (&:is(.dark *));
 
@@ -14,7 +14,7 @@
 
 /* Light theme variables */
 :root {
-  --font-display: "Satoshi", "sans-serif";
+  --font-display: 'Satoshi', 'sans-serif';
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -52,7 +52,7 @@
 
 /* Dark theme variables */
 .dark {
-  --font-display: "Satoshi", "sans-serif";
+  --font-display: 'Satoshi', 'sans-serif';
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);

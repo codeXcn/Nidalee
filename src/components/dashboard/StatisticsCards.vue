@@ -109,8 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Settings, Clock, TrendingUp, RefreshCw, Wifi, Play } from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
 

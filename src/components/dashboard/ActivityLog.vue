@@ -52,9 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Clock } from 'lucide-vue-next'
 import { useFormatters } from '@/hooks/useFormatters'
+import { Clock } from 'lucide-vue-next'
 
 interface Activity {
   id: string | number

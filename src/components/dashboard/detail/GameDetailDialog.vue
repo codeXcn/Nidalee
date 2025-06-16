@@ -269,12 +269,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { useGameStore } from '@/stores/gameStore'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getMapName, getQueueName, getChampionIconUrl, getChampionName, getProfileIconUrl } from '@/lib'
-// import type { GameDetailData, RecentGame, Column } from '@/types/game'
+import { getChampionIconUrl, getChampionName, getMapName, getProfileIconUrl, getQueueName } from '@/lib'
+import { useGameStore } from '@/stores'
+import { invoke } from '@tauri-apps/api/core'
+import { ref, watch } from 'vue'
 
 const props = defineProps<{
   selectedGame: RecentGame | null

@@ -220,23 +220,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import SimpleSlider from '@/components/ui/slider/SimpleSlider.vue'
 import {
-  Zap,
+  Bookmark,
+  Edit,
+  Eye,
+  MessageSquare,
   Power,
   PowerOff,
-  User,
-  Shield,
-  Bookmark,
-  Eye,
-  Target,
-  MessageSquare,
   Settings,
-  Edit
+  Shield,
+  Target,
+  User,
+  Zap
 } from 'lucide-vue-next'
 
 // 状态管理

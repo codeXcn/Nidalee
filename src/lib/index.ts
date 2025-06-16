@@ -123,41 +123,6 @@ export const getPlayerDisplayName = (participantId: number, gameDetail: any): st
   return summonerName || '未知玩家'
 }
 
-// 类型定义
-export interface GameDetailData {
-  gameId: number
-  gameDuration: number
-  gameMode: string
-  gameVersion: string
-  mapId: number
-  queueId: number
-  teams: any[]
-  participants: any[]
-  participantIdentities: any[]
-  blueTeamStats: any
-  redTeamStats: any
-  bestPlayerChampionId?: number
-  maxDamage?: number
-  maxTankChampionId?: number
-  maxTank?: number
-  maxStreakChampionId?: number
-  maxStreak?: number
-}
-
-export interface TeamBan {
-  championId: number
-  pickTurn: number
-}
-
-export interface Participant {
-  participantId: number
-  teamId: number
-  championId: number
-  championName: string
-  stats?: any
-  rankTier?: string
-  score?: number
-}
 export const getChampionName = (championId: number | string | null): string => {
   if (!championId) return '未选择英雄'
   const championMap: Record<number | string, string> = {
@@ -340,9 +305,9 @@ export const getSpellIconUrl = (spellId: number | null): string => {
   return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/${spellId}.png`
 }
 // 召唤师技能图标
-export const getSpellMeta = (spellId: number | null): { label: string, icon: string } => {
+export const getSpellMeta = (spellId: number | null): { label: string; icon: string } => {
   if (!spellId) return { label: '', icon: '' }
-  const spellMap: Record<number, { label: string, icon: string }> = {
+  const spellMap: Record<number, { label: string; icon: string }> = {
     1: { label: '净化', icon: new URL('@/assets/SpellIconFiles/1.png', import.meta.url).href },
     3: { label: '虚弱', icon: new URL('@/assets/SpellIconFiles/3.png', import.meta.url).href },
     4: { label: '闪现', icon: new URL('@/assets/SpellIconFiles/4.png', import.meta.url).href },

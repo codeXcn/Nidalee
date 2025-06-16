@@ -195,25 +195,25 @@ interface PerkInfo {
   name: string
 }
 // 定义接口类型
-export interface GameSession {
+interface GameSession {
   startTime: number
   duration: number
 }
 
-export interface Activity {
+interface Activity {
   id: string
   type: 'success' | 'info' | 'warning' | 'error'
   message: string
   timestamp: number
 }
 
-export interface GameStatus {
+interface GameStatus {
   phase: string
   queue: string | null
   isInGame: boolean
 }
 
-export interface MatchStatistics {
+interface MatchStatistics {
   total_games: number
   wins: number
   losses: number
@@ -226,14 +226,14 @@ export interface MatchStatistics {
   recent_performance: RecentGame[]
 }
 
-export interface ChampionStats {
+interface ChampionStats {
   champion_name: string
   games_played: number
   wins: number
   win_rate: number
 }
 
-export interface RecentGame {
+interface RecentGame {
   game_id: number
   champion_name: string
   game_mode: string
@@ -245,12 +245,12 @@ export interface RecentGame {
   game_creation: number
 }
 
-export interface LcuAuthInfo {
+interface LcuAuthInfo {
   app_port: number
   remoting_auth_token: string
 }
 
-export interface SummonerInfo {
+interface SummonerInfo {
   // 基本信息
   displayName: string
   gameName?: string
@@ -299,22 +299,22 @@ export interface SummonerInfo {
 }
 
 // 游戏阶段信息
-export interface GamePhase {
+interface GamePhase {
   phase: string
 }
 
 // 房间信息
-export interface LobbyInfo {
+interface LobbyInfo {
   id: string
   partyType: string
   members: LobbyMember[]
 }
 
-export interface LobbyMember {
+interface LobbyMember {
   summonerId: number
   displayName: string
 }
-export interface ChampSelectPlayer {
+interface ChampSelectPlayer {
   cellId: number
   summonerId?: string
   championId: number
@@ -329,12 +329,12 @@ export interface ChampSelectPlayer {
   winRate?: number
 }
 
-export interface ChampSelectBans {
+interface ChampSelectBans {
   myTeamBans: number[]
   theirTeamBans: number[]
 }
 
-export interface ChampSelectSession {
+interface ChampSelectSession {
   localPlayerCellId: number
   myTeam: ChampSelectPlayer[]
   theirTeam: ChampSelectPlayer[]
@@ -346,7 +346,7 @@ export interface ChampSelectSession {
   suggestions?: string[]
   warnings?: string[]
 }
-export interface MatchmakingError {
+interface MatchmakingError {
   errorType: string
   id: number
   message: string
@@ -354,7 +354,7 @@ export interface MatchmakingError {
   penaltyTimeRemaining: number
 }
 
-export interface LowPriorityData {
+interface LowPriorityData {
   bustedLeaverAccessToken: string
   penalizedSummonerIds: number[]
   penaltyTime: number
@@ -362,19 +362,54 @@ export interface LowPriorityData {
   reason: string
 }
 
-export interface MatchmakingState {
+interface MatchmakingState {
   errors: MatchmakingError[]
   lowPriorityData: LowPriorityData
   searchState: string
 }
 
-export interface PlayerInfo {
+interface PlayerInfo {
   summonerName: string
   championId: number
   teamId: number
 }
 
-export interface MatchInfo {
+interface MatchInfo {
   matchId: string
   players: PlayerInfo[]
+}
+// 类型定义
+interface GameDetailData {
+  gameId: number
+  gameDuration: number
+  gameMode: string
+  gameVersion: string
+  mapId: number
+  queueId: number
+  teams: any[]
+  participants: any[]
+  participantIdentities: any[]
+  blueTeamStats: any
+  redTeamStats: any
+  bestPlayerChampionId?: number
+  maxDamage?: number
+  maxTankChampionId?: number
+  maxTank?: number
+  maxStreakChampionId?: number
+  maxStreak?: number
+}
+
+interface TeamBan {
+  championId: number
+  pickTurn: number
+}
+
+interface Participant {
+  participantId: number
+  teamId: number
+  championId: number
+  championName: string
+  stats?: any
+  rankTier?: string
+  score?: number
 }

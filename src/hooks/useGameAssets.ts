@@ -1,5 +1,3 @@
-import { ref } from 'vue'
-
 export function useGameAssets() {
   const gameVersion = ref('14.23.1')
 

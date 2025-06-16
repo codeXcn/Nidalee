@@ -55,10 +55,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import ThemeCustomizer from '@/components/ThemeCustomizer.vue'
-</script>

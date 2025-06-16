@@ -58,9 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { useGameStore } from '@/stores/gameStore'
+import { useGameStore } from '@/stores'
 import { Zap } from 'lucide-vue-next'
 const store = useGameStore()
 const { handleMatchmaking, handleAcceptMatch, handleDeclineMatch } = store

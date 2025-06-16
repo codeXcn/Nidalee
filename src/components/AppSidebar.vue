@@ -53,20 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail
-} from '@/components/ui/sidebar'
-import { BarChart3, Gamepad2, TrendingUp, Zap, Shield, Settings } from 'lucide-vue-next'
+import { BarChart3, Gamepad2, Settings, Shield, TrendingUp, Zap } from 'lucide-vue-next'
 
 const route = useRoute()
 

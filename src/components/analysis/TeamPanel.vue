@@ -30,7 +30,13 @@
           :key="player.summonerId + '-' + player.cellId"
           :player="player"
           :is-local="player.cellId === localCellId"
-          :selected="!!(selectedPlayer && selectedPlayer.cellId === player.cellId && selectedPlayer.summonerId === player.summonerId)"
+          :selected="
+            !!(
+              selectedPlayer &&
+              selectedPlayer.cellId === player.cellId &&
+              selectedPlayer.summonerId === player.summonerId
+            )
+          "
           :color="color"
           @select="onSelectPlayer"
         />
@@ -78,11 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
-import { Users, Lightbulb } from 'lucide-vue-next'
-import PlayerCard from './PlayerCard.vue'
-import type { ChampSelectPlayer } from './types/champSelect'
-import { inject, ref } from 'vue'
+import { Lightbulb, Users } from 'lucide-vue-next'
 
 const props = defineProps<{
   title: string

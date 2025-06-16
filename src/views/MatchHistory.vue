@@ -808,15 +808,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getChampionName } from '@/lib'
+import { invoke } from '@tauri-apps/api/core'
 interface MatchStatistics {
   total_games: number
   wins: number
@@ -1033,8 +1028,6 @@ const getTeamParticipants = (teamId: string, gameDetail: Record<string, unknown>
   if (!participants || !Array.isArray(participants)) return []
   return participants.filter((p: Record<string, unknown>) => p.teamId?.toString() === teamId)
 }
-
-
 
 // 获取玩家名称
 const getPlayerName = (participantId: number, gameDetail: Record<string, unknown>) => {
