@@ -1,6 +1,6 @@
 // LCU 数据结构定义
-use serde::{Deserialize, Serialize};
 use serde::de::{self, Deserializer};
+use serde::{Deserialize, Serialize};
 
 /// 兼容数字和字符串的反序列化 helper
 pub fn string_or_number<'de, D>(deserializer: D) -> Result<String, D::Error>
@@ -128,7 +128,7 @@ pub struct TeamStats {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GameflowPhase {
-  pub phase: String,
+    pub phase: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -308,16 +308,16 @@ pub struct ChampSelectTimer {
 }
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct RankInfo {
-   pub solo_tier: Option<String>,
-   pub solo_division: Option<String>,
-   pub solo_lp: Option<i32>,
-   pub solo_wins: Option<i32>,
-   pub solo_losses: Option<i32>,
-   pub flex_tier: Option<String>,
-   pub flex_division: Option<String>,
-   pub flex_lp: Option<i32>,
-   pub flex_wins: Option<i32>,
-   pub flex_losses: Option<i32>,
+    pub solo_tier: Option<String>,
+    pub solo_division: Option<String>,
+    pub solo_lp: Option<i32>,
+    pub solo_wins: Option<i32>,
+    pub solo_losses: Option<i32>,
+    pub flex_tier: Option<String>,
+    pub flex_division: Option<String>,
+    pub flex_lp: Option<i32>,
+    pub flex_wins: Option<i32>,
+    pub flex_losses: Option<i32>,
 }
 // 轮询状态结构体
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -359,13 +359,13 @@ pub struct LowPriorityData {
     pub reason: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize,PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct MatchInfo {
     pub match_id: String,
     pub players: Vec<PlayerInfo>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize,PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PlayerInfo {
     pub summoner_name: String,
     pub champion_id: i32,
@@ -395,7 +395,7 @@ pub struct SimpleMatchInfo {
     pub game_creation: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Clone, Deserialize)]
 pub struct MatchStatistics {
     pub total_games: i32,
     pub wins: i32,
@@ -409,7 +409,7 @@ pub struct MatchStatistics {
     pub recent_performance: Vec<RecentGame>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ChampionStats {
     pub champion_id: i32,
     pub games_played: i32,
@@ -417,7 +417,7 @@ pub struct ChampionStats {
     pub win_rate: f32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RecentGame {
     pub game_id: u64,
     pub champion_id: i32,
@@ -445,4 +445,11 @@ pub struct ChampSelectPlayerInfo {
 pub struct ChampSelectTeamInfo {
     pub my_team: Vec<ChampSelectPlayerInfo>,
     pub their_team: Vec<ChampSelectPlayerInfo>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SummonerWithMatches {
+    pub display_name: String,
+    pub summoner_info: SummonerInfo,
+    pub matches: MatchStatistics,
 }

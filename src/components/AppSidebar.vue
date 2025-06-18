@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Gamepad2, Settings, Shield, TrendingUp, Zap } from 'lucide-vue-next'
+import { BarChart3, Gamepad2, Search, Settings, Shield, TrendingUp, Zap } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -67,6 +67,11 @@ const menuItems = [
     title: '游戏助手',
     url: '/game-helper',
     icon: Gamepad2
+  },
+  {
+    title: '战绩查询',
+    url: '/match-search',
+    icon: Search
   },
   {
     title: '对局分析',

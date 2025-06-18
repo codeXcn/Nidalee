@@ -69,7 +69,7 @@
               {{ formatChallengePoints(summonerInfo.challengePoints) }}
             </p>
           </div>
-          <div>
+          <div v-if="sessionDuration">
             <p class="text-white/80 text-sm">会话时长</p>
             <p class="text-xl font-bold">{{ sessionDuration }}</p>
           </div>
@@ -280,14 +280,14 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatters } from '@/hooks/useFormatters'
-import { useGameAssets } from '@/hooks/useGameAssets'
-import { getTierIconUrl } from '@/lib'
-import { Shield, Trophy, User, Users } from 'lucide-vue-next'
+import { useFormatters } from '@/hooks/useFormatters';
+import { useGameAssets } from '@/hooks/useGameAssets';
+import { getTierIconUrl } from '@/lib';
+import { Shield, Trophy, User, Users } from 'lucide-vue-next';
 
 const props = defineProps<{
   summonerInfo: any
-  sessionDuration: string
+  sessionDuration?: string
 }>()
 console.log(props.summonerInfo)
 const { getProfileIconUrl } = useGameAssets()

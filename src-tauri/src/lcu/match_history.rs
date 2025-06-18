@@ -210,39 +210,17 @@ pub async fn get_recent_matches_by_summoner_id(
     client: &Client,
     puuid: &str,
     count: usize,
-) -> Result<Vec<SimpleMatchInfo>, String> {
+) -> Result<MatchStatistics, String> {
     let url = format!(
-        "/lol-match-history/v1/products/lol/{}/matches",
-        puuid
+        "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
+        puuid,19
     );
-    let json: Value = lcu_get(client, &url).await?;
-    let mut result = vec![];
-    if let Some(games) = json.get("games").and_then(|g| g.as_array()) {
-        for game in games {
-            let game_id = game.get("gameId").and_then(|v| v.as_u64()).unwrap_or(0);
-            let champion_id = game.get("championId").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-            let stats = game.get("stats").unwrap_or(&Value::Null);
-            let win = stats.get("win").and_then(|v| v.as_bool()).unwrap_or(false);
-            let kills = stats.get("kills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-            let deaths = stats.get("deaths").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-            let assists = stats.get("assists").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-            let game_creation = game
-                .get("gameCreation")
-                .and_then(|v| v.as_i64())
-                .unwrap_or(0);
+    let match_list_data: Value = lcu_get(client, &url).await?;
 
-            result.push(SimpleMatchInfo {
-                game_id,
-                champion_id,
-                win,
-                kills,
-                deaths,
-                assists,
-                game_creation,
-            });
-        }
-    }
-    Ok(result)
+    // 第3步：直接分析对局列表数据
+    println!("\n📍 第3步：分析对局列表数据");
+    let statistics = analyze_match_list_data(match_list_data, puuid)?;
+    Ok(statistics)
 }
 
 fn analyze_match_list_data(

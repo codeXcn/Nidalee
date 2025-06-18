@@ -1,5 +1,4 @@
 // 其他辅助函数
-
 export const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetailData): number => {
   const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)
   return identity?.player?.profileIcon || 0
@@ -66,7 +65,8 @@ export const getProfileIconUrl = (iconId: number): string => {
 }
 
 export const getItemIconUrl = (itemId: number, gameVersion: string): string => {
-  if (!itemId || itemId === 0) return ''
+  if (!itemId || itemId === 0)
+    return 'data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="%23e5e7eb"/><text x="16" y="22" text-anchor="middle" font-size="20" fill="%239ca3af" font-family="Arial, Helvetica, sans-serif">?</text></svg>'
   return `https://ddragon.leagueoflegends.com/cdn/${gameVersion}/img/item/${itemId}.png`
 }
 
@@ -337,4 +337,45 @@ export const getTierIconUrl = (tier: string | undefined): string => {
     CHALLENGER: new URL('@/assets/RankedIconFiles/CHALLENGER.png', import.meta.url).href
   }
   return tierMap[tier] || ''
+}
+// 获取最新版本号
+export const getLatestVersion = async () => {
+  const response = await fetch('https://ddragon.leagueoflegends.com/api/versions.json')
+  const versions = await response.json()
+  const latestVersion = versions[0]
+  return latestVersion || '15.12.1'
+}
+// 获取所有符文详细信息（含描述等）
+export const getAllRunes = async (gameVersion: string, language: string = 'zh_CN') => {
+  const resp = await fetch(`https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/runesReforged.json`)
+  return await resp.json()
+}
+
+// 获取所有召唤师技能详细信息
+export const getAllSummonerSpells = async (gameVersion: string, language: string = 'zh_CN') => {
+  const resp = await fetch(`https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/summoner.json`)
+  return await resp.json()
+}
+// 获取所有英雄基础信息
+export const getAllChampions = async (gameVersion: string, language: string = 'zh_CN'): Promise<any> => {
+  const resp = await fetch(`https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/champion.json`)
+  return await resp.json()
+}
+
+// 获取单个英雄详细信息
+export const getChampionDetail = async (
+  championName: string,
+  gameVersion: string,
+  language: string = 'zh_CN'
+): Promise<any> => {
+  const resp = await fetch(
+    `https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/champion/${championName}.json`
+  )
+  return await resp.json()
+}
+
+// 获取所有物品数据
+export const getAllItems = async (gameVersion: string, language: string = 'zh_CN'): Promise<any> => {
+  const resp = await fetch(`https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/item.json`)
+  return await resp.json()
 }

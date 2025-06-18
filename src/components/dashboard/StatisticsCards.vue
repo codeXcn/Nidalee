@@ -29,7 +29,7 @@
         </div>
       </div>
       <div class="mt-4">
-        <Button v-if="!isConnected" size="sm" variant="outline" class="text-xs" @click="attemptConnection">
+        <Button v-if="!isConnected" size="sm" variant="outline" class="text-xs">
           <RefreshCw class="h-3 w-3 mr-1" />
           重新连接
         </Button>
@@ -109,8 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { Settings, Clock, TrendingUp, RefreshCw, Wifi, Play } from 'lucide-vue-next'
-import { useFormatters } from '@/hooks/useFormatters'
+import { useFormatters } from '@/hooks/useFormatters';
+import { Clock, Play, RefreshCw, Settings, TrendingUp, Wifi } from 'lucide-vue-next';
 
 const props = defineProps<{
   isConnected: boolean
@@ -129,8 +129,4 @@ const emit = defineEmits<{
 }>()
 
 const { formatTime } = useFormatters()
-
-const attemptConnection = () => {
-  emit('attempt-connection')
-}
 </script>

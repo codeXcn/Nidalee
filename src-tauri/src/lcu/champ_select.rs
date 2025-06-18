@@ -1,9 +1,12 @@
-use reqwest::Client;
-use serde_json::{Value, Number};
-use crate::lcu::types::{ChampSelectPlayer, ChampSelectPlayerInfo, ChampSelectSession, ChampSelectTeamInfo, CurrentChampion, SummonerInfo};
+use crate::lcu::match_history::get_recent_matches_by_summoner_id;
 use crate::lcu::request::lcu_get;
 use crate::lcu::summoner::get_summoner_by_id;
-use crate::lcu::match_history::get_recent_matches_by_summoner_id;
+use crate::lcu::types::{
+    ChampSelectPlayer, ChampSelectPlayerInfo, ChampSelectSession, ChampSelectTeamInfo,
+    CurrentChampion, MatchStatistics, SummonerInfo,
+};
+use reqwest::Client;
+use serde_json::{Number, Value};
 use std::collections::HashMap;
 // ---------- 数据清洗函数 ----------
 
@@ -17,7 +20,13 @@ fn fix_team_array(team: &mut Vec<Value>) {
                 }
             }
             // 处理其他大数值字段
-            for field in ["championId", "championPickIntent", "selectedSkinId", "spell1Id", "spell2Id"] {
+            for field in [
+                "championId",
+                "championPickIntent",
+                "selectedSkinId",
+                "spell1Id",
+                "spell2Id",
+            ] {
                 if let Some(value) = player_obj.get(field) {
                     if let Some(num) = value.as_f64() {
                         if num == 1.8446744073709552e19 || num == 0.0 {
@@ -45,10 +54,7 @@ fn fix_bans(ban_list: &mut Vec<Value>) {
 }
 
 /// 批量 enrich 召唤师信息
-async fn enrich_champ_select_session(
-    client: &Client,
-    session: &mut ChampSelectSession,
-) {
+async fn enrich_champ_select_session(client: &Client, session: &mut ChampSelectSession) {
     // 收集所有 summoner_id
     let mut all_ids = vec![];
     for p in session.my_team.iter().chain(session.their_team.iter()) {
@@ -87,7 +93,10 @@ async fn enrich_champ_select_session(
     }
 }
 
-fn enrich_player(player: &mut ChampSelectPlayer, info_map: &std::collections::HashMap<String, SummonerInfo>) {
+fn enrich_player(
+    player: &mut ChampSelectPlayer,
+    info_map: &std::collections::HashMap<String, SummonerInfo>,
+) {
     if let Some(sid) = &player.summoner_id {
         if sid == "0" {
             player.display_name = Some("机器人".to_string());
@@ -96,11 +105,12 @@ fn enrich_player(player: &mut ChampSelectPlayer, info_map: &std::collections::Ha
             player.tier = None;
         } else if let Some(info) = info_map.get(sid) {
             // 优先用 game_name + tag_line
-            let display_name = if let (Some(game_name), Some(tag_line)) = (&info.game_name, &info.tag_line) {
-                format!("{}#{}", game_name, tag_line)
-            } else {
-                info.display_name.clone()
-            };
+            let display_name =
+                if let (Some(game_name), Some(tag_line)) = (&info.game_name, &info.tag_line) {
+                    format!("{}#{}", game_name, tag_line)
+                } else {
+                    info.display_name.clone()
+                };
             player.display_name = Some(display_name);
             player.tag_line = info.tag_line.clone();
             player.profile_icon_id = Some(info.profile_icon_id);
@@ -112,9 +122,7 @@ fn enrich_player(player: &mut ChampSelectPlayer, info_map: &std::collections::Ha
 // ---------- 主函数 ----------
 
 /// 获取当前选人阶段的完整 session 信息（最优实践版）
-pub async fn get_champ_select_session(
-    client: &Client,
-) -> Result<ChampSelectSession, String> {
+pub async fn get_champ_select_session(client: &Client) -> Result<ChampSelectSession, String> {
     // 直接用通用 LCU 请求工具
     let mut json: Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
 
@@ -146,16 +154,36 @@ pub async fn get_champ_select_session(
 // 主函数：批量获取队友和对手信息（无缓存，简洁版）
 pub async fn get_champselect_team_players_info(
     client: &Client,
-) -> Result<ChampSelectTeamInfo, String> {
+) -> Result<HashMap<String, MatchStatistics>, String> {
     // 1. 获取当前选人会话
     let session: serde_json::Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
-    let my_team = session.get("myTeam").and_then(|v| v.as_array()).ok_or("myTeam解析失败")?;
-    let their_team = session.get("theirTeam").and_then(|v| v.as_array()).ok_or("theirTeam解析失败")?;
+    let my_team = session
+        .get("myTeam")
+        .and_then(|v| v.as_array())
+        .ok_or("myTeam解析失败")?;
+    let their_team = session
+        .get("theirTeam")
+        .and_then(|v| v.as_array())
+        .ok_or("theirTeam解析失败")?;
 
     // 2. 收集所有 summoner_id
-    let extract_id = |player: &serde_json::Value| player.get("summonerId").and_then(|v| v.as_u64()).unwrap_or(0).to_string();
-    let my_ids: Vec<String> = my_team.iter().map(extract_id).filter(|id| id != "0").collect();
-    let their_ids: Vec<String> = their_team.iter().map(extract_id).filter(|id| id != "0").collect();
+    let extract_id = |player: &serde_json::Value| {
+        player
+            .get("summonerId")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0)
+            .to_string()
+    };
+    let my_ids: Vec<String> = my_team
+        .iter()
+        .map(extract_id)
+        .filter(|id| id != "0")
+        .collect();
+    let their_ids: Vec<String> = their_team
+        .iter()
+        .map(extract_id)
+        .filter(|id| id != "0")
+        .collect();
 
     // 3. 批量查SummonerInfo
     let mut all_ids = my_ids.clone();
@@ -174,47 +202,15 @@ pub async fn get_champselect_team_players_info(
 
     // 4. 批量查最近10场战绩
     let mut match_map = HashMap::new();
-      log::info!("准备批量查最近10场战绩, 总人数: {}", info_map.len());
-  for (sid, info) in &info_map {
-       log::info!("查找召唤师 {} recent matches", sid);
-       if let Ok(matches) = get_recent_matches_by_summoner_id(client, &info.puuid, 10).await {
-           log::info!("查到 {} 场", matches.len());
-           match_map.insert(sid.clone(), matches);
-       } else {
-           log::warn!("查找 {} 失败", sid);
-       }
-   }
-
-    // 5. 组装返回结构体
-    let mut map_player = |player: &serde_json::Value| -> Option<ChampSelectPlayerInfo> {
-        let sid = extract_id(player);
-        if sid == "0" { // 跳过机器人
-            return None;
-        }
-        if let Some(info) = info_map.get(&sid) {
-            Some(ChampSelectPlayerInfo {
-                summoner_id: sid.clone(),
-                display_name: if let (Some(ref n), Some(ref t)) = (&info.game_name, &info.tag_line) {
-                    format!("{}#{}", n, t)
-                } else {
-                    info.display_name.clone()
-                },
-                tag_line: info.tag_line.clone(),
-                profile_icon_id: info.profile_icon_id,
-                tier: info.solo_rank_tier.clone(),
-                puuid: info.puuid.clone(),
-                recent_matches: match_map.get(&sid).cloned().unwrap_or_default(),
-            })
+    log::info!("准备批量查最近10场战绩, 总人数: {}", info_map.len());
+    for (sid, info) in &info_map {
+        log::info!("查找召唤师 {} recent matches", sid);
+        if let Ok(matches) = get_recent_matches_by_summoner_id(client, &info.puuid, 10).await {
+            log::info!("查到 {:?} 场", matches);
+            match_map.insert(sid.clone(), matches);
         } else {
-            None
+            log::warn!("查找 {} 失败", sid);
         }
-    };
-
-    let my_team_info: Vec<ChampSelectPlayerInfo> = my_team.iter().filter_map(&mut map_player).collect();
-    let their_team_info: Vec<ChampSelectPlayerInfo> = their_team.iter().filter_map(&mut map_player).collect();
-
-    Ok(ChampSelectTeamInfo {
-        my_team: my_team_info,
-        their_team: their_team_info,
-    })
+    }
+    Ok(match_map)
 }

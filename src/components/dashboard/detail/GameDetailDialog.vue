@@ -122,7 +122,9 @@
                         <img
                           v-for="i in itemSlots"
                           :key="i"
-                          :src="getItemIconUrl(participant.stats?.[`item${i}`])"
+                          :src="
+                            getItemIconUrl((participant.stats?.[`item${i}`] as number) || 0, gameStore.getGameVersion)
+                          "
                           class="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800"
                           :style="{ opacity: participant.stats?.[`item${i}`] ? 1 : 0.3 }"
                           :alt="participant.stats?.[`item${i}`] ? `装备 ${participant.stats[`item${i}`]}` : '空装备槽'"
@@ -217,7 +219,9 @@
                         <img
                           v-for="i in itemSlots"
                           :key="i"
-                          :src="getItemIconUrl(participant.stats?.[`item${i}`])"
+                          :src="
+                            getItemIconUrl((participant.stats?.[`item${i}`] as number) || 0, gameStore.getGameVersion)
+                          "
                           class="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800"
                           :style="{
                             opacity: participant.stats?.[`item${i}`] ? 1 : 0.3
@@ -270,7 +274,15 @@
 
 <script setup lang="ts">
 import { useFormatters } from '@/hooks/useFormatters'
-import { getChampionIconUrl, getChampionName, getMapName, getProfileIconUrl, getQueueName } from '@/lib'
+import {
+  getChampionIconUrl,
+  getChampionName,
+  getItemIconUrl,
+  getMapName,
+  getProfileIconUrl,
+  getQueueName,
+  getRankIconUrl
+} from '@/lib'
 import { useGameStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 import { ref, watch } from 'vue'
@@ -361,14 +373,17 @@ const formatNumber = (num: number): string => {
   return num?.toLocaleString() || '0'
 }
 
-const getRankIconUrl = (tier: string): string => {
-  if (!tier) return ''
-  const tierLower = tier.toLowerCase()
-  return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/gold.png`
-}
+// const getRankIconUrl = (tier: string): string => {
+//   if (!tier) return ''
+//   const tierLower = tier.toLowerCase()
+//   return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/gold.png`
+// }
 
-const getItemIconUrl = (itemId: unknown): string => {
-  if (!itemId || typeof itemId !== 'number' || itemId === 0) return ''
-  return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/${itemId}.png`
-}
+// const getItemIconUrl = (itemId: unknown): string => {
+//   if (!itemId || typeof itemId !== 'number' || itemId === 0) {
+//     // 使用SVG问号占位
+//     return 'data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="%23e5e7eb"/><text x="16" y="22" text-anchor="middle" font-size="20" fill="%239ca3af" font-family="Arial, Helvetica, sans-serif">?</text></svg>'
+//   }
+//   return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/${itemId}.png`
+// }
 </script>

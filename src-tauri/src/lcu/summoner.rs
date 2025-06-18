@@ -1,13 +1,19 @@
 use reqwest::Client;
-use tauri::command;
 use crate::lcu::types::{SummonerInfo, RankInfo};
-use crate::lcu::request::lcu_get;
+use crate::lcu::request::{lcu_get, lcu_post};
 use serde_json::Value;
 
 pub async fn get_current_summoner(client: &Client) -> Result<SummonerInfo, String> {
     let mut summoner_info: SummonerInfo = lcu_get(client, "/lol-summoner/v1/current-summoner").await?;
-
     // 获取段位信息
+    fill_summoner_extra_info(client, &mut summoner_info).await;
+    Ok(summoner_info)
+}
+// 补全信息
+pub async fn fill_summoner_extra_info(
+    client: &Client,
+    summoner_info: &mut SummonerInfo,
+) {
     if let Ok(rank_info) = get_rank_info(client, &summoner_info.puuid).await {
         summoner_info.solo_rank_tier = rank_info.solo_tier;
         summoner_info.solo_rank_division = rank_info.solo_division;
@@ -24,10 +30,7 @@ pub async fn get_current_summoner(client: &Client) -> Result<SummonerInfo, Strin
     if let (Some(game_name), Some(tag_line)) = (summoner_info.game_name.clone(), summoner_info.tag_line.clone()) {
         summoner_info.display_name = format!("{}#{}", game_name, tag_line);
     }
-
-    Ok(summoner_info)
 }
-
 pub async fn get_rank_info(client: &Client, puuid: &str) -> Result<RankInfo, String> {
     let path = &format!("/lol-ranked/v1/ranked-stats/{}", puuid);
     let rank_data: Value = lcu_get(client, path).await?;
@@ -62,4 +65,11 @@ pub async fn get_rank_info(client: &Client, puuid: &str) -> Result<RankInfo, Str
 pub async fn get_summoner_by_id(client: &Client, summoner_id: u64) -> Result<SummonerInfo, String> {
     let path = &format!("/lol-summoner/v1/summoners/{}", summoner_id);
     lcu_get(client, path).await
+}
+
+// 批量获取召唤师信息
+pub async fn get_summoners_by_names(client: &Client, names: Vec<String>) ->Result<Vec<SummonerInfo>, String> {
+    let path = &format!("/lol-summoner/v2/summoners/names");
+    let summoners: Vec<SummonerInfo> = lcu_post(client, path,names.into()).await?;
+    Ok(summoners)
 }

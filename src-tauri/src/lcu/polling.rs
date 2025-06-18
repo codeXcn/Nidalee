@@ -326,10 +326,6 @@ async fn emit_if_change(app: &AppHandle, state: &Arc<RwLock<PollState>>, emit_ca
         let _ = app.emit("auth-info-change", &s.auth_info);
         c.auth_info = s.auth_info.clone();
     }
-    if c.current_summoner.as_ref() != s.current_summoner.as_ref() {
-        let _ = app.emit("summoner-change", &s.current_summoner);
-        c.current_summoner = s.current_summoner.clone();
-    }
     if c.gameflow_phase.as_ref() != s.gameflow_phase.as_ref() {
         let _ = app.emit("gameflow-phase-change", &s.gameflow_phase);
         c.gameflow_phase = s.gameflow_phase.clone();

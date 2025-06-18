@@ -5,6 +5,7 @@ import { now } from '@vueuse/core'
 export const useGameStore = defineStore(
   'game',
   () => {
+    const gameVersion = ref('15.12.1')
     // 基础状态
     const isConnected = ref(false)
     const authInfo = ref<LcuAuthInfo | null>(null)
@@ -92,11 +93,12 @@ export const useGameStore = defineStore(
     }
 
     // 设置认证信息
-    const setAuthInfo = (info: LcuAuthInfo | null) => {
+    const setAuthInfo = async (info: LcuAuthInfo | null) => {
       if (info) {
         isConnected.value = true
         authInfo.value = info
         addActivity('success', 'LCU 认证信息已更新')
+        await fetchSummonerInfo()
       } else {
         isConnected.value = false
         authInfo.value = null
@@ -110,11 +112,7 @@ export const useGameStore = defineStore(
       try {
         const connected = await invoke<LcuAuthInfo>('get_auth_info')
         setAuthInfo(connected)
-
-        if (connected) {
-          // 获取召唤师信息
-          await fetchSummonerInfo()
-        }
+        await fetchSummonerInfo()
       } catch (error) {
         console.error('检查连接失败:', error)
         setAuthInfo(null)
@@ -216,10 +214,11 @@ export const useGameStore = defineStore(
     }
 
     // 设置连接状态
-    const setConnectionStatus = (status: boolean) => {
+    const setConnectionStatus = async (status: boolean) => {
       isConnected.value = status
       if (status) {
         addActivity('success', 'LCU 连接已建立')
+        await fetchSummonerInfo()
       } else {
         addActivity('warning', 'LCU 连接已断开')
         clearSummonerInfo()
@@ -315,8 +314,15 @@ export const useGameStore = defineStore(
         val === 'Found' && autoFunctions.value.acceptMatch && handleAcceptMatch()
       }
     )
-
+    const setGameVersion = (version: string) => {
+      gameVersion.value = version
+    }
+    const getGameVersion = computed(() => {
+      return gameVersion.value
+    })
     return {
+      setGameVersion,
+      getGameVersion,
       // 状态
       isConnected,
       authInfo,

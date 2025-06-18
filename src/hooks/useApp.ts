@@ -1,3 +1,4 @@
+import { getLatestVersion } from '@/lib'
 import { useGameStore, useThemeStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -25,8 +26,9 @@ export function useApp() {
 
   onMounted(async () => {
     try {
+      const latestVersion = await getLatestVersion()
+      if (latestVersion !== gameStore.getGameVersion) gameStore.setGameVersion(latestVersion)
       if (gameStore.isConnected) {
-        console.log('已连接')
         if (gameStore.isConnected) {
           gameStore.addActivity('info', '从缓存恢复连接状态')
         }

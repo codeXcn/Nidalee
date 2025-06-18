@@ -20,7 +20,6 @@
     <!-- 连接按钮 -->
     <button
       v-if="!isConnected"
-      @click="attemptConnection"
       class="ml-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
     >
       连接
@@ -34,7 +33,6 @@ import { storeToRefs } from 'pinia'
 
 // 使用store和监控
 const gameStore = useGameStore()
-const { attemptConnection } = useGameMonitor()
 
 // 从store中解构响应式状态
 const { isConnected, summonerInfo } = storeToRefs(gameStore)

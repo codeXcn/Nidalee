@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- 用户信息卡片 -->
-    <SummonerCard v-if="summonerInfo" :summoner-info="summonerInfo" :session-duration="sessionDuration" />
+    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" :session-duration="sessionDuration" />
 
     <!-- 顶部统计卡片 -->
     <StatisticsCards
@@ -10,7 +10,6 @@
       :win-rate="winRate"
       :enabled-functions-count="enabledFunctionsCount"
       :session-duration="sessionDuration"
-      @attempt-connection="attemptConnection"
     />
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -62,7 +61,6 @@ import { invoke } from '@tauri-apps/api/core'
 
 // 使用store和监控
 const gameStore = useGameStore()
-const { attemptConnection } = useGameMonitor()
 
 // 从store中解构响应式状态
 const {

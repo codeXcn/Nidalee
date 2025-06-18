@@ -1,18 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod lcu;
+use std::collections::HashMap;
+
 use tauri::{
-    tray::{
-        TrayIconBuilder,
-        MouseButtonState,
-        MouseButton,
-        TrayIconEvent
-    },
-    menu::{
-        Menu,
-        MenuItem,
-    },
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
 };
+
+use crate::lcu::summoner::fill_summoner_extra_info;
 
 #[tauri::command]
 async fn get_game_version() -> Result<String, String> {
@@ -43,7 +39,7 @@ async fn get_game_version() -> Result<String, String> {
 
 #[tauri::command]
 async fn get_match_history() -> Result<lcu::types::MatchStatistics, String> {
-      let client = reqwest::Client::builder()
+    let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
@@ -51,7 +47,7 @@ async fn get_match_history() -> Result<lcu::types::MatchStatistics, String> {
 }
 #[tauri::command]
 async fn get_game_detail(game_id: u64) -> Result<serde_json::Value, String> {
-      let client = reqwest::Client::builder()
+    let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to create HTTP client");
@@ -124,13 +120,56 @@ async fn get_summoner_by_id(id: u64) -> Result<Option<lcu::types::SummonerInfo>,
     }
 }
 #[tauri::command]
-async fn get_champselect_team_players_info() -> Result<lcu::types::ChampSelectTeamInfo, String> {
+async fn get_champselect_team_players_info(
+) -> Result<HashMap<String, lcu::types::MatchStatistics>, String> {
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
         .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
 
     lcu::champ_select::get_champselect_team_players_info(&client).await
+}
+
+#[tauri::command]
+async fn get_summoners_and_histories(
+    names: Vec<String>,
+) -> Result<Vec<lcu::types::SummonerWithMatches>, String> {
+    println!("[get_summoners_and_histories] 查询召唤师列表: {:?}", names);
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|e| format!("创建HTTP客户端失败: {}", e))?;
+
+    // 1. 批量查召唤师信息
+    let mut summoners = lcu::summoner::get_summoners_by_names(&client, names)
+        .await
+        .map_err(|e| format!("批量获取召唤师信息失败: {}", e))?;
+    // 2. 合并所有召唤师的信息
+    let mut result = Vec::new();
+    for summoner in &mut summoners {
+        let puuid = summoner.puuid.clone();
+        println!("[get_summoners_and_histories] summoner puuid: {}", puuid);
+        if !puuid.is_empty() {
+            fill_summoner_extra_info(&client, summoner).await;
+            match lcu::match_history::get_recent_matches_by_summoner_id(&client, &puuid, 10).await {
+                Ok(history) => {
+                    println!("[get_summoners_and_histories] 获取 {} 战绩成功", puuid);
+                    result.push(lcu::types::SummonerWithMatches {
+                        display_name: summoner.display_name.clone(),
+                        summoner_info: summoner.clone(),
+                        matches: history,
+                    });
+                }
+                Err(e) => eprintln!(
+                    "[get_summoners_and_histories] 获取召唤师 {} 战绩失败: {}",
+                    puuid, e
+                ),
+            }
+        } else {
+            println!("[get_summoners_and_histories] summoner puuid 为空，跳过");
+        }
+    }
+    Ok(result)
 }
 #[tokio::main]
 async fn main() {
@@ -162,7 +201,8 @@ async fn main() {
                         button: MouseButton::Left,
                         button_state: MouseButtonState::Up,
                         ..
-                    } = event {
+                    } = event
+                    {
                         if let Some(window) = tray.app_handle().get_webview_window("main") {
                             if let Ok(is_visible) = window.is_visible() {
                                 if is_visible {
@@ -220,6 +260,7 @@ async fn main() {
             decline_match,
             get_summoner_by_id,
             get_champselect_team_players_info,
+            get_summoners_and_histories
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
