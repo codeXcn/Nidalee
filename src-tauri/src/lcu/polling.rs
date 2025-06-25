@@ -284,26 +284,28 @@ async fn poll_game_business(app: AppHandle, state: Arc<RwLock<PollState>>, emit_
                       }
                   }
               }
-          } else if phase.as_deref() == Some("InProgress") && last_phase.as_deref() != Some("InProgress") {
-            match retry(|| get_champ_select_session(&client), 2, 200).await {
-              Ok(session) => {
-                  let mut s = state.write().await;
-                  if s.current_champ_select_session.as_ref() != Some(&session) {
-                      info!("进入英雄选择阶段");
-                      s.current_champ_select_session = Some(session.clone());
-                      let _ = app.emit("champ-select-session-changed", session);
-                  }
-              }
-              Err(e) => {
-                  let mut s = state.write().await;
-                  if s.current_champ_select_session.is_some() {
-                      info!("英雄选择阶段获取失败: {}, 清除状态", e);
-                      s.current_champ_select_session = None;
-                      let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
-                  }
-              }
           }
-          } else {
+          // else if phase.as_deref() == Some("InProgress") && last_phase.as_deref() != Some("InProgress") {
+          //   match retry(|| get_champ_select_session(&client), 2, 200).await {
+          //     Ok(session) => {
+          //         let mut s = state.write().await;
+          //         if s.current_champ_select_session.as_ref() != Some(&session) {
+          //             info!("进入英雄选择阶段");
+          //             s.current_champ_select_session = Some(session.clone());
+          //             let _ = app.emit("champ-select-session-changed", session);
+          //         }
+          //     }
+          //     Err(e) => {
+          //         let mut s = state.write().await;
+          //         if s.current_champ_select_session.is_some() {
+          //             info!("英雄选择阶段获取失败: {}, 清除状态", e);
+          //             s.current_champ_select_session = None;
+          //             let _ = app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
+          //         }
+          //     }
+          // }
+          // }
+          else {
                 let mut s = state.write().await;
                 if s.current_champ_select_session.is_some() {
                     info!("离开英雄选择阶段");

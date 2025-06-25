@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen flex flex-col justify-center items-center bg-white">
     <!-- 加载状态 -->
-    <div v-if="loading" class="flex items-center justify-center h-64">
+    <!-- <div v-if="loading" class="flex items-center justify-center h-64">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
         <p class="mt-4 text-muted-foreground">正在加载对局数据...</p>
       </div>
-    </div>
+    </div> -->
 
     <!-- 主要内容 -->
-    <div v-else-if="session" class="w-full max-w-5xl space-y-8">
+    <div v-if="session" class="w-full max-w-5xl space-y-8">
       <!-- 比分面板 -->
       <ScorePanel :my-score="session.myScore" :their-score="session.theirScore" />
 
@@ -63,7 +63,6 @@ import { useChampSelectSession } from '@/components/analysis/composables/useCham
 import { Info } from 'lucide-vue-next'
 
 const { session, loading } = useChampSelectSession()
-watchEffect(() => console.log(session.value))
 </script>
 
 <style scoped>

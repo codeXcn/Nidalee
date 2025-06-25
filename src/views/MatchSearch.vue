@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-4">
     <SummonerSearchBox v-model:summoner-name="searchText" @on-search="onSearch" />
     <!-- names数组的tags（shadcn-vue Badge + tailwind） -->
     <div v-if="names.length" class="mb-2 flex gap-2 flex-wrap">

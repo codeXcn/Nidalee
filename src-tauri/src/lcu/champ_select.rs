@@ -77,12 +77,12 @@ async fn enrich_champ_select_session(client: &Client, session: &mut ChampSelectS
     }
     // 查询所有最近战绩
     // 如需 enrich 战绩，依样调用 get_recent_matches_by_summoner_id
-    let mut match_map = std::collections::HashMap::new();
-    for (sid, puuid) in &puuid_map {
-        if let Ok(matches) = get_recent_matches_by_summoner_id(client, puuid, 5).await {
-            match_map.insert(sid.clone(), matches);
-        }
-    }
+    // let mut match_map = std::collections::HashMap::new();
+    // for (sid, puuid) in &puuid_map {
+    //     if let Ok(matches) = get_recent_matches_by_summoner_id(client, puuid, 5).await {
+    //         match_map.insert(sid.clone(), matches);
+    //     }
+    // }
     // 补全 my_team
     for p in session.my_team.iter_mut() {
         enrich_player(p, &info_map);

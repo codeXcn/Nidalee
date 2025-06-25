@@ -20,12 +20,12 @@ export function useSearchMatches() {
     try {
       const matches = await invoke<MatechsResult[]>('get_summoners_and_histories', { names })
       if (Array.isArray(matches) && matches.length > 0) {
+        result.value = matches
+        // 每次查询成功后，重置索引为0（显示第一个结果）
         cunrrentIndex.value = 0
-        if (matches && matches.length > 0) {
-          result.value = matches
-          // 查询成功
-          console.log('matches', matches)
-        }
+        // 查询成功
+        console.log('matches', matches)
+        return matches
       }
       return null
     } catch (e: any) {
@@ -39,6 +39,8 @@ export function useSearchMatches() {
     loading.value = false
     error.value = ''
     result.value = null
+    currentRestult.value = null
+    cunrrentIndex.value = -1
     if (!searchText.value.trim()) return
     loading.value = true
     try {

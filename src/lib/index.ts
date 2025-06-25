@@ -331,6 +331,7 @@ export const getTierIconUrl = (tier: string | undefined): string => {
     SILVER: new URL('@/assets/RankedIconFiles/SILVER.png', import.meta.url).href,
     GOLD: new URL('@/assets/RankedIconFiles/GOLD.png', import.meta.url).href,
     PLATINUM: new URL('@/assets/RankedIconFiles/PLATINUM.png', import.meta.url).href,
+    EMERALD: new URL('@/assets/RankedIconFiles/EMERALD.png', import.meta.url).href,
     DIAMOND: new URL('@/assets/RankedIconFiles/DIAMOND.png', import.meta.url).href,
     MASTER: new URL('@/assets/RankedIconFiles/MASTER.png', import.meta.url).href,
     GRANDMASTER: new URL('@/assets/RankedIconFiles/GRANDMASTER.png', import.meta.url).href,

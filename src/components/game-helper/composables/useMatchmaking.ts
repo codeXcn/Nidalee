@@ -1,43 +1,11 @@
+import { useGameStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
-export interface MatchmakingError {
-  errorType: string
-  id: number
-  message: string
-  penalizedSummonerId: number
-  penaltyTimeRemaining: number
-}
-
-export interface LowPriorityData {
-  bustedLeaverAccessToken: string
-  penalizedSummonerIds: number[]
-  penaltyTime: number
-  penaltyTimeRemaining: number
-  reason: string
-}
-
-export interface MatchmakingState {
-  errors: MatchmakingError[]
-  lowPriorityData: LowPriorityData
-  searchState: string
-}
-
-export interface PlayerInfo {
-  summonerName: string
-  championId: number
-  teamId: number
-}
-
-export interface MatchInfo {
-  matchId: string
-  players: PlayerInfo[]
-}
 
 export function useMatchmaking() {
   const matchmakingState = ref<MatchmakingState | null>(null)
   const matchInfo = ref<MatchInfo | null>(null)
-
   const handleMatchmaking = async () => {
     try {
       if (matchmakingState.value?.searchState === 'Searching') {
@@ -72,7 +40,12 @@ export function useMatchmaking() {
   onMounted(async () => {
     unlistenMatchmakingState = await listen('matchmaking-state-changed', (event) => {
       console.log('[Event] matchmaking-state-changed:', event.payload)
-      matchmakingState.value = event.payload as MatchmakingState
+      const payload = event.payload as MatchmakingState
+      matchmakingState.value = payload
+      if (payload.searchState === 'Invalid' && useGameStore().currentChampSelectSession) {
+        useGameStore().currentChampSelectSession = null
+        console.log('置空 对局信息')
+      }
     })
     unlistenMatchInfo = await listen('match-info-change', (event) => {
       console.log('match-info-change', event.payload)

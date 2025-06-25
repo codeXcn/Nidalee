@@ -109,8 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatters } from '@/hooks/useFormatters';
-import { Clock, Play, RefreshCw, Settings, TrendingUp, Wifi } from 'lucide-vue-next';
+import { useFormatters } from '@/hooks/useFormatters'
+import { Clock, Play, RefreshCw, Settings, TrendingUp, Wifi } from 'lucide-vue-next'
 
 const props = defineProps<{
   isConnected: boolean

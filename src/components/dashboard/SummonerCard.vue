@@ -280,10 +280,10 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatters } from '@/hooks/useFormatters';
-import { useGameAssets } from '@/hooks/useGameAssets';
-import { getTierIconUrl } from '@/lib';
-import { Shield, Trophy, User, Users } from 'lucide-vue-next';
+import { useFormatters } from '@/hooks/useFormatters'
+import { useGameAssets } from '@/hooks/useGameAssets'
+import { getTierIconUrl } from '@/lib'
+import { Shield, Trophy, User, Users } from 'lucide-vue-next'
 
 const props = defineProps<{
   summonerInfo: any

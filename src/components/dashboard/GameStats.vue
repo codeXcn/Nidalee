@@ -112,6 +112,8 @@
               </p>
               <p class="text-sm text-muted-foreground">平均KDA</p>
             </div>
+            <!-- 召唤师特征分析 -->
+            <SummonerTraits :match-statistics="matchStatistics" />
           </div>
 
           <!-- 常用英雄 -->
@@ -246,6 +248,7 @@ import {
   Trophy,
   Wifi
 } from 'lucide-vue-next'
+import SummonerTraits from './SummonerTraits.vue'
 const dialogOpen = ref(false)
 const selectedGame = ref(null)
 
@@ -259,7 +262,7 @@ const props = defineProps<{
   matchHistoryLoading: boolean
   matchStatistics: any
 }>()
-console.log('matchStatistics',props.matchStatistics)
+console.log('matchStatistics', props.matchStatistics)
 const emit = defineEmits<{
   (e: 'fetch-match-history'): void
   (e: 'open-game-detail', game: any): void

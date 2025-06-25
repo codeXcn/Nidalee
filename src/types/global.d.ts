@@ -378,7 +378,6 @@ interface MatchInfo {
   matchId: string
   players: PlayerInfo[]
 }
-// 类型定义
 interface GameDetailData {
   gameId: number
   gameDuration: number
@@ -412,4 +411,37 @@ interface Participant {
   stats?: any
   rankTier?: string
   score?: number
+}
+
+interface MatchmakingError {
+  errorType: string
+  id: number
+  message: string
+  penalizedSummonerId: number
+  penaltyTimeRemaining: number
+}
+
+interface LowPriorityData {
+  bustedLeaverAccessToken: string
+  penalizedSummonerIds: number[]
+  penaltyTime: number
+  penaltyTimeRemaining: number
+  reason: string
+}
+
+interface MatchmakingState {
+  errors: MatchmakingError[]
+  lowPriorityData: LowPriorityData
+  searchState: string
+}
+
+interface PlayerInfo {
+  summonerName: string
+  championId: number
+  teamId: number
+}
+
+interface MatchInfo {
+  matchId: string
+  players: PlayerInfo[]
 }

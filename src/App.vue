@@ -14,11 +14,11 @@ const handleRouteChange = () => {
 </script>
 
 <template>
-  <div id="app" :class="{ dark: isDark }">
+  <div id="app" :class="{ dark: isDark }" class="h-screen flex flex-col overflow-hidden">
     <TitleBar />
-    <SidebarProvider class="mt-8">
+    <SidebarProvider class="flex-1 flex overflow-hidden">
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset class="flex-1 flex flex-col overflow-hidden mt-10">
         <header
           class="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border/40"
         >
@@ -31,12 +31,16 @@ const handleRouteChange = () => {
             <ThemeSettings />
           </div>
         </header>
-        <div class="flex flex-1 flex-col gap-6 p-6">
-          <router-view v-slot="{ Component }">
-            <transition :name="currentTransition" mode="out-in" @before-leave="handleRouteChange">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+        <div
+          class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
+        >
+          <div class="flex flex-col gap-6 p-6">
+            <router-view v-slot="{ Component }">
+              <transition :name="currentTransition" mode="out-in" @before-leave="handleRouteChange">
+                <component :is="Component" />
+              </transition>
+            </router-view>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

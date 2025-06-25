@@ -20,7 +20,7 @@ export function useChampSelectSession() {
     if (player.summonerId === '0') {
       return {
         ...player,
-        displayName: '机器人',
+        displayName: '未知召唤师',
         avatar: getProfileIconUrl(0),
         isBot: true,
         isLocal: false,
