@@ -1,5 +1,5 @@
 <template>
-  <Card class="p-8 rounded-2xl shadow-lg bg-gradient-to-br from-white to-blue-50">
+  <Card class="p-8 rounded-2xl shadow-lg bg-gradient-to-br">
     <div class="space-y-6">
       <!-- 标题 -->
       <div class="flex items-center space-x-3 mb-2">
@@ -8,7 +8,7 @@
       </div>
 
       <!-- 匹配状态 -->
-      <div class="flex flex-col items-center justify-center p-6 rounded-xl border bg-white/80 shadow transition-all">
+      <div class="flex flex-col items-center justify-center p-6 rounded-xl border shadow transition-all">
         <div class="flex items-center space-x-3 mb-2">
           <span
             class="h-3 w-3 rounded-full animate-pulse"

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col justify-center items-center bg-white">
+  <div class="min-h-screen flex flex-col justify-center items-center">
     <!-- 加载状态 -->
     <!-- <div v-if="loading" class="flex items-center justify-center h-64">
       <div class="text-center">

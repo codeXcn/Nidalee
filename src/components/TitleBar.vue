@@ -1,6 +1,6 @@
 <template>
   <div data-tauri-drag-region class="titlebar">
-    <div class="titlebar-left">
+    <div class="titlebar-left animate-pulse">
       <img src="../assets/logo.svg" alt="logo" class="logo" />
       <span class="title">Nidalee - 英雄联盟游戏助手</span>
     </div>

@@ -11,7 +11,9 @@
         <TooltipTrigger as-child>
           <Badge
             :variant="trait.variant"
-            class="flex items-center gap-1 px-3 py-1 cursor-help transition-all duration-200 hover:scale-105 group"
+            class="flex items-center gap-1 px-3 py-1 cursor-pointer transition-all duration-200 hover:scale-105 group"
+            :class="{ 'ring-2 ring-primary ring-offset-2': selectedTrait?.name === trait.name }"
+            @click="selectTrait(trait)"
           >
             <component :is="trait.icon" class="h-3 w-3" />
             {{ trait.name }}
@@ -25,30 +27,32 @@
               <span class="font-medium">{{ trait.name }}</span>
             </div>
             <p class="text-sm">{{ trait.description }}</p>
-            <p class="text-xs text-muted-foreground">{{ trait.detail }}</p>
+            <!-- <p class="text-xs text-muted-foreground">{{ trait.detail }}</p> -->
           </div>
         </TooltipContent>
       </Tooltip>
     </div>
 
     <!-- 特征详情 -->
-    <div v-if="primaryTrait" class="bg-card border rounded-lg p-4 transition-all duration-200 hover:shadow-sm">
+    <div v-if="selectedTrait" class="bg-card border rounded-lg p-4 transition-all duration-200 hover:shadow-sm">
       <div class="flex items-start gap-3">
         <div class="p-2 bg-muted rounded-lg">
-          <component :is="primaryTrait.icon" class="h-5 w-5" />
+          <component :is="selectedTrait.icon" class="h-5 w-5" />
         </div>
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-1">
             <h5 class="font-semibold">
-              {{ primaryTrait.name }}
+              {{ selectedTrait.name }}
             </h5>
-            <Badge variant="outline" class="text-xs"> 主要特征 </Badge>
+            <Badge variant="outline" class="text-xs">
+              {{ selectedTrait.name === primaryTrait?.name ? '主要特征' : '特征详情' }}
+            </Badge>
           </div>
           <p class="text-sm text-muted-foreground mb-2">
-            {{ primaryTrait.description }}
+            {{ selectedTrait.description }}
           </p>
           <p class="text-xs text-muted-foreground">
-            {{ primaryTrait.detail }}
+            {{ selectedTrait.detail }}
           </p>
         </div>
       </div>
@@ -118,16 +122,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 点击状态管理
-const clickedTrait = ref<string | null>(null)
+// 选中的特征
+const selectedTrait = ref<Trait | null>(null)
 
-// 处理标签点击
-const handleTraitClick = (traitName: string) => {
-  clickedTrait.value = traitName
-  // 重置点击状态
-  setTimeout(() => {
-    clickedTrait.value = null
-  }, 300)
+// 选择特征
+const selectTrait = (trait: Trait) => {
+  selectedTrait.value = trait
 }
 
 // 分析召唤师特征
@@ -168,7 +168,7 @@ const analyzeTraits = (): Trait[] => {
   // 2. KDA特征
   if (stats.avg_kda >= 4.0) {
     traits.push({
-      name: '野爹',
+      name: '大爹',
       description: 'KDA超高的carry玩家',
       detail: `平均KDA ${stats.avg_kda.toFixed(2)}，经常carry全场`,
       score: Math.round(stats.avg_kda * 10),
@@ -379,4 +379,15 @@ const traits = computed(() => analyzeTraits())
 
 // 主要特征（得分最高的）
 const primaryTrait = computed(() => traits.value[0])
+
+// 初始化选中主要特征
+watch(
+  traits,
+  (newTraits) => {
+    if (newTraits.length > 0 && !selectedTrait.value) {
+      selectedTrait.value = newTraits[0]
+    }
+  },
+  { immediate: true }
+)
 </script>

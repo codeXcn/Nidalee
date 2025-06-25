@@ -2,7 +2,7 @@
   <div class="flex items-center gap-3 px-4 py-2 rounded-lg border-2 bg-background/50 backdrop-blur-sm shadow-sm">
     <!-- 连接状态指示器 -->
     <div class="flex items-center gap-2">
-      <div :class="['h-2 w-2 rounded-full shadow-sm', isConnected ? 'bg-green-500' : 'bg-red-500']" />
+      <div :class="['animate-pulse h-2 w-2 rounded-full shadow-sm', isConnected ? 'bg-green-500' : 'bg-red-500']" />
       <span class="text-sm font-medium text-foreground">
         {{ isConnected ? summonerInfo?.displayName || '未知召唤师' : '未连接' }}
       </span>
@@ -29,7 +29,6 @@
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores'
-import { storeToRefs } from 'pinia'
 
 // 使用store和监控
 const gameStore = useGameStore()
