@@ -1,10 +1,31 @@
-# 🎮 Nidalee - 英雄联盟游戏助手
 
-> 功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。
+<div align="center">
+  <img src="src/assets/logo.svg" alt="Nidalee Logo" width="120" height="120">
 
-![Build Status](https://github.com/codexlin/Nidalee/workflows/Release/badge.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+  <h1>🎮 Nidalee</h1>
+  <p><strong>功能强大的英雄联盟游戏助手</strong></p>
+  <p>提供实时游戏数据分析、自动化功能和个性化设置</p>
+
+  <div>
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
+    <img src="https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg" alt="Tauri">
+    <img src="https://img.shields.io/badge/vue-3.x-brightgreen.svg" alt="Vue">
+    <img src="https://img.shields.io/badge/rust-1.75-orange.svg" alt="Rust">
+  </div>
+
+  <br>
+
+  <p>
+    <a href="#-特性">✨ 特性</a> •
+    <a href="#-下载安装">📦 下载</a> •
+    <a href="#-开发">🚀 开发</a> •
+    <a href="docs/user-guide-zh.md">📖 使用指南</a> •
+    <a href="#-贡献">🤝 贡献</a>
+  </p>
+</div>
+
+---
 
 ## ✨ 特性
 
@@ -51,7 +72,7 @@ sudo apt install -f
 
 ### 环境要求
 
-- **Node.js** 18+ 
+- **Node.js** 18+
 - **pnpm** 8+
 - **Rust** 1.70+
 - **Tauri CLI** 2.0+
@@ -89,11 +110,17 @@ Nidalee/
 - [x] 基础架构搭建
 - [x] League Client API 集成
 - [x] CI/CD 自动化发布
-- [ ] 自动接受匹配功能
+- [x] 用户信息获取和展示
+- [x] 召唤师特征分析
+- [x] 自动接受匹配功能
 - [ ] 自动选择/禁用英雄
-- [ ] 游戏数据分析
-- [ ] 个性化设置界面
+- [x] 游戏数据分析
+- [x] 个性化设置界面
 - [ ] 多语言支持
+
+## 📖 使用指南
+
+详细的使用说明请查看 [使用指南](docs/user-guide-zh.md)
 
 ## 🤝 贡献
 
@@ -119,4 +146,4 @@ Nidalee/
 
 ---
 
-**Built with ❤️ using [Tauri](https://tauri.app/) + [Vue.js](https://vuejs.org/)**
+**Built with ❤️ using [Tauri 2.0](https://tauri.app/) + [Vue.js](https://vuejs.org/)**

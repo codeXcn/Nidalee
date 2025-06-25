@@ -1,15 +1,35 @@
-# Nidalee - League of Legends Game Assistant
 
 <div align="center">
-  <img src="assets/logo.png" alt="Nidalee Logo" width="200">
-  
-  ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-  ![Tauri](https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg)
-  ![Vue](https://img.shields.io/badge/vue-3.x-brightgreen.svg)
-  ![Rust](https://img.shields.io/badge/rust-1.75-orange.svg)
-  
-  [English](./README_EN.md) | [简体中文](./README.md)
+  <img src="src/assets/logo.svg" alt="Nidalee Logo" width="120" height="120">
+
+  <h1>🎮 Nidalee</h1>
+  <p><strong>Powerful League of Legends Game Assistant</strong></p>
+  <p>Real-time game data analysis, automation features and personalized settings</p>
+
+  <div>
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+    <img src="https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg" alt="Tauri">
+    <img src="https://img.shields.io/badge/vue-3.x-brightgreen.svg" alt="Vue">
+    <img src="https://img.shields.io/badge/rust-1.75-orange.svg" alt="Rust">
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
+  </div>
+
+  <br>
+
+  <p>
+    <a href="#-features">✨ Features</a> •
+    <a href="#-installation">📦 Installation</a> •
+    <a href="#-development">🚀 Development</a> •
+    <a href="#-usage">📖 Usage</a> •
+    <a href="#-contributing">🤝 Contributing</a>
+  </p>
+
+  <p>
+    <a href="./README.md">简体中文</a> | <a href="./README_EN.md">English</a>
+  </p>
 </div>
+
+---
 
 ## 🌟 Features
 
@@ -137,7 +157,7 @@ This project is for learning and research purposes only. Not for commercial use.
 
 ## 🙏 Acknowledgments
 
-- [Tauri](https://tauri.app/)
+- [Tauri 2.0](https://tauri.app/)
 - [Vue.js](https://vuejs.org/)
 - [Rust](https://www.rust-lang.org/)
-- [League Client Protocol](https://developer.riotgames.com/) 
+- [League Client Protocol](https://developer.riotgames.com/)
