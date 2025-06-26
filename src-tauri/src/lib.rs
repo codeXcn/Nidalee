@@ -11,6 +11,8 @@ pub fn run() {
         .setup(app::setup_app)
         .invoke_handler(tauri::generate_handler![
             lcu::auth::get_auth_info,
+            lcu::connection_manager::get_connection_state,
+            lcu::connection_manager::force_refresh_connection,
             commands::get_current_summoner,
             commands::get_game_version,
             commands::get_match_history,

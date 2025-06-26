@@ -57,19 +57,24 @@
 
 <script setup lang="ts">
 import { useGameManagement } from '@/composables'
+import { useSummonerStore, useMatchStatisticsStore, useConnectionStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 
-// 使用新的游戏管理 composable
+// 直接使用各个 store
+const summonerStore = useSummonerStore()
+const matchStatisticsStore = useMatchStatisticsStore()
+const connectionStore = useConnectionStore()
+
+// 使用游戏管理 composable 获取处理方法和其他状态
 const gameManagement = useGameManagement()
-const { connectionStore, summonerStore, activityStore, autoFunctionStore, matchStatisticsStore, appSessionStore } =
-  gameManagement
+const { activityStore, autoFunctionStore, appSessionStore } = gameManagement
 
 // 从各个 store 中解构响应式状态
-const { isConnected } = storeToRefs(connectionStore)
 const { summonerInfo } = storeToRefs(summonerStore)
+const { todayMatches, matchStatistics, matchHistoryLoading, winRate } = storeToRefs(matchStatisticsStore)
+const { isConnected } = storeToRefs(connectionStore)
 const { activities } = storeToRefs(activityStore)
 const { autoFunctions, enabledFunctionsCount } = storeToRefs(autoFunctionStore)
-const { todayMatches, matchStatistics, matchHistoryLoading, winRate } = storeToRefs(matchStatisticsStore)
 const { sessionDuration } = storeToRefs(appSessionStore)
 
 // 调试状态
@@ -102,7 +107,11 @@ const simulateMatchResult = (won: boolean) => {
 }
 
 const fetchMatchHistory = async () => {
-  await gameManagement.loadMatchHistory()
+  try {
+    await matchStatisticsStore.fetchMatchHistory()
+  } catch (error) {
+    console.error('获取对局历史失败:', error)
+  }
 }
 
 // 调试登录信息

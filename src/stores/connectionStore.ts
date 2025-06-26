@@ -63,7 +63,8 @@ export const useConnectionStore = defineStore(
   },
   {
     persist: {
-      paths: ['authInfo']
+      key: 'connection-store',
+      paths: ['authInfo', 'isConnected'] // 持久化连接状态和认证信息
     }
   }
 )

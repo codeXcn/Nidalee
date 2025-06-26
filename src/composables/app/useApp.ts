@@ -1,41 +1,27 @@
 import { getLatestVersion } from '@/lib'
-import { useThemeStore, useAppSessionStore } from '@/stores'
+import {
+  useThemeStore,
+  useAppSessionStore,
+  useSummonerStore,
+  useMatchStatisticsStore,
+  useConnectionStore
+} from '@/stores'
 import { useGameManagement } from '@/composables'
-import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
 export function useApp() {
   const themeStore = useThemeStore()
   const appSessionStore = useAppSessionStore()
+  const summonerStore = useSummonerStore()
+  const matchStatisticsStore = useMatchStatisticsStore()
+  const connectionStore = useConnectionStore()
   const gameManagement = useGameManagement()
 
-  const {
-    connectionStore,
-    summonerStore,
-    activityStore,
-    matchStatisticsStore,
-    handleChampSelectChange,
-    handleGamePhaseChange,
-    handleLobbyChange
-  } = gameManagement
+  const { handleChampSelectChange, handleGamePhaseChange, handleLobbyChange } = gameManagement
 
   const isDark = computed(() => themeStore.isDark)
 
-  // 获取对局历史
-  const fetchMatchHistory = async () => {
-    try {
-      console.log('[App] 开始获取对局历史...')
-      const matchHistory = await invoke<MatchStatistics>('get_match_history')
-      console.log('[App] 对局历史数据:', matchHistory)
-      matchStatisticsStore.updateMatchStatistics(matchHistory)
-    } catch (error) {
-      console.error('[App] 获取对局历史失败:', error)
-      activityStore.addActivity('error', `获取对局历史失败: ${error}`)
-    }
-  }
-
-  // 初始化连接和主题
-  gameManagement.initializeConnection()
+  // 初始化主题
   themeStore.initTheme()
 
   onMounted(async () => {
@@ -45,39 +31,61 @@ export function useApp() {
         appSessionStore.setGameVersion(latestVersion)
       }
 
-      if (connectionStore.isConnected) {
-        activityStore.addActivity('info', '从缓存恢复连接状态')
+      // 应用启动时主动尝试获取召唤师信息和战绩
+      console.log('[App] 应用启动，尝试获取最新数据...')
 
-        if (summonerStore.summonerInfo) {
-          activityStore.addActivity('info', `从缓存恢复召唤师信息: ${summonerStore.summonerInfo.displayName}`)
-          await fetchMatchHistory()
-        }
+      try {
+        await summonerStore.fetchSummonerInfo()
+        console.log('[App] 召唤师信息获取成功')
+        connectionStore.setConnectionStatus(true)
 
-        if (connectionStore.authInfo) {
-          activityStore.addActivity('info', '从缓存恢复认证信息')
+        // 如果召唤师信息获取成功，则获取战绩
+        try {
+          await matchStatisticsStore.fetchMatchHistory()
+          console.log('[App] 战绩数据获取成功')
+        } catch (error) {
+          console.log('[App] 战绩数据获取失败，可能客户端未连接:', error)
         }
+      } catch (error) {
+        console.log('[App] 召唤师信息获取失败，客户端可能未连接:', error)
+        connectionStore.setConnectionStatus(false, '无法连接到客户端')
       }
 
-      // 监听召唤师信息变化
+      // 监听召唤师信息变化（连接状态的核心指标）
       await listen('summoner-change', async (event) => {
-        console.log('[Event] 召唤师信息变化:', event.payload)
+        console.log('[Event] summoner-change:', event.payload)
+
         if (event.payload) {
-          summonerStore.updateSummonerInfo(event.payload as SummonerInfo)
-          await fetchMatchHistory()
+          // 有召唤师信息，表示连接已建立
+          summonerStore.updateSummonerInfo(event.payload)
+          connectionStore.setConnectionStatus(true)
+
+          // 自动获取战绩
+          try {
+            await matchStatisticsStore.fetchMatchHistory()
+            console.log('[Event] 战绩数据已更新')
+          } catch (error) {
+            console.warn('[Event] 自动获取战绩失败:', error)
+          }
         } else {
+          // 召唤师信息为空，表示连接已断开
+          console.log('[Event] 连接断开，清理所有数据')
+          connectionStore.setConnectionStatus(false, '客户端连接已断开')
           summonerStore.clearSummonerInfo()
+          matchStatisticsStore.clearMatchHistory()
+
+          // 使用gameManagement的断开连接处理逻辑
+          gameManagement.handleDisconnection()
         }
       })
 
-      // 监听认证信息变化
-      await listen('auth-info-change', (event) => {
-        console.log('[Event] 认证信息变化:', event.payload)
-        if (event.payload) {
-          connectionStore.setAuthInfo(event.payload as LcuAuthInfo)
-          activityStore.addActivity('success', 'LCU 认证信息已更新')
-        } else {
-          connectionStore.clearAuthInfo()
-          activityStore.addActivity('warning', 'LCU 认证信息已清除')
+      // 监听游戏结束事件，刷新战绩
+      await listen('game-finished', async () => {
+        console.log('[Event] game-finished，刷新战绩')
+        try {
+          await matchStatisticsStore.fetchMatchHistory()
+        } catch (error) {
+          console.warn('[Event] 游戏结束后刷新战绩失败:', error)
         }
       })
 
@@ -99,7 +107,7 @@ export function useApp() {
         handleChampSelectChange(event.payload as ChampSelectSession | null)
       })
 
-      console.log('[App] 事件监听器已设置')
+      console.log('[App] 所有事件监听器已设置')
     } catch (error) {
       console.error('[App] 设置事件监听器失败:', error)
     }

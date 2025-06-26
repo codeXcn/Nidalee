@@ -17,26 +17,42 @@
       </span>
     </div>
 
-    <!-- 连接按钮 -->
+    <!-- 连接/刷新按钮 -->
     <button
-      v-if="!isConnected"
-      class="ml-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+      @click="refreshConnection"
+      :class="[
+        'ml-2 px-3 py-1 text-xs rounded hover:bg-primary/90 transition-colors',
+        isConnected 
+          ? 'bg-green-600 text-white hover:bg-green-700' 
+          : 'bg-primary text-primary-foreground'
+      ]"
     >
-      连接
+      {{ isConnected ? '刷新' : '重新连接' }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useConnectionStore, useSummonerStore } from '@/stores'
+import { useSummonerStore, useMatchStatisticsStore, useConnectionStore } from '@/stores'
 
-// 使用新的模块化 store
-const connectionStore = useConnectionStore()
+// 直接从 store 获取状态
 const summonerStore = useSummonerStore()
+const matchStatisticsStore = useMatchStatisticsStore()
+const connectionStore = useConnectionStore()
 
 // 从store中解构响应式状态
-const { isConnected } = storeToRefs(connectionStore)
 const { summonerInfo } = storeToRefs(summonerStore)
+const { isConnected } = storeToRefs(connectionStore)
+
+// 手动刷新
+const refreshConnection = async () => {
+  try {
+    await summonerStore.fetchSummonerInfo()
+    await matchStatisticsStore.fetchMatchHistory()
+  } catch (error) {
+    console.error('手动刷新失败:', error)
+  }
+}
 
 // 格式化段位
 const formatRankTier = (tier: string): string => {

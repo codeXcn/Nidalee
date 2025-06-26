@@ -92,6 +92,14 @@ export const useMatchStatisticsStore = defineStore(
       }
     }
 
+    // 清理所有战绩数据
+    const clearMatchHistory = () => {
+      matchStatistics.value = null
+      matchHistoryError.value = null
+      matchHistoryLoading.value = false
+      console.log('[MatchStatisticsStore] 已清理所有战绩数据')
+    }
+
     // 计算属性
     const winRate = computed(() => {
       const total = todayMatches.value.total
@@ -133,12 +141,14 @@ export const useMatchStatisticsStore = defineStore(
       fetchMatchHistory,
       updateMatchStatistics,
       simulateMatchResult,
-      resetTodayMatches
+      resetTodayMatches,
+      clearMatchHistory
     }
   },
   {
     persist: {
-      paths: ['todayMatches']
+      key: 'match-statistics-store',
+      paths: ['todayMatches'] // 只持久化今日对局统计，战绩数据每次启动时重新获取
     }
   }
 )

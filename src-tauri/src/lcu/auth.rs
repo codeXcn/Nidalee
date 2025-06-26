@@ -30,20 +30,29 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
                 log::info!("[LCU] AuthInfo 缓存已过期，准备刷新");
             }
         } else {
-            log::info!("[LCU] 当前无有效缓存，准备刷新");
+            log::debug!("[LCU] 当前无有效缓存，准备刷新");
         }
     }
-    // 2. 自动刷新
-    match refresh_auth_info() {
-        Ok(auth) => {
-            log::info!("[LCU] 自动刷新 AuthInfo 成功");
-            Some(auth)
-        }
-        Err(e) => {
-            log::error!("[LCU] 自动刷新 AuthInfo 失败: {}", e);
-            None
+    
+    // 2. 带重试的自动刷新（LOL 启动初期可能需要多次尝试）
+    for attempt in 1..=3 {
+        match refresh_auth_info() {
+            Ok(auth) => {
+                log::info!("[LCU] 自动刷新 AuthInfo 成功 (尝试 {}/3)", attempt);
+                return Some(auth);
+            }
+            Err(e) => {
+                log::warn!("[LCU] 自动刷新 AuthInfo 失败 (尝试 {}/3): {}", attempt, e);
+                if attempt < 3 {
+                    // 短暂等待后重试
+                    std::thread::sleep(Duration::from_millis(500));
+                }
+            }
         }
     }
+    
+    log::error!("[LCU] 多次尝试后仍无法获取有效的 AuthInfo");
+    None
 }
 
 /// 手动强制刷新 AuthInfo（一般不直接用，内部自动调用）
@@ -114,24 +123,86 @@ pub fn refresh_auth_info() -> Result<LcuAuthInfo, String> {
 fn get_lcu_cmdline() -> Option<String> {
     let mut system = SYSTEM.lock().unwrap();
     system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
+    
+    // 寻找所有可能的 LoL 客户端进程
+    let possible_names = ["LeagueClientUx.exe", "LeagueClient.exe", "LeagueOfLegends.exe"];
+    
     for (_pid, process) in system.processes() {
-        if process.name().eq_ignore_ascii_case("LeagueClientUx.exe") {
+        let process_name = process.name();
+        
+        if possible_names.iter().any(|name| process_name.eq_ignore_ascii_case(name)) {
             let cmdline = process.cmd()
                 .iter()
                 .map(|s| s.to_string_lossy())
                 .collect::<Vec<_>>()
                 .join(" ");
-            log::debug!("[LCU] 获取 LeagueClientUx.exe 启动参数: {}", cmdline);
-            return Some(cmdline);
+                
+            // 检查命令行是否包含 LCU 相关参数
+            if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
+                log::debug!("[LCU] 找到有效的 {} 进程，PID: {}", process_name.to_string_lossy(), _pid);
+                log::debug!("[LCU] 启动参数: {}", cmdline);
+                return Some(cmdline);
+            } else {
+                log::debug!("[LCU] 找到 {} 进程但不包含 LCU 参数，跳过", process_name.to_string_lossy());
+            }
         }
     }
-    log::warn!("[LCU] 未找到 LeagueClientUx.exe 进程参数");
+    
+    log::debug!("[LCU] 未找到包含有效 LCU 参数的客户端进程");
     None
 }
 
-fn invalidate_auth_info() {
+pub fn invalidate_auth_info() {
     let mut info = AUTH_INFO.write().unwrap();
     *info = None;
     let mut ts = AUTH_TIMESTAMP.write().unwrap();
     *ts = None;
+    log::info!("[LCU] AuthInfo 缓存已清除");
+}
+
+/// 验证 AuthInfo 是否真正可用（通过简单的 API 测试）
+pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .timeout(Duration::from_secs(5))
+        .build();
+        
+    let client = match client {
+        Ok(c) => c,
+        Err(_) => return false,
+    };
+    
+    let url = format!("https://127.0.0.1:{}/lol-summoner/v1/current-summoner", auth.app_port);
+    let response = client
+        .get(&url)
+        .basic_auth("riot", Some(&auth.remoting_auth_token))
+        .send()
+        .await;
+        
+    match response {
+        Ok(resp) => {
+            let success = resp.status().is_success();
+            log::debug!("[LCU] 连接验证结果: {}, 状态码: {}", success, resp.status());
+            success
+        }
+        Err(e) => {
+            log::debug!("[LCU] 连接验证失败: {}", e);
+            false
+        }
+    }
+}
+
+/// 获取（并自动刷新）最新有效的 LCU AuthInfo，带连接验证
+pub async fn ensure_valid_auth_info_with_validation() -> Option<LcuAuthInfo> {
+    // 1. 先尝试获取基本的认证信息
+    let auth = ensure_valid_auth_info()?;
+    
+    // 2. 验证连接是否真正可用
+    if validate_auth_connection(&auth).await {
+        Some(auth)
+    } else {
+        log::warn!("[LCU] 认证信息存在但连接不可用，清除缓存");
+        invalidate_auth_info();
+        None
+    }
 }
