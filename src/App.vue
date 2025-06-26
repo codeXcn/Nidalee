@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useApp } from '@/hooks/useApp'
 const { isDark } = useApp()
 
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']

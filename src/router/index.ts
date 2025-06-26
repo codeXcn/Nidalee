@@ -23,7 +23,7 @@ const router = createRouter({
     {
       path: '/match-search',
       name: 'match-search',
-      component: () => import('../views//MatchSearch.vue')
+      component: () => import('../views/MatchSearchView.vue')
     },
     {
       path: '/auto-functions',

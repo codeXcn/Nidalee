@@ -59,9 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import { useChampSelectSession } from '@/components/analysis/composables/useChampSelectSession'
 import { Info } from 'lucide-vue-next'
-
+import { useChampSelectSession } from '@/composables'
 const { session, loading } = useChampSelectSession()
 </script>
 

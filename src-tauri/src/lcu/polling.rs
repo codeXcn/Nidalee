@@ -16,6 +16,7 @@ use log::{info, warn};
 
 // 防抖缓存
 #[derive(Clone, Default)]
+#[allow(dead_code)]
 struct EmitCache {
     // is_lcu_running: Option<bool>,
     auth_info: Option<LcuAuthInfo>,
@@ -144,7 +145,6 @@ async fn poll_auth_info(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cach
 
 // gameflow_phase 轮询，监听游戏结束后自动拉取summoner info
 async fn poll_gameflow_phase(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cache: Arc<RwLock<EmitCache>>, client: reqwest::Client) {
-    let mut last_phase: Option<String> = None;
     loop {
         if ensure_valid_auth_info().is_some() {
             match retry(|| get_gameflow_phase(&client), 2, 200).await {
@@ -170,7 +170,6 @@ async fn poll_gameflow_phase(app: AppHandle, state: Arc<RwLock<PollState>>, emit
                         }
                         s.gameflow_phase = Some(phase.clone());
                     }
-                    last_phase = Some(phase);
                 }
                 Err(e) => {
                     let mut s = state.write().await;
@@ -194,7 +193,6 @@ async fn poll_gameflow_phase(app: AppHandle, state: Arc<RwLock<PollState>>, emit
 async fn poll_game_business(app: AppHandle, state: Arc<RwLock<PollState>>, emit_cache: Arc<RwLock<EmitCache>>, client: reqwest::Client) {
     loop {
         let phase = { state.read().await.gameflow_phase.clone() };
-        let mut last_phase: Option<String> = None;
         if phase.as_deref() == Some("InProgress") {
             // 游戏中，暂停业务轮询
             tokio::time::sleep(Duration::from_secs(5)).await;
@@ -314,7 +312,6 @@ async fn poll_game_business(app: AppHandle, state: Arc<RwLock<PollState>>, emit_
                 }
             }
         }
-        last_phase = phase;
         emit_if_change(&app, &state, &emit_cache).await;
         tokio::time::sleep(Duration::from_secs(5)).await;
     }

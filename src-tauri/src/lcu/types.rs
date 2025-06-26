@@ -244,6 +244,7 @@ pub struct ChampSelectPlayer {
     pub recent_matches: Option<Vec<SimpleMatchInfo>>, // 新增
 }
 
+#[allow(dead_code)]
 impl ChampSelectPlayer {
     // 检查是否是有效的召唤师技能ID
     pub fn is_valid_spell_id(&self, spell_id: Option<f64>) -> bool {

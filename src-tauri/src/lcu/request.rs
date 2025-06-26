@@ -117,6 +117,7 @@ pub async fn lcu_post<T: DeserializeOwned>(
 }
 
 /// PUT 方法，自动反序列化为 T
+#[allow(dead_code)]
 pub async fn lcu_put<T: DeserializeOwned>(
     client: &Client,
     path: &str,
@@ -133,6 +134,7 @@ pub async fn lcu_delete<T: DeserializeOwned>(
     lcu_request_json(client, Method::DELETE, path, None).await
 }
 
+#[allow(dead_code)]
 pub async fn lcu_post_no_content(
     client: &Client,
     path: &str,

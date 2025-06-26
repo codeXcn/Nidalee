@@ -1,6 +1,6 @@
 use crate::lcu::request::lcu_get;
 use crate::lcu::types::{
-    ChampionStats, MatchStatistics, RecentGame, SimpleMatchInfo, TeamStats,
+    ChampionStats, MatchStatistics, RecentGame, TeamStats,
 };
 use reqwest::Client;
 use serde_json::{json, Value};
@@ -213,7 +213,7 @@ pub async fn get_recent_matches_by_summoner_id(
 ) -> Result<MatchStatistics, String> {
     let url = format!(
         "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
-        puuid,19
+        puuid, count
     );
     let match_list_data: Value = lcu_get(client, &url).await?;
 

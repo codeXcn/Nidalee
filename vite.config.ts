@@ -16,13 +16,13 @@ export default defineConfig({
     ViteAutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
       dts: 'types/auto-imports.d.ts',
-      dirs: ['./src/hooks']
+      dirs: ['./src/composables']
     }),
     Components({
       // 组件的有效文件扩展名。
       extensions: ['vue', 'tsx', 'jsx'],
       // 相对路径，用于搜索组件的目录。
-      dirs: ['src/components'],
+      dirs: ['src/components', 'src/components/features', 'src/components/layout', 'src/components/ui'],
       // 用于转换目标的过滤器。
       include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/],
       // 生成 `components.d.ts` 全局声明文件，

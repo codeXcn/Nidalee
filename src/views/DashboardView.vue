@@ -56,25 +56,21 @@
 </template>
 
 <script setup lang="ts">
-import { useGameStore } from '@/stores'
+import { useGameManagement } from '@/composables'
 import { invoke } from '@tauri-apps/api/core'
 
-// 使用store和监控
-const gameStore = useGameStore()
+// 使用新的游戏管理 composable
+const gameManagement = useGameManagement()
+const { connectionStore, summonerStore, activityStore, autoFunctionStore, matchStatisticsStore, appSessionStore } =
+  gameManagement
 
-// 从store中解构响应式状态
-const {
-  isConnected,
-  summonerInfo,
-  todayMatches,
-  activities,
-  autoFunctions,
-  winRate,
-  enabledFunctionsCount,
-  sessionDuration,
-  matchStatistics,
-  matchHistoryLoading
-} = storeToRefs(gameStore)
+// 从各个 store 中解构响应式状态
+const { isConnected } = storeToRefs(connectionStore)
+const { summonerInfo } = storeToRefs(summonerStore)
+const { activities } = storeToRefs(activityStore)
+const { autoFunctions, enabledFunctionsCount } = storeToRefs(autoFunctionStore)
+const { todayMatches, matchStatistics, matchHistoryLoading, winRate } = storeToRefs(matchStatisticsStore)
+const { sessionDuration } = storeToRefs(appSessionStore)
 
 // 调试状态
 const debugInfo = ref<Record<string, unknown> | null>(null)
@@ -96,20 +92,31 @@ watch(isConnected, (newValue) => {
 })
 
 // 方法
-const { toggleAutoFunction, simulateMatchResult, fetchMatchHistory } = gameStore
+const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {
+  gameManagement.handleAutoFunctionToggle(key)
+}
+
+const simulateMatchResult = (won: boolean) => {
+  matchStatisticsStore.simulateMatchResult(won)
+  activityStore.addActivity(won ? 'success' : 'info', won ? '对局胜利！' : '对局结束')
+}
+
+const fetchMatchHistory = async () => {
+  await gameManagement.loadMatchHistory()
+}
 
 // 调试登录信息
 const debugLoginInfo = async (): Promise<void> => {
   try {
-    gameStore.addActivity('info', '开始调试API信息...')
+    activityStore.addActivity('info', '开始调试API信息...')
     const result = await invoke('debug_login_info')
     debugInfo.value = result as any
     showDebugInfo.value = true
     console.log('调试信息:', result)
-    gameStore.addActivity('success', '调试信息获取成功，请查看控制台')
+    activityStore.addActivity('success', '调试信息获取成功，请查看控制台')
   } catch (error) {
     console.error('调试失败:', error)
-    gameStore.addActivity('error', `调试失败: ${error}`)
+    activityStore.addActivity('error', `调试失败: ${error}`)
   }
 }
 
