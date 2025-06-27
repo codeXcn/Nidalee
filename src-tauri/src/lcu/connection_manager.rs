@@ -5,6 +5,7 @@ use tauri::{AppHandle, Emitter};
 use serde::{Deserialize, Serialize};
 use crate::lcu::auth::{ensure_valid_auth_info, validate_auth_connection};
 use crate::lcu::types::LcuAuthInfo;
+use crate::lcu::unified_polling::UnifiedPollingManager;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ConnectionState {
@@ -45,13 +46,16 @@ impl Default for ConnectionInfo {
 pub struct ConnectionManager {
     info: Arc<RwLock<ConnectionInfo>>,
     app: AppHandle,
+    polling_manager: UnifiedPollingManager,
 }
 
 impl ConnectionManager {
     pub fn new(app: AppHandle) -> Self {
+        let polling_manager = UnifiedPollingManager::new(app.clone());
         Self {
             info: Arc::new(RwLock::new(ConnectionInfo::default())),
             app,
+            polling_manager,
         }
     }
 
@@ -59,11 +63,19 @@ impl ConnectionManager {
     pub async fn start_monitoring(&self) {
         let info = self.info.clone();
         let app = self.app.clone();
+        let polling_manager = self.polling_manager.clone();
         
         tokio::spawn(async move {
-            let mut manager = ConnectionManager { info, app };
+            let mut manager = ConnectionManager { 
+                info, 
+                app: app.clone(),
+                polling_manager: polling_manager.clone(),
+            };
             manager.monitor_loop().await;
         });
+        
+        // 启动统一轮询管理器
+        self.polling_manager.start().await;
     }
 
     async fn monitor_loop(&mut self) {

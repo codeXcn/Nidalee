@@ -56,18 +56,27 @@
 </template>
 
 <script setup lang="ts">
-import { useGameManagement } from '@/composables'
-import { useSummonerStore, useMatchStatisticsStore, useConnectionStore } from '@/stores'
+import { useAutoFunctionManager } from '@/composables/game/useAutoFunctionManager'
+import { 
+  useSummonerStore, 
+  useMatchStatisticsStore, 
+  useConnectionStore,
+  useActivityStore,
+  useAutoFunctionStore,
+  useAppSessionStore
+} from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 
 // 直接使用各个 store
 const summonerStore = useSummonerStore()
 const matchStatisticsStore = useMatchStatisticsStore()
 const connectionStore = useConnectionStore()
+const activityStore = useActivityStore()
+const autoFunctionStore = useAutoFunctionStore()
+const appSessionStore = useAppSessionStore()
 
-// 使用游戏管理 composable 获取处理方法和其他状态
-const gameManagement = useGameManagement()
-const { activityStore, autoFunctionStore, appSessionStore } = gameManagement
+// 使用自动功能管理器
+const autoFunctionManager = useAutoFunctionManager()
 
 // 从各个 store 中解构响应式状态
 const { summonerInfo } = storeToRefs(summonerStore)
@@ -98,7 +107,7 @@ watch(isConnected, (newValue) => {
 
 // 方法
 const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {
-  gameManagement.handleAutoFunctionToggle(key)
+  autoFunctionManager.handleAutoFunctionToggle(key)
 }
 
 const simulateMatchResult = (won: boolean) => {
@@ -106,13 +115,13 @@ const simulateMatchResult = (won: boolean) => {
   activityStore.addActivity(won ? 'success' : 'info', won ? '对局胜利！' : '对局结束')
 }
 
-const fetchMatchHistory = async () => {
+const fetchMatchHistory = inject('fetchMatchHistory', async () => {
   try {
     await matchStatisticsStore.fetchMatchHistory()
   } catch (error) {
     console.error('获取对局历史失败:', error)
   }
-}
+})
 
 // 调试登录信息
 const debugLoginInfo = async (): Promise<void> => {

@@ -320,17 +320,6 @@ pub struct RankInfo {
     pub flex_wins: Option<i32>,
     pub flex_losses: Option<i32>,
 }
-// 轮询状态结构体
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct PollState {
-    pub auth_info: Option<LcuAuthInfo>,
-    pub current_summoner: Option<SummonerInfo>,
-    pub gameflow_phase: Option<String>,
-    pub in_lobby: bool,
-    pub matchmaking_state: Option<MatchmakingState>,
-    pub match_info: Option<MatchInfo>,
-    pub current_champ_select_session: Option<ChampSelectSession>,
-}
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]

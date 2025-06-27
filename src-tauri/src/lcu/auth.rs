@@ -191,18 +191,3 @@ pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
         }
     }
 }
-
-/// 获取（并自动刷新）最新有效的 LCU AuthInfo，带连接验证
-pub async fn ensure_valid_auth_info_with_validation() -> Option<LcuAuthInfo> {
-    // 1. 先尝试获取基本的认证信息
-    let auth = ensure_valid_auth_info()?;
-    
-    // 2. 验证连接是否真正可用
-    if validate_auth_connection(&auth).await {
-        Some(auth)
-    } else {
-        log::warn!("[LCU] 认证信息存在但连接不可用，清除缓存");
-        invalidate_auth_info();
-        None
-    }
-}

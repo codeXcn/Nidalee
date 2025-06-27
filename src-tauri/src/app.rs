@@ -25,18 +25,12 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// 启动各种后台服务
-fn start_services(app: &mut App, connection_manager: Arc<RwLock<lcu::ConnectionManager>>) {
-    let app_handle = app.handle().clone();
-    
-    // 启动连接管理器
+fn start_services(_app: &mut App, connection_manager: Arc<RwLock<lcu::ConnectionManager>>) {
+    // 启动优化后的连接管理器（包含统一轮询）
     tokio::spawn(async move {
         let manager = connection_manager.read().await;
         manager.start_monitoring().await;
     });
     
-    // 启动传统轮询服务（保持兼容性）
-    let app_handle_2 = app.handle().clone();
-    tokio::spawn(async move {
-        lcu::polling::start_polling(app_handle_2).await;
-    });
+    log::info!("[应用] 优化后的轮询系统已启动");
 }

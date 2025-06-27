@@ -33,26 +33,28 @@
 </template>
 
 <script setup lang="ts">
-import { useSummonerStore, useMatchStatisticsStore, useConnectionStore } from '@/stores'
+import { useSummonerStore, useConnectionStore } from '@/stores'
 
 // 直接从 store 获取状态
 const summonerStore = useSummonerStore()
-const matchStatisticsStore = useMatchStatisticsStore()
 const connectionStore = useConnectionStore()
 
 // 从store中解构响应式状态
 const { summonerInfo } = storeToRefs(summonerStore)
 const { isConnected } = storeToRefs(connectionStore)
 
-// 手动刷新
-const refreshConnection = async () => {
+// 从父组件或全局状态获取刷新方法
+// 注意：这里我们使用注入的方式获取刷新方法，避免直接在组件中调用多个store
+const refreshConnection = inject('refreshConnection', async () => {
   try {
-    await summonerStore.fetchSummonerInfo()
-    await matchStatisticsStore.fetchMatchHistory()
+    await connectionStore.checkConnection()
+    if (connectionStore.isConnected) {
+      await summonerStore.fetchSummonerInfo()
+    }
   } catch (error) {
     console.error('手动刷新失败:', error)
   }
-}
+})
 
 // 格式化段位
 const formatRankTier = (tier: string): string => {

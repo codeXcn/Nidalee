@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const { isDark } = useApp()
+const { isDark, refreshConnection, fetchMatchHistory } = useApp()
+
+// 提供刷新连接方法给子组件使用
+provide('refreshConnection', refreshConnection)
+provide('fetchMatchHistory', fetchMatchHistory)
 
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
 const currentTransition = ref(transitions[0])
