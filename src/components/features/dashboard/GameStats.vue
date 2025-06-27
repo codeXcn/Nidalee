@@ -260,7 +260,6 @@ const props = defineProps<{
   matchHistoryLoading: boolean
   matchStatistics: any
 }>()
-console.log('matchStatistics', props.matchStatistics)
 const emit = defineEmits<{
   (e: 'fetch-match-history'): void
   (e: 'open-game-detail', game: any): void

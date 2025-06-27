@@ -57,10 +57,10 @@
 
 <script setup lang="ts">
 import { useAutoFunctionManager } from '@/composables/game/useAutoFunctionManager'
-import { 
-  useSummonerStore, 
-  useMatchStatisticsStore, 
-  useConnectionStore,
+import {
+  useSummonerStore,
+  useMatchStatisticsStore,
+  useConnectStore,
   useActivityStore,
   useAutoFunctionStore,
   useAppSessionStore
@@ -70,11 +70,14 @@ import { invoke } from '@tauri-apps/api/core'
 // 直接使用各个 store
 const summonerStore = useSummonerStore()
 const matchStatisticsStore = useMatchStatisticsStore()
-const connectionStore = useConnectionStore()
+const connectionStore = useConnectStore()
 const activityStore = useActivityStore()
 const autoFunctionStore = useAutoFunctionStore()
 const appSessionStore = useAppSessionStore()
-
+watchEffect(() => {
+  // 监听连接状态变化
+  console.log('连接状态:', connectionStore.isConnected)
+})
 // 使用自动功能管理器
 const autoFunctionManager = useAutoFunctionManager()
 
@@ -90,20 +93,7 @@ const { sessionDuration } = storeToRefs(appSessionStore)
 const debugInfo = ref<Record<string, unknown> | null>(null)
 const showDebugInfo = ref(false)
 
-// 组件挂载时获取游戏版本和对局历史
-onMounted(() => {
-  // 如果已连接，自动获取对局历史
-  if (isConnected.value) {
-    fetchMatchHistory()
-  }
-})
 
-// 监听连接状态变化，自动获取对局历史
-watch(isConnected, (newValue) => {
-  if (newValue && !matchStatistics.value) {
-    fetchMatchHistory()
-  }
-})
 
 // 方法
 const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {
@@ -122,25 +112,11 @@ const fetchMatchHistory = inject('fetchMatchHistory', async () => {
     console.error('获取对局历史失败:', error)
   }
 })
-
-// 调试登录信息
-const debugLoginInfo = async (): Promise<void> => {
+const fetchSummonerInfo = inject('fetchSummonerInfo', async () => {
   try {
-    activityStore.addActivity('info', '开始调试API信息...')
-    const result = await invoke('debug_login_info')
-    debugInfo.value = result as any
-    showDebugInfo.value = true
-    console.log('调试信息:', result)
-    activityStore.addActivity('success', '调试信息获取成功，请查看控制台')
+    await summonerStore.fetchSummonerInfo()
   } catch (error) {
-    console.error('调试失败:', error)
-    activityStore.addActivity('error', `调试失败: ${error}`)
+    console.error('获取召唤师信息失败:', error)
   }
-}
-
-// 模拟对局（用于测试）
-const simulateMatch = (): void => {
-  const won = Math.random() > 0.5
-  simulateMatchResult(won)
-}
+})
 </script>

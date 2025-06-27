@@ -340,8 +340,7 @@ export const useThemeStore = defineStore(
       style.textContent = css
       document.head.appendChild(style)
 
-      // 保存到 localStorage
-      localStorage.setItem('color', colorName)
+      // 移除手动 localStorage 操作，让 Pinia 自动处理
     }
 
     // 设置颜色
@@ -354,13 +353,13 @@ export const useThemeStore = defineStore(
     const setRadius = (radius: number) => {
       selectedRadius.value = radius
       document.documentElement.style.setProperty('--radius', `${radius}rem`)
-      localStorage.setItem('radius', radius.toString())
+      // 移除手动 localStorage 操作，让 Pinia 自动处理
     }
 
     // 设置风格
     const setStyle = (styleName: string) => {
       selectedStyle.value = styleName
-      localStorage.setItem('style', styleName)
+      // 移除手动 localStorage 操作，让 Pinia 自动处理
     }
 
     // 切换主题
@@ -371,7 +370,7 @@ export const useThemeStore = defineStore(
       } else {
         document.documentElement.classList.remove('dark')
       }
-      localStorage.setItem('theme', newValue ? 'dark' : 'light')
+      // 移除手动 localStorage 操作，让 Pinia 自动处理
       applyColorTheme(selectedColor.value)
     }
 
@@ -385,40 +384,61 @@ export const useThemeStore = defineStore(
       document.documentElement.classList.remove('dark')
       document.documentElement.style.setProperty('--radius', '0.5rem')
 
-      localStorage.removeItem('theme')
-      localStorage.removeItem('color')
-      localStorage.removeItem('radius')
-      localStorage.removeItem('style')
+      // 移除手动 localStorage 操作，Pinia 会自动更新持久化数据
 
       applyColorTheme('neutral')
     }
 
     // 初始化主题
     const initTheme = () => {
-      // 检查系统主题偏好
+      // 清理可能存在的旧 localStorage 数据
+      cleanupOldLocalStorage()
+
+      // 检查系统主题偏好（仅在首次访问且无持久化数据时）
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      if (!localStorage.getItem('theme')) {
-        isDark.value = mediaQuery.matches
-        if (mediaQuery.matches) {
+
+      // 如果当前 isDark 为 false 且系统偏好暗色主题，则使用系统偏好
+      // 这只在首次访问应用时生效，后续以用户设置为准
+      if (!isDark.value && mediaQuery.matches) {
+        // 检查是否是首次访问（通过检查是否有持久化的主题配置）
+        const hasPersistedTheme =
+          selectedColor.value !== 'neutral' || selectedRadius.value !== 0.5 || selectedStyle.value !== 'new-york'
+
+        if (!hasPersistedTheme) {
+          isDark.value = true
           document.documentElement.classList.add('dark')
         }
       }
 
-      // 监听系统主题变化
+      // 应用当前状态到 DOM
+      if (isDark.value) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+
+      // 应用圆角设置
+      document.documentElement.style.setProperty('--radius', `${selectedRadius.value}rem`)
+
+      // 监听系统主题变化（仅作为参考，不强制覆盖用户设置）
       mediaQuery.addEventListener('change', (e) => {
-        if (!localStorage.getItem('theme')) {
-          isDark.value = e.matches
-          if (e.matches) {
-            document.documentElement.classList.add('dark')
-          } else {
-            document.documentElement.classList.remove('dark')
-          }
-          applyColorTheme(selectedColor.value)
-        }
+        console.log('[Theme] 系统主题偏好变化:', e.matches ? 'dark' : 'light')
+        // 这里可以选择是否要跟随系统主题，当前保持用户设置
       })
 
       // 应用初始颜色主题
       applyColorTheme(selectedColor.value)
+    }
+
+    // 清理旧的 localStorage 数据（迁移用）
+    const cleanupOldLocalStorage = () => {
+      const keysToRemove = ['theme', 'color', 'radius', 'style']
+      keysToRemove.forEach((key) => {
+        if (localStorage.getItem(key)) {
+          console.log(`[Theme] 清理旧的 localStorage 数据: ${key}`)
+          localStorage.removeItem(key)
+        }
+      })
     }
 
     return {

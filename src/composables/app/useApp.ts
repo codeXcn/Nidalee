@@ -1,5 +1,5 @@
 import { getLatestVersion } from '@/lib'
-import { useThemeStore, useAppSessionStore } from '@/stores'
+import { useThemeStore, useAppSessionStore, useSummonerStore } from '@/stores'
 import { useAppInitialization } from './useAppInitialization'
 import { useGamePhaseManager } from '@/composables/game/useGamePhaseManager'
 import { useChampSelectManager } from '@/composables/game/useChampSelectManager'
@@ -11,17 +11,23 @@ export function useApp() {
   const appInit = useAppInitialization()
   const gamePhaseManager = useGamePhaseManager()
   const champSelectManager = useChampSelectManager()
-
+  const summonerStore = useSummonerStore()
   const { handleGamePhaseChange } = gamePhaseManager
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
 
   const isDark = computed(() => themeStore.isDark)
 
-  // 初始化主题
+  // 初始化主题（在onMounted之前）
   themeStore.initTheme()
 
   onMounted(async () => {
     try {
+      if (appInit.isConnected) {
+        console.log('[App] 已连接，获取信息')
+        // 如果已连接，自动获取召唤师信息和对局历史
+        summonerStore.fetchSummonerInfo()
+        appInit.fetchMatchHistory()
+      }
       // 获取游戏版本
       const latestVersion = await getLatestVersion()
       if (latestVersion !== appSessionStore.gameVersion) {

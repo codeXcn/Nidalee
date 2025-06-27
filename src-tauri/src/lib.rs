@@ -13,6 +13,7 @@ pub fn run() {
             lcu::auth::get_auth_info,
             lcu::connection_manager::get_connection_state,
             lcu::connection_manager::force_refresh_connection,
+            lcu::connection_manager::check_connection_state_command,
             commands::get_current_summoner,
             commands::get_game_version,
             commands::get_match_history,

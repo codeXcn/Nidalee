@@ -151,3 +151,10 @@ pub async fn get_summoners_and_histories(
 
     Ok(result)
 }
+
+// 重新导出连接管理相关的命令
+pub use crate::lcu::connection_manager::{
+    get_connection_state, 
+    force_refresh_connection,
+    check_connection_state_command
+};

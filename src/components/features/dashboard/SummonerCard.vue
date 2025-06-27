@@ -287,7 +287,6 @@ const props = defineProps<{
   summonerInfo: any
   sessionDuration?: string
 }>()
-console.log(props.summonerInfo)
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
 

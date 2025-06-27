@@ -18,7 +18,7 @@ export const useGameStatusStore = defineStore('gameStatus', () => {
   // 更新游戏阶段
   const updateGamePhase = (phase: GamePhase | null) => {
     if (phase) {
-      gameStatus.value.phase = phase.phase
+      gameStatus.value.phase = phase?.phase || phase 
       gameStatus.value.isInGame = phase.phase === 'InProgress'
     } else {
       gameStatus.value.phase = 'None'

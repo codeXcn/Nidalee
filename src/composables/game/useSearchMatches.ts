@@ -23,13 +23,19 @@ export function useSearchMatches() {
         result.value = matches
         // 每次查询成功后，重置索引为0（显示第一个结果）
         cunrrentIndex.value = 0
+        // 直接设置当前结果，不依赖watch
+        currentRestult.value = matches[0]
         // 查询成功
         console.log('matches', matches)
         return matches
+      } else {
+        // 查询无结果时清空当前结果
+        currentRestult.value = null
       }
       return null
     } catch (e: any) {
       error.value = e?.message || '查询失败'
+      currentRestult.value = null
       return null
     } finally {
       loading.value = false

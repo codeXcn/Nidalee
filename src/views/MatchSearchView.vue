@@ -28,9 +28,8 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { useConnectionStore } from '@/stores'
+import { useConnectStore } from '@/stores'
 
 const { onSearch, cunrrentIndex, names, searchText, loading, currentRestult } = useSearchMatches()
-console.log(loading.value)
-const { isConnected } = storeToRefs(useConnectionStore())
+const { isConnected } = storeToRefs(useConnectStore())
 </script>

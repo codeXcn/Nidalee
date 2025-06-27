@@ -1,7 +1,7 @@
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 export * from './themeStore'
-export * from './connectionStore'
+export * from './connectStore'
 export * from './summonerStore'
 export * from './gameStatusStore'
 export * from './activityStore'

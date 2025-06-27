@@ -8,14 +8,14 @@ export function useGamePhaseManager() {
   // 游戏阶段变更处理
   const handleGamePhaseChange = (phase: GamePhase | null) => {
     const previousPhase = gameStatusStore.currentPhase
-
+    console.log('[GamePhaseManager] 处理游戏阶段变更:', phase)
     gameStatusStore.updateGamePhase(phase)
 
     if (phase) {
-      activityStore.addActivity('info', `游戏阶段变更: ${phase.phase}`)
+      activityStore.addActivity('info', `游戏阶段变更: ${phase}`)
 
       // 检查是否从游戏中退出
-      if (previousPhase === 'InProgress' && phase.phase !== 'InProgress') {
+      if (previousPhase === 'InProgress' && phase !== 'InProgress') {
         console.log('[GamePhaseManager] 检测到游戏退出，清理选人和房间状态')
         gameStatusStore.updateChampSelectSession(null)
         gameStatusStore.updateLobbyInfo(null)

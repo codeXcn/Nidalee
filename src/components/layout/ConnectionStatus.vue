@@ -22,8 +22,8 @@
       @click="refreshConnection"
       :class="[
         'ml-2 px-3 py-1 text-xs rounded hover:bg-primary/90 transition-colors',
-        isConnected 
-          ? 'bg-green-600 text-white hover:bg-green-700' 
+        isConnected
+          ? 'bg-green-600 text-white hover:bg-green-700'
           : 'bg-primary text-primary-foreground'
       ]"
     >
@@ -33,11 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { useSummonerStore, useConnectionStore } from '@/stores'
+import { useSummonerStore, useConnectStore } from '@/stores'
 
 // 直接从 store 获取状态
 const summonerStore = useSummonerStore()
-const connectionStore = useConnectionStore()
+const connectionStore = useConnectStore()
 
 // 从store中解构响应式状态
 const { summonerInfo } = storeToRefs(summonerStore)

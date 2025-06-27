@@ -291,3 +291,13 @@ pub async fn force_refresh_connection(
     manager.force_refresh().await;
     Ok(())
 }
+
+/// Tauri 命令：手动检查连接状态
+#[tauri::command]
+pub async fn check_connection_state_command(
+    manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>,
+) -> Result<ConnectionState, String> {
+    let manager = manager.read().await;
+    let state = manager.check_connection_state().await;
+    Ok(state)
+}
