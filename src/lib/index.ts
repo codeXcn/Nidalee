@@ -1,3 +1,6 @@
+// 数据API模块
+export * from './dataApi'
+
 // 其他辅助函数
 export const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetailData): number => {
   const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)
@@ -53,23 +56,82 @@ export const formatNumber = (num: number): string => {
   return num?.toLocaleString() || '0'
 }
 
-// 资源URL相关函数
+/**
+ * 根据英雄ID获取英雄图标URL
+ * @param championId 英雄ID，number或string
+ * @returns 英雄图标URL
+ */
 export const getChampionIconUrl = (championId: number | string | null): string => {
   if (!championId) return ''
   return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`
 }
+/**
+ * 根据英雄别名获取英雄图标URL
+ * @param alias 英雄别名
+ * @returns 英雄图标URL
+ */
+export const getChampionIconUrlByAlias = (alias: string): string => {
+  if (!alias) return ''
+  return `https://game.gtimg.cn/images/lol/act/img/champion/${alias}.png`
+}
+// 处理 Community Dragon 路径
+export const getCommunityDragonUrl = (path: string): string => {
+  if (!path) return ''
+  // 移除开头的斜杠并构建完整URL
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  return `https://raw.communitydragon.org/latest/plugins/${cleanPath}`
+}
 
+/**
+ * 根据玩家头像ID获取头像URL
+ * @param iconId 头像ID
+ * @returns 头像URL
+ */
 export const getProfileIconUrl = (iconId: number): string => {
   if (!iconId) return ''
   return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${iconId}.jpg`
 }
 
+/**
+ * 根据物品ID获取物品图标URL
+ * @param itemId 物品ID
+ * @param gameVersion 游戏版本
+ * @returns 物品图标URL
+ * @example
+ * import { getItemIconUrl } from '@/lib'
+ * const url = getItemIconUrl(3135, '12.23.1')
+ * // https://ddragon.leagueoflegends.com/cdn/12.23.1/img/item/3135.png
+ */
 export const getItemIconUrl = (itemId: number, gameVersion: string): string => {
   if (!itemId || itemId === 0)
     return 'data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="%23e5e7eb"/><text x="16" y="22" text-anchor="middle" font-size="20" fill="%239ca3af" font-family="Arial, Helvetica, sans-serif">?</text></svg>'
   return `https://ddragon.leagueoflegends.com/cdn/${gameVersion}/img/item/${itemId}.png`
 }
+/**
+ * 根据物品ID获取物品图标URL (腾讯CDN)
+ * @param itemId 物品ID
+ * @param gameVersion 游戏版本
+ * @returns 物品图标URL
+ * @example
+ * import { getItemIconByCdnUrl } from '@/lib'
+ * const url = getItemIconByCdnUrl(3135, '12.23.1')
+ * // https://game.gtimg.cn/images/lol/act/img/item/3135.png
+ */
+export const getItemIconByCdnUrl = (itemId: number): string => {
+  if (!itemId || itemId === 0)
+    return 'data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="%23e5e7eb"/><text x="16" y="22" text-anchor="middle" font-size="20" fill="%239ca3af" font-family="Arial, Helvetica, sans-serif">?</text></svg>'
+  return `https://game.gtimg.cn/images/lol/act/img/item/${itemId}.png`
+}
 
+/**
+ * 根据段位tier获取段位图标URL
+ * @param tier 段位tier
+ * @returns 段位图标URL
+ * @example
+ * import { getRankIconUrl } from '@/lib'
+ * const url = getRankIconUrl('CHALLENGER')
+ * // https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/challenger.png
+ */
 export const getRankIconUrl = (tier: string): string => {
   if (!tier) return ''
   const tierLower = tier.toLowerCase()

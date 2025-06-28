@@ -150,3 +150,15 @@ pub async fn lcu_post_no_content(
         Err(format!("服务器返回错误: {}", response.status()))
     }
 }
+pub async fn lcu_patch_no_content(
+  client: &Client,
+  path: &str,
+  body: Value,
+) -> Result<(), String> {
+  let response = lcu_request_raw(client, Method::PATCH, path, Some(body)).await?;
+  if response.status().is_success() {
+      Ok(())
+  } else {
+      Err(format!("服务器返回错误: {}", response.status()))
+  }
+}

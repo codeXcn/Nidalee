@@ -4,6 +4,7 @@ import { useAppInitialization } from './useAppInitialization'
 import { useGamePhaseManager } from '@/composables/game/useGamePhaseManager'
 import { useChampSelectManager } from '@/composables/game/useChampSelectManager'
 import { listen } from '@tauri-apps/api/event'
+import { useConnection } from '../utils/useConnection'
 
 export function useApp() {
   const themeStore = useThemeStore()
@@ -12,6 +13,7 @@ export function useApp() {
   const gamePhaseManager = useGamePhaseManager()
   const champSelectManager = useChampSelectManager()
   const summonerStore = useSummonerStore()
+  const { isConnected } = useConnection()
   const { handleGamePhaseChange } = gamePhaseManager
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
 
@@ -19,15 +21,24 @@ export function useApp() {
 
   // 初始化主题（在onMounted之前）
   themeStore.initTheme()
-
-  onMounted(async () => {
-    try {
-      if (appInit.isConnected) {
-        console.log('[App] 已连接，获取信息')
+  watch(
+    isConnected,
+    (isConnected) => {
+      if (isConnected) {
+        console.log('[App] 连接已建立，更新主题')
         // 如果已连接，自动获取召唤师信息和对局历史
         summonerStore.fetchSummonerInfo()
         appInit.fetchMatchHistory()
+      } else {
+        console.log('[App] 客户端未连接')
       }
+    },
+    {
+      immediate: true
+    }
+  )
+  onMounted(async () => {
+    try {
       // 获取游戏版本
       const latestVersion = await getLatestVersion()
       if (latestVersion !== appSessionStore.gameVersion) {

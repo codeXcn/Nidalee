@@ -224,12 +224,27 @@ pub struct ChampSelectSession {
     pub their_team: Vec<ChampSelectPlayer>,
     pub bans: ChampSelectBans,
     pub timer: ChampSelectTimer,
+    pub actions: Vec<Vec<ChampSelectAction>>, // 使用 Option<serde_json::Value> 以兼容不同类型
 }
-
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub struct ChampSelectAction {
+  pub actor_cell_id: Option<i32>,
+  pub champion_id: Option<i32>,
+  pub completed: bool,
+  pub id: i32,
+  pub is_ally_action: Option<bool>,
+  pub is_in_progress: Option<bool>,
+  pub pick_turn: Option<i32>,
+  #[serde(rename = "type")]
+  pub action_type: String, // "pick" 或 "ban"
+  pub is_current_user: Option<bool>,
+}
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectPlayer {
     pub cell_id: i32,
+    pub puuid: Option<String>, // 使用 String 类型来兼容数字和字符串
     pub summoner_id: Option<String>,
     pub champion_id: Option<f64>,
     pub champion_pick_intent: Option<f64>,

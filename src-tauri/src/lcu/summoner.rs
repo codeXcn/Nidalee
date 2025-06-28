@@ -1,7 +1,15 @@
 use reqwest::Client;
 use crate::lcu::types::{SummonerInfo, RankInfo};
-use crate::lcu::request::{lcu_get, lcu_post};
-use serde_json::Value;
+use crate::lcu::request::{lcu_get, lcu_post, lcu_put};
+use serde_json::{Value, to_value};
+use serde::{Deserialize, Serialize};
+
+// 生涯背景设置请求体（正确的API格式）
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ProfileUpdateRequest {
+    pub key: String,
+    pub value: u64,
+}
 
 pub async fn get_current_summoner(client: &Client) -> Result<SummonerInfo, String> {
     let mut summoner_info: SummonerInfo = lcu_get(client, "/lol-summoner/v1/current-summoner").await?;
@@ -72,4 +80,44 @@ pub async fn get_summoners_by_names(client: &Client, names: Vec<String>) ->Resul
     let path = &format!("/lol-summoner/v2/summoners/names");
     let summoners: Vec<SummonerInfo> = lcu_post(client, path,names.into()).await?;
     Ok(summoners)
+}
+
+// 设置生涯背景皮肤（使用正确的API - POST请求）
+pub async fn set_summoner_background(
+    client: &Client,
+    skin_id: u64
+) -> Result<(), String> {
+    let path = "/lol-summoner/v1/current-summoner/summoner-profile";
+
+    let request_body = ProfileUpdateRequest {
+        key: "backgroundSkinId".to_string(),
+        value: skin_id,
+    };
+
+    // 将结构体序列化为 serde_json::Value
+    let body_value = serde_json::to_value(request_body)
+        .map_err(|e| format!("序列化请求体失败: {}", e))?;
+
+    // 使用 POST 请求而不是 PUT
+    match lcu_post::<Value>(client, path, body_value).await {
+        Ok(response) => {
+            println!("成功设置生涯背景皮肤，皮肤ID: {}", skin_id);
+            if !response.is_null() {
+                println!("返回的 profile 信息: {}", response);
+            }
+            Ok(())
+        }
+        Err(e) => {
+            println!("设置生涯背景皮肤失败: {}", e);
+            // 尝试解析错误信息
+            if let Ok(error_json) = serde_json::from_str::<Value>(&e) {
+                if let Some(error_code) = error_json.get("errorCode") {
+                    if let Some(message) = error_json.get("message") {
+                        return Err(format!("设置背景失败 [{}]: {}", error_code, message));
+                    }
+                }
+            }
+            Err(format!("设置生涯背景失败: {}", e))
+        }
+    }
 }

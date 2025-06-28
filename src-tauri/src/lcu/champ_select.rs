@@ -1,5 +1,5 @@
 use crate::lcu::match_history::get_recent_matches_by_summoner_id;
-use crate::lcu::request::lcu_get;
+use crate::lcu::request::{lcu_get, lcu_patch_no_content};
 use crate::lcu::summoner::get_summoner_by_id;
 use crate::lcu::types::{
     ChampSelectPlayer, ChampSelectSession, MatchStatistics, SummonerInfo,
@@ -7,6 +7,47 @@ use crate::lcu::types::{
 use reqwest::Client;
 use serde_json::{Number, Value};
 use std::collections::HashMap;
+
+// 获取选人会话信息 (简化版本，返回 Value)
+pub async fn get_champ_select_session_raw(client: &Client) -> Result<Value, String> {
+    lcu_get(client, "/lol-champ-select/v1/session").await
+}
+
+// 选择/禁用英雄的通用函数
+pub async fn champion_action(
+    client: &Client,
+    action_id: u64,
+    champion_id: u64,
+    completed: bool,
+) -> Result<(), String> {
+    let url = format!("/lol-champ-select/v1/session/actions/{}", action_id);
+    let body = serde_json::json!({
+        "championId": champion_id,
+        "completed": completed
+    });
+
+    lcu_patch_no_content(client, &url, body).await
+}
+
+// 选择英雄 (hover 或 lock)
+pub async fn pick_champion(
+    client: &Client,
+    action_id: u64,
+    champion_id: u64,
+    completed: bool,
+) -> Result<(), String> {
+    champion_action(client, action_id, champion_id, completed).await
+}
+
+// 禁用英雄
+pub async fn ban_champion(
+    client: &Client,
+    action_id: u64,
+    champion_id: u64,
+) -> Result<(), String> {
+    champion_action(client, action_id, champion_id, true).await
+}
+
 // ---------- 数据清洗函数 ----------
 
 fn fix_team_array(team: &mut Vec<Value>) {
@@ -74,14 +115,6 @@ async fn enrich_champ_select_session(client: &Client, session: &mut ChampSelectS
             }
         }
     }
-    // 查询所有最近战绩
-    // 如需 enrich 战绩，依样调用 get_recent_matches_by_summoner_id
-    // let mut match_map = std::collections::HashMap::new();
-    // for (sid, puuid) in &puuid_map {
-    //     if let Ok(matches) = get_recent_matches_by_summoner_id(client, puuid, 5).await {
-    //         match_map.insert(sid.clone(), matches);
-    //     }
-    // }
     // 补全 my_team
     for p in session.my_team.iter_mut() {
         enrich_player(p, &info_map);
@@ -141,7 +174,7 @@ pub async fn get_champ_select_session(client: &Client) -> Result<ChampSelectSess
             }
         }
     }
-
+    log::info!("[get_champ_select_session] 原始 session JSON");
     // 反序列化为结构体
     let mut session = serde_json::from_value::<ChampSelectSession>(json)
         .map_err(|e| format!("解析 session 响应失败: {}", e))?;

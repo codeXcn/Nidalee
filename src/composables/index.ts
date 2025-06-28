@@ -2,3 +2,4 @@
 export * from './app'
 export * from './game'
 export * from './utils'
+export * from './game-helper'

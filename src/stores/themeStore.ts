@@ -391,9 +391,6 @@ export const useThemeStore = defineStore(
 
     // 初始化主题
     const initTheme = () => {
-      // 清理可能存在的旧 localStorage 数据
-      cleanupOldLocalStorage()
-
       // 检查系统主题偏好（仅在首次访问且无持久化数据时）
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -428,17 +425,6 @@ export const useThemeStore = defineStore(
 
       // 应用初始颜色主题
       applyColorTheme(selectedColor.value)
-    }
-
-    // 清理旧的 localStorage 数据（迁移用）
-    const cleanupOldLocalStorage = () => {
-      const keysToRemove = ['theme', 'color', 'radius', 'style']
-      keysToRemove.forEach((key) => {
-        if (localStorage.getItem(key)) {
-          console.log(`[Theme] 清理旧的 localStorage 数据: ${key}`)
-          localStorage.removeItem(key)
-        }
-      })
     }
 
     return {

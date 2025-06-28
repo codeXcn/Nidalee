@@ -20,21 +20,17 @@
     <!-- 连接/刷新按钮 -->
     <button
       @click="refreshConnection"
-      :class="[
-        'ml-2 px-3 py-1 text-xs rounded hover:bg-primary/90 transition-colors',
-        isConnected
-          ? 'bg-green-600 text-white hover:bg-green-700'
-          : 'bg-primary text-primary-foreground'
-      ]"
+      class="cursor-pointer ml-2 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 hover:bg-primary/80 hover:text-white text-primary border border-primary/30 shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+      title="刷新"
     >
-      {{ isConnected ? '刷新' : '重新连接' }}
+      <RotateCw class="h-3 w-3 animate-spin" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useSummonerStore, useConnectStore } from '@/stores'
-
+import {RotateCw} from 'lucide-vue-next'
 // 直接从 store 获取状态
 const summonerStore = useSummonerStore()
 const connectionStore = useConnectStore()
@@ -73,3 +69,13 @@ const formatRankTier = (tier: string): string => {
   return tierMap[tier] || tier
 }
 </script>
+
+<style scoped>
+@keyframes breath {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.18); }
+}
+.animate-breath {
+  animation: breath 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+</style>

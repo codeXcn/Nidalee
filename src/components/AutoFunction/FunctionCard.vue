@@ -1,0 +1,156 @@
+<template>
+  <Card class="transition-all duration-200 hover:shadow-lg border-border bg-card">
+    <CardHeader class="space-y-4">
+      <div class="flex items-start justify-between">
+        <div class="space-y-2 flex-1">
+          <CardTitle class="text-lg font-semibold text-card-foreground">
+            {{ title }}
+          </CardTitle>
+          <CardDescription class="text-sm text-muted-foreground leading-relaxed">
+            {{ description }}
+          </CardDescription>
+        </div>
+        <Switch :model-value="enabled" @update:model-value="enabled = $event" class="ml-4" />
+      </div>
+    </CardHeader>
+
+    <CardContent v-if="enabled" class="space-y-6 pt-0">
+      <Separator />
+
+      <!-- 延迟配置 -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <Label class="text-sm font-medium text-foreground">执行延迟</Label>
+          <div class="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+            <span>{{ formatDelayDisplay(debouncedDelay) }}</span>
+            <div
+              v-if="isDelayPending"
+              class="h-2 w-2 bg-orange-500 rounded-full animate-pulse"
+              title="设置保存中..."
+            />
+            <div
+              v-else
+              class="h-2 w-2 bg-green-500 rounded-full"
+              title="设置已保存"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <Slider
+            :model-value="delayModel"
+            @update:model-value="(val: number[] | undefined) => (delayModel = val || [0])"
+            :max="10000"
+            :min="0"
+            :step="100"
+            class="w-full"
+          />
+
+          <div class="flex items-center gap-3 bg-muted/50 p-3 rounded-lg">
+            <Input
+              :model-value="debouncedDelay"
+              @update:model-value="
+                (val: string | number) => (debouncedDelay = typeof val === 'string' ? parseInt(val) || 0 : val)
+              "
+              type="number"
+              :min="0"
+              :max="10000"
+              :step="100"
+              class="w-28 text-center text-sm"
+            />
+            <span class="text-xs text-muted-foreground font-medium">毫秒</span>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</template>
+
+<script setup lang="ts">
+import { useDebouncedNumberModel } from '@/composables/utils/useDebouncedModel'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const props = defineProps<Props>()
+
+// 使用 defineModel 定义双向绑定
+const enabled = defineModel<boolean>('enabled', { default: false })
+const delay = defineModel<number>('delay', { default: 1000 })
+
+// 使用防抖处理延迟设置
+const {
+  value: debouncedDelay,
+  isPending: isDelayPending,
+  flush: flushDelay
+} = useDebouncedNumberModel(delay, {
+  delay: 500, // 500ms 防抖
+  min: 0,
+  max: 10000,
+  step: 100
+})
+
+// 添加日志监听 enabled 状态变化
+watch(
+  enabled,
+  (newVal, oldVal) => {
+    console.log(`[FunctionCard] ${props.title} - enabled changed:`, {
+      from: oldVal,
+      to: newVal,
+      title: props.title
+    })
+  },
+  { immediate: true }
+)
+
+// 添加日志监听 delay 状态变化（实际保存的值）
+watch(
+  delay,
+  (newVal, oldVal) => {
+    console.log(`[FunctionCard] ${props.title} - delay saved:`, {
+      from: oldVal,
+      to: newVal,
+      title: props.title
+    })
+  },
+  { immediate: true }
+)
+
+// 监听防抖状态
+watch(
+  isDelayPending,
+  (pending) => {
+    if (pending) {
+      console.log(`[FunctionCard] ${props.title} - delay change pending...`)
+    } else {
+      console.log(`[FunctionCard] ${props.title} - delay change saved`)
+    }
+  }
+)
+
+// Slider 需要数组格式，创建计算属性处理转换
+const delayModel = computed({
+  get: () => {
+    return [debouncedDelay.value]
+  },
+  set: (value: number[] | undefined) => {
+    const newDelay = value?.[0] || 0
+    debouncedDelay.value = newDelay
+  }
+})
+
+// 格式化延迟显示
+const formatDelayDisplay = (value: number) => {
+  if (value < 1000) {
+    return `${value}ms`
+  }
+  return `${(value / 1000).toFixed(1)}s`
+}
+
+// 组件卸载时确保保存最后的更改
+onBeforeUnmount(() => {
+  flushDelay()
+})
+</script>

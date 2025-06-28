@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { Toaster } from 'vue-sonner'
+import 'vue-sonner/style.css'
+import DebugPanel from '@/components/common/DebugPanel.vue'
+
 const { isDark, refreshConnection, fetchMatchHistory } = useApp()
+const theme = computed(() => (isDark.value ? 'dark' : 'light'))
 
 // 提供刷新连接方法给子组件使用
 provide('refreshConnection', refreshConnection)
@@ -18,6 +23,7 @@ const handleRouteChange = () => {
 
 <template>
   <div id="app" :class="{ dark: isDark }" class="h-screen flex flex-col overflow-hidden">
+    <Toaster richColors :theme />
     <TitleBar />
     <SidebarProvider class="flex-1 flex overflow-hidden">
       <AppSidebar />
@@ -29,9 +35,6 @@ const handleRouteChange = () => {
             <SidebarTrigger class="-ml-1 text-foreground/70 hover:text-foreground hover:bg-accent" />
             <div class="h-4 w-px bg-border/60 ml-2" />
             <ConnectionStatus />
-          </div>
-          <div class="px-4">
-            <ThemeSettings />
           </div>
         </header>
         <div
@@ -47,5 +50,6 @@ const handleRouteChange = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
+
   </div>
 </template>

@@ -39,10 +39,9 @@ export function useAppInitialization() {
     initializeApp,
     cleanup,
 
-    // 暴露子模块的状态和方法
-    isConnected: connection.isConnected,
     connectionMessage: connection.connectionMessage,
     refreshConnection: connection.refreshConnection,
     fetchMatchHistory: matchDataManager.fetchMatchHistoryWithDebounce
   }
 }
+

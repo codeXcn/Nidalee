@@ -24,7 +24,11 @@ pub fn run() {
             commands::decline_match,
             commands::get_summoner_by_id,
             commands::get_champselect_team_players_info,
-            commands::get_summoners_and_histories
+            commands::get_summoners_and_histories,
+            commands::set_summoner_background_skin,
+            commands::get_champ_select_session,
+            commands::pick_champion,
+            commands::ban_champion
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

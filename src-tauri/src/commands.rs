@@ -152,9 +152,59 @@ pub async fn get_summoners_and_histories(
     Ok(result)
 }
 
-// 重新导出连接管理相关的命令
-pub use crate::lcu::connection_manager::{
-    get_connection_state, 
-    force_refresh_connection,
-    check_connection_state_command
-};
+#[tauri::command]
+pub async fn set_summoner_background_skin(skin_id: u64) -> Result<(), String> {
+    let client = http_client::get_lcu_client();
+    lcu::summoner::set_summoner_background(client, skin_id).await
+}
+
+// 选人相关 API
+#[tauri::command]
+pub async fn get_champ_select_session() -> Result<serde_json::Value, String> {
+    let client = http_client::get_lcu_client();
+    lcu::champ_select::get_champ_select_session_raw(client).await
+}
+
+#[tauri::command]
+pub async fn get_champ_select_session_typed() -> Result<lcu::types::ChampSelectSession, String> {
+    let client = http_client::get_lcu_client();
+    lcu::champ_select::get_champ_select_session(client).await
+}
+
+#[tauri::command]
+pub async fn pick_champion(action_id: u64, champion_id: u64, completed: bool) -> Result<String, String> {
+    let client = http_client::get_lcu_client();
+    match lcu::champ_select::pick_champion(client, action_id, champion_id, completed).await {
+        Ok(()) => {
+            let action_type = if completed { "锁定" } else { "预选" };
+            let message = format!("{}英雄成功 (ActionID: {}, ChampionID: {})", action_type, action_id, champion_id);
+            log::info!("[Commands] {}", message);
+            Ok(message)
+        }
+        Err(e) => {
+            let action_type = if completed { "锁定" } else { "预选" };
+            let error_msg = format!("{}英雄失败: {}", action_type, e);
+            log::error!("[Commands] {}", error_msg);
+            Err(error_msg)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn ban_champion(action_id: u64, champion_id: u64) -> Result<String, String> {
+    let client = http_client::get_lcu_client();
+    match lcu::champ_select::ban_champion(client, action_id, champion_id).await {
+        Ok(()) => {
+            let message = format!("禁用英雄成功 (ActionID: {}, ChampionID: {})", action_id, champion_id);
+            log::info!("[Commands] {}", message);
+            Ok(message)
+        }
+        Err(e) => {
+            let error_msg = format!("禁用英雄失败: {}", e);
+            log::error!("[Commands] {}", error_msg);
+            Err(error_msg)
+        }
+    }
+}
+
+

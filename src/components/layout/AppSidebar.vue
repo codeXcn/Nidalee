@@ -33,6 +33,21 @@
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
+
+      <!-- 开发者工具分组 - 仅在开发环境显示 -->
+      <SidebarGroup v-if="isDev">
+        <SidebarGroupLabel>开发者工具</SidebarGroupLabel>
+        <SidebarMenu>
+          <SidebarMenuItem v-for="item in devItems" :key="item.title">
+            <SidebarMenuButton class="text-md" asChild :tooltip="item.title" :is-active="isActiveRoute(item.url)">
+              <router-link :to="item.url">
+                <component :is="item.icon" />
+                <span>{{ item.title }}</span>
+              </router-link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
     </SidebarContent>
 
     <SidebarFooter>
@@ -53,9 +68,12 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Gamepad2, Search, Settings, Shield, TrendingUp, Zap } from 'lucide-vue-next'
+import { BarChart3, Gamepad2, Search, Settings, Shield, TrendingUp, Zap, TestTube } from 'lucide-vue-next'
 
 const route = useRoute()
+
+// 检测是否为开发环境
+const isDev = import.meta.env.DEV
 
 const menuItems = [
   {
@@ -87,6 +105,19 @@ const menuItems = [
     title: '安全设置',
     url: '/security',
     icon: Shield
+  }
+]
+
+const devItems = [
+  {
+    title: 'API测试',
+    url: '/test-api',
+    icon: TestTube
+  },
+  {
+    title: '选人测试',
+    url: '/champ-select-test',
+    icon: TestTube
   }
 ]
 

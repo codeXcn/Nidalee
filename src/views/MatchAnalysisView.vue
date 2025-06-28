@@ -2,11 +2,15 @@
   <div class="min-h-screen p-4 lg:p-6">
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
-
       <!-- 队伍分析卡片 -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 animate-in fade-in-0 duration-700 slide-in-from-bottom-4">
+      <div
+        class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 animate-in fade-in-0 duration-700 slide-in-from-bottom-4"
+      >
         <!-- 我方队伍 -->
-        <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-left-4" style="animation-delay: 100ms;">
+        <Card
+          class="p- case 'ChampSelect': return '正在加载选人阶段数据，请稍候...' case 'GameStart': return '选人阶段结束，游戏即将加载。' case 'InProgress': return '游戏正在进行中，可以查看队伍分析。' case 'WaitingForStats': return '游戏已结束，正在等待战绩统计。' case 'PreEndOfGame': case 'EndOfGame': return '游戏已结束，可以查看本局详细数据。'imate-in fade-in-0 duration-500 slide-in-from-left-4"
+          style="animation-delay: 100ms"
+        >
           <div class="flex items-center justify-between mb-4 lg:mb-6">
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 lg:w-4 lg:h-4 bg-blue-500 rounded-full animate-pulse"></div>
@@ -37,7 +41,7 @@
         </Card>
 
         <!-- 敌方队伍 -->
-        <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-right-4" style="animation-delay: 200ms;">
+        <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-right-4" style="animation-delay: 200ms">
           <div class="flex items-center justify-between mb-4 lg:mb-6">
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 lg:w-4 lg:h-4 bg-red-500 rounded-full animate-pulse"></div>
@@ -68,7 +72,7 @@
       </div>
 
       <!-- 对局建议 -->
-      <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-3" style="animation-delay: 800ms;">
+      <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-3" style="animation-delay: 800ms">
         <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
           <Lightbulb class="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
           对局建议
@@ -77,7 +81,10 @@
       </Card>
 
       <!-- 补充功能区域 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-4" style="animation-delay: 1000ms;">
+      <div
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-4"
+        style="animation-delay: 1000ms"
+      >
         <!-- 阵容分析 -->
         <Card class="p-4 lg:p-6">
           <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
@@ -96,6 +103,18 @@
           <WinRatePrediction :session="session" />
         </Card>
       </div>
+
+      <!-- 静态数据增强功能区域 -->
+      <div
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-5"
+        style="animation-delay: 1200ms"
+      >
+        <!-- 符文分析 -->
+        <RuneAnalysis :session="session" />
+
+        <!-- 装备推荐 -->
+        <ItemRecommendation :session="session" />
+      </div>
     </div>
 
     <!-- 无数据状态 -->
@@ -109,17 +128,24 @@
           {{ getStatusDescription() }}
         </p>
       </div>
-    </div>    <!-- 召唤师详情抽屉 -->
+    </div>
+    <!-- 召唤师详情抽屉 -->
     <Sheet v-model:open="isDetailsOpen">
       <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
-        <div class="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-6">
+        <div
+          class="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-6"
+        >
           <SheetHeader>
             <div class="flex items-center justify-between">
               <SheetTitle class="flex items-center gap-4 text-left">
                 <div v-if="currentRestult" class="flex items-center gap-4">
                   <!-- 使用查询到的召唤师信息 -->
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20">
-                    <span class="text-lg font-bold text-primary">{{ currentRestult.displayName?.charAt(0)?.toUpperCase() || '?' }}</span>
+                  <div
+                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
+                  >
+                    <span class="text-lg font-bold text-primary">{{
+                      currentRestult.displayName?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
                   </div>
                   <div>
                     <h3 class="text-xl font-bold text-foreground">{{ currentRestult.displayName || '未知召唤师' }}</h3>
@@ -128,8 +154,12 @@
                 </div>
                 <div v-else-if="selectedPlayer" class="flex items-center gap-4">
                   <!-- 查询中或失败时显示原始玩家信息 -->
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20">
-                    <span class="text-lg font-bold text-primary">{{ selectedPlayer.displayName?.charAt(0)?.toUpperCase() || '?' }}</span>
+                  <div
+                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
+                  >
+                    <span class="text-lg font-bold text-primary">{{
+                      selectedPlayer.displayName?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
                   </div>
                   <div>
                     <h3 class="text-xl font-bold text-foreground">{{ selectedPlayer.displayName || '未知召唤师' }}</h3>
@@ -138,7 +168,9 @@
                 </div>
               </SheetTitle>
 
-              <SheetClose class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary text-muted-foreground hover:text-foreground">
+              <SheetClose
+                class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary text-muted-foreground hover:text-foreground"
+              >
                 <X class="h-4 w-4" />
                 <span class="sr-only">关闭</span>
               </SheetClose>
@@ -161,11 +193,7 @@
             <SummonerCard :summoner-info="currentRestult.summonerInfo" />
 
             <!-- 游戏统计 -->
-            <GameStats
-              :is-connected="true"
-              :match-history-loading="false"
-              :match-statistics="currentRestult.matches"
-            />
+            <GameStats :is-connected="true" :match-history-loading="false" :match-statistics="currentRestult.matches" />
           </div>
 
           <!-- 无数据状态 -->
@@ -183,39 +211,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
-import { storeToRefs } from 'pinia'
-import { Info, Lightbulb, Users, BarChart3, X } from 'lucide-vue-next'
-import { invoke } from '@tauri-apps/api/core'
 import { useChampSelectSession } from '@/composables'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import { useGameStatusStore } from '@/stores'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetClose
-} from '@/components/ui/sheet'
-
-// 导入组件
-import PlayerCard from '@/components/features/match/PlayerCard.vue'
-import TeamStats from '@/components/features/match-analysis/TeamStats.vue'
-import MatchSuggestions from '@/components/features/match-analysis/MatchSuggestions.vue'
-import TeamComposition from '@/components/features/match-analysis/TeamComposition.vue'
-import WinRatePrediction from '@/components/features/match-analysis/WinRatePrediction.vue'
-import GameStats from '@/components/features/dashboard/GameStats.vue'
-import SummonerCard from '@/components/features/dashboard/SummonerCard.vue'
+import { invoke } from '@tauri-apps/api/core'
+import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
 const { session: rawSession, enrichedSession, loading } = useChampSelectSession()
 const session = computed(() => enrichedSession.value)
 
 // 判断是否应该显示对局分析
 const shouldShowMatchAnalysis = computed(() => {
   const phase = currentPhase.value
-  // 只有在选人阶段才显示对局分析
-  return phase === 'ChampSelect'
+  // 在选人阶段、游戏开始、游戏中、等待结算、游戏结束等阶段都显示对局分析
+  // 这样用户可以在整个游戏流程中查看对局数据
+  return (
+    phase === 'ChampSelect' ||
+    phase === 'GameStart' ||
+    phase === 'InProgress' ||
+    phase === 'WaitingForStats' ||
+    phase === 'PreEndOfGame' ||
+    phase === 'EndOfGame'
+  )
 })
 
 // 使用搜索召唤师战绩的钩子
@@ -233,14 +249,14 @@ const selectedPlayer = ref<any>(null)
 watchEffect(() => {
   console.log('Game phase changed:', currentPhase.value)
   console.log('Is in champion select:', isInChampSelect.value)
-  
+
   // 只有当会话数据不存在且详情抽屉打开时，才关闭抽屉
   // 这样用户可以在 None、Lobby、Matchmaking 等状态下查看召唤师详情
-  if (!session.value && isDetailsOpen.value) {
-    console.log('No session data available, closing summoner details')
-    isDetailsOpen.value = false
-    selectedPlayer.value = null
-  }
+  // if (!session.value && isDetailsOpen.value) {
+  //   console.log('No session data available, closing summoner details')
+  //   isDetailsOpen.value = false
+  //   selectedPlayer.value = null
+  // }
 })
 
 // 添加调试信息和会话监听
@@ -260,11 +276,11 @@ const openSummonerDetails = async (player: any) => {
   console.log('Player displayName:', player.displayName)
   console.log('Player summonerId:', player.summonerId)
   console.log('Player cellId:', player.cellId)
-  
+
   selectedPlayer.value = player
   isDetailsOpen.value = true
   console.log('isDetailsOpen set to:', isDetailsOpen.value)
-  
+
   // 首先尝试使用 displayName 搜索
   if (player.displayName && player.displayName !== '未知玩家' && player.displayName !== '未知召唤师') {
     console.log('Searching match history by displayName:', player.displayName)
@@ -274,7 +290,7 @@ const openSummonerDetails = async (player: any) => {
     } catch (error) {
       console.error('Failed to fetch summoner data by displayName:', error)
     }
-  } 
+  }
   // 如果 displayName 不可用或搜索失败，尝试通过 summonerId 获取召唤师信息
   else if (player.summonerId && player.summonerId !== '0') {
     console.log('Trying to get summoner info by summonerId:', player.summonerId)
@@ -282,7 +298,7 @@ const openSummonerDetails = async (player: any) => {
       // 使用 summonerId 获取召唤师基本信息
       const summonerInfo = await invoke('get_summoner_by_id', { id: parseInt(player.summonerId) })
       console.log('Summoner info by ID:', summonerInfo)
-      
+
       if (summonerInfo && summonerInfo.displayName) {
         console.log('Got summoner displayName:', summonerInfo.displayName)
         // 使用获取到的 displayName 搜索战绩
@@ -309,7 +325,7 @@ const getStatusTitle = () => {
     case 'ReadyCheck':
       return '确认对局'
     case 'ChampSelect':
-      return '等待选人数据'
+      return '正在加载选人阶段数据，请稍候...'
     case 'GameStart':
       return '游戏即将开始'
     case 'InProgress':
@@ -322,7 +338,7 @@ const getStatusTitle = () => {
     case 'TerminatedInError':
       return '游戏异常终止'
     default:
-      return '等待进入选人阶段'
+      return '进入游戏以查看对局分析'
   }
 }
 
@@ -351,8 +367,7 @@ const getStatusDescription = () => {
     case 'TerminatedInError':
       return '游戏因错误而终止，请重新开始匹配。'
     default:
-      return '进入英雄联盟客户端的选人界面以查看对局分析。'
+      return '开始游戏匹配以查看详细的对局分析数据。'
   }
-}</script>
-
-
+}
+</script>
