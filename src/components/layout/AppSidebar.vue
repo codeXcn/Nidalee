@@ -6,11 +6,20 @@
           <SidebarMenuButton size="lg" asChild>
             <router-link to="/">
               <!-- 顶部Logo -->
-              <div class="flex items-center gap-3 px-2 py-2">
-                <img src="@/assets/logo.png" class="w-9 h-9 rounded-lg shadow" />
-                <div>
-                  <div class="font-bold text-lg leading-tight">Nidalee</div>
-                  <div class="text-xs text-gray-500">LCU Helper</div>
+              <div class="flex items-center gap-3 px-2 py-2 select-none">
+                <img src="@/assets/logo.png" class="w-10 h-10 rounded-xl shadow-lg border border-gray-200 bg-white" />
+                <div class="flex flex-col justify-center min-w-0">
+                  <div
+                    class="font-extrabold text-xl leading-tight tracking-wide truncate bg-gradient-to-r bg-clip-text text-transparent"
+                    :style="{
+                      backgroundImage:
+                        $colorMode === 'dark'
+                          ? 'linear-gradient(90deg, var(--color-primary, #f59e42), #312e81)'
+                          : 'linear-gradient(90deg, var(--color-primary, #f59e42), #7c3aed)'
+                    }"
+                  >
+                    Nidalee
+                  </div>
                 </div>
               </div>
             </router-link>

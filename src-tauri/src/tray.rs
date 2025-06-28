@@ -23,7 +23,7 @@ pub fn setup_system_tray(app: &mut App) -> TauriResult<()> {
         // 添加菜单
         .menu(&menu)
         // 添加悬浮提示
-        .tooltip("Nidalee - 英雄联盟游戏助手")
+        .tooltip("Nidalee - 高性能、体积小巧的智能英雄联盟游戏助手")
         // 禁用鼠标左键点击图标显示托盘菜单
         .show_menu_on_left_click(false)
         // 监听托盘图标发出的鼠标事件

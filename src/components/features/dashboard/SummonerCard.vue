@@ -1,7 +1,15 @@
 <template>
   <Card v-if="summonerInfo" class="overflow-hidden py-0">
     <!-- 头部渐变背景 -->
-    <div class="bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 p-6 text-white">
+    <div
+      class="p-6 text-white"
+      :style="{
+        background:
+          $colorMode === 'dark'
+            ? 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #312e81 100%)'
+            : 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #7c3aed 100%)'
+      }"
+    >
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <!-- 头像 -->

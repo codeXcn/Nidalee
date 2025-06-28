@@ -1,17 +1,16 @@
-
 <div align="center">
   <img src="src/assets/logo.svg" alt="Nidalee Logo" width="120" height="120">
 
   <h1>🎮 Nidalee</h1>
-  <p><strong>Powerful League of Legends Game Assistant</strong></p>
-  <p>Real-time game data analysis, automation features and personalized settings</p>
+  <p><strong>High-performance, lightweight and intelligent League of Legends assistant</strong></p>
+  <p>Nidalee is a high-performance, lightweight and intelligent assistant for League of Legends players. It integrates auto-accept, auto pick/ban, real-time data analysis and personalized settings, helping you climb the ranks efficiently and safely. Powered by Rust + Tauri, it features fast startup, low resource usage, and a minimal footprint.</p>
 
   <div>
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg" alt="License"/></a>
     <img src="https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg" alt="Tauri">
     <img src="https://img.shields.io/badge/vue-3.x-brightgreen.svg" alt="Vue">
     <img src="https://img.shields.io/badge/rust-1.75-orange.svg" alt="Rust">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
+    <img src="https://img.shields.io/badge/platform-Windows-blue.svg" alt="Platform">
   </div>
 
   <br>
@@ -34,11 +33,13 @@
 ## 🌟 Features
 
 ### 🎮 Automation
+
 - **Auto Accept**: Automatically detect and accept match invitations
 - **Smart Champion Selection**: Auto pick or ban champions based on presets
 - **Rune Configuration**: Automatically fetch and apply optimal rune pages from OP.GG
 
 ### 📊 Data Analysis
+
 - **Real-time Match Analysis**
   - Team Composition Evaluation
   - Lane Advantage Analysis
@@ -51,6 +52,7 @@
   - Recent Performance Score
 
 ### 🔍 Information Display
+
 - **Real-time Match Information**
   - Teammate and Opponent Details
   - Champion Counter Relationships
@@ -70,31 +72,17 @@
 
 ## 📦 Installation
 
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/nidalee.git
-cd nidalee
-```
+Download the latest Windows version from the [Releases](../../releases) page:
 
-2. Install dependencies
-```bash
-# Install frontend dependencies
-pnpm install
+| Platform | File | Description |
+|----------|------|-------------|
+| **Windows** | `Nidalee_1.0.0_x64_en-US.msi` | Windows 64-bit installer |
 
-# Install Rust dependencies
-cd src-tauri
-cargo build
-```
+### Installation Steps (Windows)
 
-3. Run development environment
-```bash
-pnpm tauri dev
-```
-
-4. Build production version
-```bash
-pnpm tauri build
-```
+1. Download the `.msi` file
+2. Double-click to run the installer
+3. Follow the wizard to complete installation
 
 ## 🔧 Configuration
 
@@ -140,20 +128,28 @@ Contributions are welcome! Check out our [Contributors List](CONTRIBUTORS.md).
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) (Attribution-NonCommercial-ShareAlike 4.0 International) license.
 
-## 🎯 Roadmap
+- Free to copy, distribute, and adapt, but **commercial use is strictly prohibited**.
+- Derivative works must use the same license.
+- Please credit the original author and project link when using.
 
-- [ ] Multi-language Support
-- [ ] Match History Export
-- [ ] Game Replay Analysis
-- [ ] Champion Combo Tips
-- [ ] Real-time Voice Alerts
-- [ ] Enhanced Data Visualization
+See the LICENSE file for full terms.
 
 ## ⚠️ Disclaimer
 
-This project is for learning and research purposes only. Not for commercial use. Users bear all consequences of using this software.
+This project is for League of Legends players as an auxiliary tool. All features are based on Riot Games' official League Client API (LCU API) and local client data.
+
+**This tool does not modify, inject, or tamper with game memory, processes, or network data, nor does it provide any cheating, acceleration, or scripting functions.**
+
+- Strictly for learning, research, and personal entertainment only.
+- All data interactions are via official APIs; no unofficial operations on the game client, server, or packets.
+- No collection, upload, or leakage of any user privacy or sensitive data.
+- This is open source software, not affiliated with Riot Games or Tencent, nor officially authorized.
+- The developer assumes no legal or financial responsibility for any consequences (including but not limited to account risk, data loss, or functional issues) arising from use.
+- **Commercial use of this project and all derivatives is strictly prohibited. All contributions and redistribution must use the same license.**
+
+**Please ensure your use complies with the League of Legends user agreement and related policies. If in doubt, stop using and consult official support.**
 
 ## 🙏 Acknowledgments
 

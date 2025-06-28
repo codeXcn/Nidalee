@@ -1,7 +1,7 @@
 [package]
 name = "nidalee"
 version = "1.0.0"
-description = "Nidalee - 英雄联盟游戏助手"
+description = "Nidalee - 高性能、体积小巧的智能英雄联盟游戏助手"
 authors = ["Nidalee Team <team@nidalee.com>"]
 license = "MIT"
 repository = "https://github.com/codexlin/Nidalee"

@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Nidalee - 英雄联盟游戏助手",
+        "title": "Nidalee - 高性能、体积小巧的智能英雄联盟游戏助手",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -29,20 +29,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
+    "targets": ["msi"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "resources": [],
     "externalBin": [],
     "copyright": "Copyright © 2024 Nidalee Team. All rights reserved.",
     "category": "Game",
-    "shortDescription": "英雄联盟游戏助手",
-    "longDescription": "Nidalee 是一个功能强大的英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。",
+    "shortDescription": "高性能、体积小巧的智能英雄联盟游戏助手",
+    "longDescription": "Nidalee 是一个高性能、体积小巧的智能英雄联盟游戏助手，提供实时游戏数据分析、自动化功能和个性化设置。",
     "publisher": "Nidalee Team",
     "homepage": "https://github.com/codexlin/Nidalee",
     "licenseFile": "../LICENSE",
