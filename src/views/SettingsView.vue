@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div>
     <div>
       <h1 class="text-3xl font-bold text-foreground">设置</h1>
       <p class="text-muted-foreground">自定义您的应用程序外观和行为</p>

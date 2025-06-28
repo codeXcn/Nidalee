@@ -1,7 +1,5 @@
 use crate::lcu::request::lcu_get;
-use crate::lcu::types::{
-    ChampionStats, MatchStatistics, RecentGame, TeamStats,
-};
+use crate::lcu::types::{ChampionStats, MatchStatistics, RecentGame, TeamStats};
 use reqwest::Client;
 use serde_json::{json, Value};
 
@@ -319,13 +317,25 @@ fn analyze_match_list_data(
                         }
 
                         // 添加到最近游戏
-                        let penta_kills = stats.get("pentaKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                        let quadra_kills = stats.get("quadraKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                        let performance_rating = get_performance_rating(kills, deaths, assists, penta_kills, quadra_kills);
+                        let penta_kills = stats
+                            .get("pentaKills")
+                            .and_then(|v| v.as_i64())
+                            .unwrap_or(0) as i32;
+                        let quadra_kills = stats
+                            .get("quadraKills")
+                            .and_then(|v| v.as_i64())
+                            .unwrap_or(0) as i32;
+                        let performance_rating = get_performance_rating(
+                            kills,
+                            deaths,
+                            assists,
+                            penta_kills,
+                            quadra_kills,
+                        );
                         recent_performance.push(RecentGame {
                             game_id: game.get("gameId").and_then(|id| id.as_u64()).unwrap_or(0),
                             champion_id: champion_id as i32,
-                            queue_id:game.get("queueId").and_then(|id| id.as_i64()).unwrap_or(0),
+                            queue_id: game.get("queueId").and_then(|id| id.as_i64()).unwrap_or(0),
                             game_mode: game
                                 .get("gameMode")
                                 .and_then(|gm| gm.as_str())
@@ -415,7 +425,13 @@ fn analyze_match_list_data(
     })
 }
 
-fn get_performance_rating(kills: i32, deaths: i32, assists: i32, penta_kills: i32, quadra_kills: i32) -> String {
+fn get_performance_rating(
+    kills: i32,
+    deaths: i32,
+    assists: i32,
+    penta_kills: i32,
+    quadra_kills: i32,
+) -> String {
     let kda = (kills + assists) as f32 / deaths.max(1) as f32;
     if penta_kills > 0 {
         return "五杀超神！".to_string();

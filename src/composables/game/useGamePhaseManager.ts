@@ -16,7 +16,7 @@ export function useGamePhaseManager() {
     console.log('[🎮 GamePhaseManager] 上一个阶段:', previousPhase)
     console.log('[🎮 GamePhaseManager] 当前阶段:', phase)
     console.log('[🎮 GamePhaseManager] 阶段变更时间:', new Date().toLocaleTimeString())
-    
+
     gameStatusStore.updateGamePhase(phase)
 
     if (phase) {
@@ -47,10 +47,10 @@ export function useGamePhaseManager() {
   // 处理自动接受对局
   const handleAutoAcceptMatch = async () => {
     const { autoFunctions } = autoFunctionStore
-    
+
     if (autoFunctions.acceptMatch.enabled) {
       console.log('[🤖 GamePhaseManager] ✅ 自动接受对局已启用，延迟', autoFunctions.acceptMatch.delay, 'ms后执行')
-      
+
       setTimeout(async () => {
         try {
           console.log('[🤖 GamePhaseManager] 🚀 开始执行自动接受对局')

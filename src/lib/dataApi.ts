@@ -11,7 +11,7 @@ const useApiFetch = createFetch({
       options.headers = {
         ...options.headers,
         'User-Agent': 'Nidalee-LoL-Assistant/1.0',
-        'Accept': 'application/json'
+        Accept: 'application/json'
       }
 
       return { options }

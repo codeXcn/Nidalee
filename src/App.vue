@@ -36,6 +36,7 @@ const handleRouteChange = () => {
             <div class="h-4 w-px bg-border/60 ml-2" />
             <ConnectionStatus />
           </div>
+          <RightToolbars />
         </header>
         <div
           class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
@@ -50,6 +51,5 @@ const handleRouteChange = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-
   </div>
 </template>

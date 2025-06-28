@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="flex flex-col gap-4">
     <!-- 用户信息卡片 -->
     <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" :session-duration="sessionDuration" />
 
@@ -12,39 +12,6 @@
       :session-duration="sessionDuration"
     />
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- 快捷功能 -->
-      <QuickActions
-        :auto-functions="autoFunctions"
-        @toggle-auto-function="toggleAutoFunction"
-        @debug="debugLoginInfo"
-        @simulate="simulateMatch"
-      />
-
-      <!-- 最近活动 -->
-      <ActivityLog :activities="activities" />
-    </div>
-
-    <!-- 调试信息 -->
-    <Card v-if="showDebugInfo && debugInfo" class="p-6">
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-lg font-semibold">API调试信息</h3>
-            <p class="text-sm text-muted-foreground">LCU API响应数据</p>
-          </div>
-          <Button variant="outline" size="sm" class="text-xs" @click="showDebugInfo = false"> 关闭 </Button>
-        </div>
-
-        <div class="space-y-4">
-          <div v-for="(value, key) in debugInfo" :key="key" class="space-y-2">
-            <h4 class="font-medium text-sm">{{ key }}</h4>
-            <pre class="bg-muted p-4 rounded-lg text-xs overflow-x-auto">{{ value }}</pre>
-          </div>
-        </div>
-      </div>
-    </Card>
-
     <!-- 游戏统计 -->
     <GameStats
       :is-connected="isConnected"
@@ -56,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { RefreshCw, Settings } from 'lucide-vue-next'
 import { useAutoFunctionManager } from '@/composables/game/useAutoFunctionManager'
 import {
   useSummonerStore,
@@ -66,6 +34,7 @@ import {
   useAppSessionStore
 } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
+import NotificationHoverCard from '@/components/common/NotificationHoverCard.vue'
 
 // 直接使用各个 store
 const summonerStore = useSummonerStore()
@@ -92,8 +61,6 @@ const { sessionDuration } = storeToRefs(appSessionStore)
 // 调试状态
 const debugInfo = ref<Record<string, unknown> | null>(null)
 const showDebugInfo = ref(false)
-
-
 
 // 方法
 const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {

@@ -16,21 +16,12 @@
         {{ formatRankTier(summonerInfo.soloRankTier) }} {{ summonerInfo.soloRankDivision }}
       </span>
     </div>
-
-    <!-- 连接/刷新按钮 -->
-    <button
-      @click="refreshConnection"
-      class="cursor-pointer ml-2 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 hover:bg-primary/80 hover:text-white text-primary border border-primary/30 shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
-      title="刷新"
-    >
-      <RotateCw class="h-3 w-3 animate-spin" />
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useSummonerStore, useConnectStore } from '@/stores'
-import {RotateCw} from 'lucide-vue-next'
+import { RotateCw } from 'lucide-vue-next'
 // 直接从 store 获取状态
 const summonerStore = useSummonerStore()
 const connectionStore = useConnectStore()
@@ -38,19 +29,6 @@ const connectionStore = useConnectStore()
 // 从store中解构响应式状态
 const { summonerInfo } = storeToRefs(summonerStore)
 const { isConnected } = storeToRefs(connectionStore)
-
-// 从父组件或全局状态获取刷新方法
-// 注意：这里我们使用注入的方式获取刷新方法，避免直接在组件中调用多个store
-const refreshConnection = inject('refreshConnection', async () => {
-  try {
-    await connectionStore.checkConnection()
-    if (connectionStore.isConnected) {
-      await summonerStore.fetchSummonerInfo()
-    }
-  } catch (error) {
-    console.error('手动刷新失败:', error)
-  }
-})
 
 // 格式化段位
 const formatRankTier = (tier: string): string => {
@@ -69,13 +47,3 @@ const formatRankTier = (tier: string): string => {
   return tierMap[tier] || tier
 }
 </script>
-
-<style scoped>
-@keyframes breath {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.18); }
-}
-.animate-breath {
-  animation: breath 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
-}
-</style>

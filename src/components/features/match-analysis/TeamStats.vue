@@ -5,7 +5,10 @@
     <div class="grid grid-cols-2 gap-4">
       <!-- 平均等级 -->
       <div class="text-center p-3 rounded-lg bg-muted/50">
-        <div class="text-lg font-bold" :class="teamType === 'ally' ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'">
+        <div
+          class="text-lg font-bold"
+          :class="teamType === 'ally' ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'"
+        >
           {{ avgLevel }}
         </div>
         <div class="text-xs text-muted-foreground">平均等级</div>
@@ -13,9 +16,7 @@
 
       <!-- 胜率 -->
       <div class="text-center p-3 rounded-lg bg-muted/50">
-        <div class="text-lg font-bold" :class="getWinRateColor(avgWinRate)">
-          {{ avgWinRate }}%
-        </div>
+        <div class="text-lg font-bold" :class="getWinRateColor(avgWinRate)">{{ avgWinRate }}%</div>
         <div class="text-xs text-muted-foreground">平均胜率</div>
       </div>
     </div>
@@ -62,9 +63,13 @@
           v-for="period in powerSpikes"
           :key="period.name"
           class="text-center p-2 rounded text-xs"
-          :class="period.strength > 70 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                  period.strength > 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                  'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'"
+          :class="
+            period.strength > 70
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+              : period.strength > 50
+                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+          "
         >
           <div class="font-medium text-foreground">{{ period.name }}</div>
           <div class="text-xs opacity-75">{{ period.strength }}%</div>
@@ -86,7 +91,16 @@
                 :style="{ width: `${synergy.score}%` }"
               ></div>
             </div>
-            <span class="text-xs w-6" :class="synergy.score > 70 ? 'text-green-600 dark:text-green-400' : synergy.score > 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+            <span
+              class="text-xs w-6"
+              :class="
+                synergy.score > 70
+                  ? 'text-green-600 dark:text-green-400'
+                  : synergy.score > 50
+                    ? 'text-yellow-600 dark:text-yellow-400'
+                    : 'text-red-600 dark:text-red-400'
+              "
+            >
               {{ synergy.score }}
             </span>
           </div>
@@ -109,7 +123,7 @@ const props = defineProps<Props>()
 
 // 计算平均等级
 const avgLevel = computed(() => {
-  const levels = props.team.map(player => player.summonerLevel || 30)
+  const levels = props.team.map((player) => player.summonerLevel || 30)
   const avg = levels.reduce((sum, level) => sum + level, 0) / levels.length
   return Math.round(avg)
 })
@@ -124,7 +138,7 @@ const avgWinRate = computed(() => {
 const rankDistribution = computed(() => {
   // 模拟排位数据，实际应该从玩家排位信息获取
   const ranks = ['GOLD', 'SILVER', 'PLATINUM', 'GOLD', 'SILVER']
-  return ranks.map(tier => ({
+  return ranks.map((tier) => ({
     tier,
     division: ['I', 'II', 'III', 'IV'][Math.floor(Math.random() * 4)]
   }))
@@ -166,35 +180,53 @@ const getWinRateColor = (winRate: number) => {
 
 const getRankColor = (tier: string) => {
   const colors: Record<string, string> = {
-    'IRON': 'bg-gray-400',
-    'BRONZE': 'bg-amber-600',
-    'SILVER': 'bg-gray-300',
-    'GOLD': 'bg-yellow-400',
-    'PLATINUM': 'bg-teal-400',
-    'EMERALD': 'bg-emerald-400',
-    'DIAMOND': 'bg-blue-400',
-    'MASTER': 'bg-purple-500',
-    'GRANDMASTER': 'bg-red-500',
-    'CHALLENGER': 'bg-yellow-500'
+    IRON: 'bg-gray-400',
+    BRONZE: 'bg-amber-600',
+    SILVER: 'bg-gray-300',
+    GOLD: 'bg-yellow-400',
+    PLATINUM: 'bg-teal-400',
+    EMERALD: 'bg-emerald-400',
+    DIAMOND: 'bg-blue-400',
+    MASTER: 'bg-purple-500',
+    GRANDMASTER: 'bg-red-500',
+    CHALLENGER: 'bg-yellow-500'
   }
   return colors[tier] || 'bg-gray-400'
 }
 
 const getHighestRank = () => {
-  const rankOrder = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
-  const ranks = rankDistribution.value.map(r => r.tier)
-  const highest = ranks.reduce((prev, curr) =>
-    rankOrder.indexOf(curr) > rankOrder.indexOf(prev) ? curr : prev
-  )
+  const rankOrder = [
+    'IRON',
+    'BRONZE',
+    'SILVER',
+    'GOLD',
+    'PLATINUM',
+    'EMERALD',
+    'DIAMOND',
+    'MASTER',
+    'GRANDMASTER',
+    'CHALLENGER'
+  ]
+  const ranks = rankDistribution.value.map((r) => r.tier)
+  const highest = ranks.reduce((prev, curr) => (rankOrder.indexOf(curr) > rankOrder.indexOf(prev) ? curr : prev))
   return highest
 }
 
 const getLowestRank = () => {
-  const rankOrder = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
-  const ranks = rankDistribution.value.map(r => r.tier)
-  const lowest = ranks.reduce((prev, curr) =>
-    rankOrder.indexOf(curr) < rankOrder.indexOf(prev) ? curr : prev
-  )
+  const rankOrder = [
+    'IRON',
+    'BRONZE',
+    'SILVER',
+    'GOLD',
+    'PLATINUM',
+    'EMERALD',
+    'DIAMOND',
+    'MASTER',
+    'GRANDMASTER',
+    'CHALLENGER'
+  ]
+  const ranks = rankDistribution.value.map((r) => r.tier)
+  const lowest = ranks.reduce((prev, curr) => (rankOrder.indexOf(curr) < rankOrder.indexOf(prev) ? curr : prev))
   return lowest
 }
 </script>

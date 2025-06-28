@@ -1,9 +1,9 @@
 // 应用库 - 提供应用运行的核心功能
-mod lcu;
-mod commands;
-mod tray;
 mod app;
+mod commands;
 mod http_client;
+mod lcu;
+mod tray;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

@@ -44,4 +44,3 @@ export function useAppInitialization() {
     fetchMatchHistory: matchDataManager.fetchMatchHistoryWithDebounce
   }
 }
-

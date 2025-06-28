@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="flex flex-col gap-4">
     <div>
       <h1 class="text-3xl font-bold text-foreground">安全设置</h1>
       <p class="text-muted-foreground">配置使用安全和风险控制选项</p>

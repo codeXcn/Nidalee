@@ -5,7 +5,10 @@
       <div class="flex items-center justify-center gap-3 mb-2">
         <TrendingUp v-if="overallWinRate >= 50" class="h-6 w-6 text-green-500 dark:text-green-400" />
         <TrendingDown v-else class="h-6 w-6 text-red-500 dark:text-red-400" />
-        <span class="text-3xl font-bold" :class="overallWinRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+        <span
+          class="text-3xl font-bold"
+          :class="overallWinRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+        >
           {{ overallWinRate }}%
         </span>
       </div>
@@ -20,9 +23,7 @@
         ></div>
       </div>
 
-      <div class="text-xs text-muted-foreground mt-2">
-        基于队伍实力、阵容匹配和历史数据分析
-      </div>
+      <div class="text-xs text-muted-foreground mt-2">基于队伍实力、阵容匹配和历史数据分析</div>
     </div>
 
     <!-- 胜率因素分析 -->
@@ -30,14 +31,37 @@
       <h4 class="text-sm font-semibold text-muted-foreground">影响因素</h4>
 
       <div class="space-y-2">
-        <div v-for="factor in winRateFactors" :key="factor.name" class="flex items-center justify-between p-3 rounded-lg border">
+        <div
+          v-for="factor in winRateFactors"
+          :key="factor.name"
+          class="flex items-center justify-between p-3 rounded-lg border"
+        >
           <div class="flex items-center gap-3">
-            <component :is="factor.icon" class="h-4 w-4" :class="factor.impact > 0 ? 'text-green-500 dark:text-green-400' : factor.impact < 0 ? 'text-red-500 dark:text-red-400' : 'text-muted-foreground'" />
+            <component
+              :is="factor.icon"
+              class="h-4 w-4"
+              :class="
+                factor.impact > 0
+                  ? 'text-green-500 dark:text-green-400'
+                  : factor.impact < 0
+                    ? 'text-red-500 dark:text-red-400'
+                    : 'text-muted-foreground'
+              "
+            />
             <span class="text-sm font-medium text-foreground">{{ factor.name }}</span>
           </div>
 
           <div class="flex items-center gap-2">
-            <div class="text-sm" :class="factor.impact > 0 ? 'text-green-600 dark:text-green-400' : factor.impact < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'">
+            <div
+              class="text-sm"
+              :class="
+                factor.impact > 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : factor.impact < 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-muted-foreground'
+              "
+            >
               {{ factor.impact > 0 ? '+' : '' }}{{ factor.impact }}%
             </div>
 
@@ -59,7 +83,10 @@
 
       <div class="grid grid-cols-3 gap-3">
         <div v-for="period in timePeriods" :key="period.name" class="text-center p-3 rounded-lg border">
-          <div class="text-lg font-bold mb-1" :class="period.winRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+          <div
+            class="text-lg font-bold mb-1"
+            :class="period.winRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+          >
             {{ period.winRate }}%
           </div>
           <div class="text-xs text-muted-foreground mb-2">{{ period.name }}</div>
@@ -118,17 +145,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Shield,
-  Zap,
-  Target,
-  Star,
-  Lightbulb,
-  ArrowRight
-} from 'lucide-vue-next'
+import { TrendingUp, TrendingDown, Users, Shield, Zap, Target, Star, Lightbulb, ArrowRight } from 'lucide-vue-next'
 
 interface Props {
   session: any

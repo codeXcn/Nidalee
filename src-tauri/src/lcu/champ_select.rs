@@ -1,9 +1,7 @@
 use crate::lcu::match_history::get_recent_matches_by_summoner_id;
 use crate::lcu::request::{lcu_get, lcu_patch_no_content};
 use crate::lcu::summoner::get_summoner_by_id;
-use crate::lcu::types::{
-    ChampSelectPlayer, ChampSelectSession, MatchStatistics, SummonerInfo,
-};
+use crate::lcu::types::{ChampSelectPlayer, ChampSelectSession, MatchStatistics, SummonerInfo};
 use reqwest::Client;
 use serde_json::{Number, Value};
 use std::collections::HashMap;
@@ -40,11 +38,7 @@ pub async fn pick_champion(
 }
 
 // 禁用英雄
-pub async fn ban_champion(
-    client: &Client,
-    action_id: u64,
-    champion_id: u64,
-) -> Result<(), String> {
+pub async fn ban_champion(client: &Client, action_id: u64, champion_id: u64) -> Result<(), String> {
     champion_action(client, action_id, champion_id, true).await
 }
 

@@ -76,16 +76,8 @@
           <Label class="text-sm font-medium text-foreground">执行延迟</Label>
           <div class="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
             <span>{{ formatDelayDisplay(debouncedDelay) }}</span>
-            <div
-              v-if="isDelayPending"
-              class="h-2 w-2 bg-orange-500 rounded-full animate-pulse"
-              title="设置保存中..."
-            />
-            <div
-              v-else
-              class="h-2 w-2 bg-green-500 rounded-full"
-              title="设置已保存"
-            />
+            <div v-if="isDelayPending" class="h-2 w-2 bg-orange-500 rounded-full animate-pulse" title="设置保存中..." />
+            <div v-else class="h-2 w-2 bg-green-500 rounded-full" title="设置已保存" />
           </div>
         </div>
 
@@ -195,16 +187,13 @@ watch(
 )
 
 // 监听防抖状态
-watch(
-  isDelayPending,
-  (pending) => {
-    if (pending) {
-      console.log(`[ChampionFunctionCard] ${props.title} - delay change pending...`)
-    } else {
-      console.log(`[ChampionFunctionCard] ${props.title} - delay change saved`)
-    }
+watch(isDelayPending, (pending) => {
+  if (pending) {
+    console.log(`[ChampionFunctionCard] ${props.title} - delay change pending...`)
+  } else {
+    console.log(`[ChampionFunctionCard] ${props.title} - delay change saved`)
   }
-)
+})
 
 // 定义其他事件
 const emit = defineEmits<{
@@ -250,8 +239,4 @@ const formatDelayDisplay = (value: number) => {
 onBeforeUnmount(() => {
   flushDelay()
 })
-
-
-
-
 </script>

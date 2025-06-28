@@ -27,9 +27,9 @@ export const useConnectStore = defineStore(
       connectionState.value = info.state
       consecutiveFailures.value = info.consecutive_failures
       connectionError.value = info.error_message
-
+      const state = info?.state ? info.state : info
       // 根据状态更新连接状态和认证信息
-      switch (info.state) {
+      switch (state) {
         case 'Connected':
           isConnected.value = true
           authInfo.value = info.auth_info

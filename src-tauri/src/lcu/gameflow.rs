@@ -1,5 +1,5 @@
-use reqwest::Client;
 use crate::lcu::request::lcu_get;
+use reqwest::Client;
 
 /// 获取当前游戏流程阶段（如 "Lobby"、"Matchmaking"、"ChampSelect"、"InProgress"、"EndOfGame" 等）
 pub async fn get_gameflow_phase(client: &Client) -> Result<String, String> {

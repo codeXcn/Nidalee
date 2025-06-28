@@ -6,11 +6,7 @@ import { ref, computed, watch, type Ref } from 'vue'
  * @param delay 防抖延迟时间（毫秒）
  * @param immediate 是否立即设置初始值
  */
-export function useDebouncedModel<T>(
-  originalModel: Ref<T>,
-  delay: number = 300,
-  immediate: boolean = true
-) {
+export function useDebouncedModel<T>(originalModel: Ref<T>, delay: number = 300, immediate: boolean = true) {
   // 内部状态，用于存储用户输入的临时值
   const internalValue = ref<T>(originalModel.value)
   let timeoutId: ReturnType<typeof setTimeout> | null = null

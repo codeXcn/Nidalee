@@ -2,7 +2,9 @@
   <div class="space-y-6">
     <!-- 召唤师基本信息 -->
     <div class="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-      <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+      <div
+        class="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center"
+      >
         <span class="text-2xl font-bold text-primary">
           {{ summonerName?.charAt(0)?.toUpperCase() || '?' }}
         </span>
@@ -11,16 +13,12 @@
       <div class="flex-1 min-w-0">
         <h3 class="text-xl font-bold mb-1 text-foreground">{{ summonerName || '未知召唤师' }}</h3>
         <div class="flex items-center gap-2 mb-2">
-          <Badge variant="outline" class="text-xs">
-            等级 {{ summonerLevel || 1 }}
-          </Badge>
+          <Badge variant="outline" class="text-xs"> 等级 {{ summonerLevel || 1 }} </Badge>
           <Badge v-if="rankedTier" :variant="getRankedVariant(rankedTier)" class="text-xs">
             {{ getRankedDisplay(rankedTier, rankedDivision) }}
           </Badge>
         </div>
-        <p class="text-sm text-muted-foreground">
-          召唤师 ID: {{ summonerId }}
-        </p>
+        <p class="text-sm text-muted-foreground">召唤师 ID: {{ summonerId }}</p>
       </div>
     </div>
 
@@ -44,9 +42,7 @@
           <div v-if="soloRank" class="space-y-1">
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">胜率</span>
-              <span :class="getWinRateColor(soloRank.winRate)">
-                {{ soloRank.winRate }}%
-              </span>
+              <span :class="getWinRateColor(soloRank.winRate)"> {{ soloRank.winRate }}% </span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">胜/负</span>
@@ -58,9 +54,7 @@
             </div>
           </div>
 
-          <div v-else class="text-sm text-muted-foreground">
-            未进行排位
-          </div>
+          <div v-else class="text-sm text-muted-foreground">未进行排位</div>
         </div>
 
         <!-- 灵活排位 -->
@@ -75,9 +69,7 @@
           <div v-if="flexRank" class="space-y-1">
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">胜率</span>
-              <span :class="getWinRateColor(flexRank.winRate)">
-                {{ flexRank.winRate }}%
-              </span>
+              <span :class="getWinRateColor(flexRank.winRate)"> {{ flexRank.winRate }}% </span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">胜/负</span>
@@ -89,9 +81,7 @@
             </div>
           </div>
 
-          <div v-else class="text-sm text-muted-foreground">
-            未进行排位
-          </div>
+          <div v-else class="text-sm text-muted-foreground">未进行排位</div>
         </div>
       </div>
     </Card>
@@ -115,9 +105,7 @@
 
           <div class="flex-1 min-w-0">
             <div class="font-medium text-sm truncate text-foreground">{{ champion.name || '未知英雄' }}</div>
-            <div class="text-xs text-muted-foreground">
-              {{ champion.gamesPlayed }} 场 · {{ champion.winRate }}%
-            </div>
+            <div class="text-xs text-muted-foreground">{{ champion.gamesPlayed }} 场 · {{ champion.winRate }}%</div>
           </div>
         </div>
       </div>
@@ -140,7 +128,11 @@
           v-for="match in recentMatches"
           :key="match.gameId"
           class="flex items-center gap-3 p-3 rounded-lg border"
-          :class="match.win ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'"
+          :class="
+            match.win
+              ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+              : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+          "
         >
           <div class="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
             <span class="text-xs font-bold text-primary">{{ match.championName?.charAt(0) || '?' }}</span>
@@ -149,10 +141,7 @@
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
               <span class="font-medium text-sm text-foreground">{{ match.championName || '未知英雄' }}</span>
-              <Badge
-                :variant="match.win ? 'default' : 'destructive'"
-                class="text-xs"
-              >
+              <Badge :variant="match.win ? 'default' : 'destructive'" class="text-xs">
                 {{ match.win ? '胜利' : '失败' }}
               </Badge>
             </div>
@@ -165,7 +154,10 @@
           </div>
 
           <div class="text-right">
-            <div class="text-sm font-medium" :class="match.win ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            <div
+              class="text-sm font-medium"
+              :class="match.win ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+            >
               KDA {{ calculateKDA(match.kda) }}
             </div>
             <div class="text-xs text-muted-foreground">
@@ -311,7 +303,7 @@ const getWinRateColor = (winRate: number) => {
   return 'text-red-600 dark:text-red-400'
 }
 
-const calculateKDA = (kda: { kills: number, deaths: number, assists: number }) => {
+const calculateKDA = (kda: { kills: number; deaths: number; assists: number }) => {
   const ratio = kda.deaths === 0 ? kda.kills + kda.assists : (kda.kills + kda.assists) / kda.deaths
   return ratio.toFixed(1)
 }

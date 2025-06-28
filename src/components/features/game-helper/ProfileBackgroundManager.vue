@@ -32,14 +32,13 @@
           <ScrollArea class="h-[min(600px,calc(85vh-200px))] w-full rounded-lg border border-border bg-muted/20">
             <div class="p-6">
               <div v-if="loadingChampions" class="flex flex-col items-center justify-center py-16 text-center">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-3xl mx-auto">
                   <Skeleton
                     v-for="i in 12"
                     :key="i"
                     class="h-24 rounded-xl bg-gradient-to-br from-muted/60 to-muted/30 animate-pulse shadow-md"
                   />
                 </div>
-                <p class="text-muted-foreground font-medium text-lg mt-8">正在加载英雄数据...</p>
               </div>
               <div v-else-if="championsError" class="flex flex-col items-center justify-center py-16 text-center">
                 <div
@@ -61,7 +60,7 @@
                   <div
                     v-for="champion in filteredChampions"
                     :key="champion.id"
-                    class="flex flex-col items-center p-1 rounded-lg cursor-pointer transition-all duration-200 bg-gradient-to-br from-background/80 to-background/40 hover:from-primary/10 hover:to-primary/20 hover:scale-105 hover:shadow group"
+                    class="hover:shadow-[0_0_16px_4px_theme('colors.primary.DEFAULT')] flex flex-col items-center p-1 rounded-lg cursor-pointer transition-all duration-200 bg-gradient-to-br from-background/80 shadow-xs to-background/40 hover:from-primary/10 hover:to-primary/20 hover:scale-105 group"
                     @click="handleChampionSelect(champion)"
                     style="will-change: transform, opacity; transform: translateZ(0); backface-visibility: hidden"
                   >
@@ -116,7 +115,7 @@
         <div v-else>
           <div class="flex items-center mb-4">
             <button @click="clearChampion" class="cursor-pointer flex items-center gap-1 text-primary hover:underline">
-              <ArrowLeft class="h-4 w-4 "/> 返回英雄列表
+              <ArrowLeft class="h-4 w-4" /> 返回英雄列表
             </button>
             <span class="ml-4 font-semibold text-2xl tracking-wide">{{ selectedChampion.name }}</span>
           </div>
@@ -154,7 +153,10 @@
                   :key="skin.id"
                   :style="getCard3DStyle(idx)"
                   class="mb-10 break-inside-avoid relative rounded-3xl overflow-hidden border-2 border-transparent cursor-pointer group shadow-2xl transition-all duration-300 bg-gradient-to-br from-background/80 to-background/60 hover:scale-105 hover:shadow-2xl hover:border-primary/80 hover:z-20 transform-gpu group-hover:[transform:perspective(800px)_rotateX(8deg)_rotateY(8deg)_scale3d(1.04,1.04,1.04)] hover:tw-animate-tilt hover:tw-animate-glow"
-                  :class="[{ 'pointer-events-none opacity-70': applyingSkinId === skin.id }, shakeSkinId === skin.id ? 'animate-shake' : '']"
+                  :class="[
+                    { 'pointer-events-none opacity-70': applyingSkinId === skin.id },
+                    shakeSkinId === skin.id ? 'animate-shake' : ''
+                  ]"
                   @click="applySkinBackground(skin)"
                   :id="'skin-card-' + skin.id"
                 >
@@ -230,7 +232,6 @@ const loadingSkins = ref(false)
 const skinsError = ref<string | null>(null)
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
-
 
 // 使用 Radash 的防抖函数，更简洁可靠
 const debouncedUpdateSearch = debounce({ delay: 300 }, (value: string) => {

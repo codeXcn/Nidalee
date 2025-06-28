@@ -1,4 +1,6 @@
+import { useConnection } from '@/composables/utils/useConnection'
 import { invoke } from '@tauri-apps/api/core'
+import { useConnectStore } from './connectStore'
 
 export const useSummonerStore = defineStore('summoner', () => {
   // 召唤师信息
@@ -17,6 +19,9 @@ export const useSummonerStore = defineStore('summoner', () => {
       return info
     } catch (err) {
       console.error('获取召唤师信息失败:', err)
+      if (err === '认证信息不存在，请检查LCU进程或重试') {
+        useConnectStore().checkConnection()
+      }
       error.value = err instanceof Error ? err.message : '获取召唤师信息失败'
       summonerInfo.value = null
       throw err

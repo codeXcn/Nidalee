@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-4 lg:p-6">
+  <div class="min-h-screen">
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->

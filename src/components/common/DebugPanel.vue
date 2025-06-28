@@ -7,13 +7,13 @@
           {{ isExpanded ? '收起' : '展开' }}
         </Button>
       </div>
-      
+
       <div v-if="isExpanded" class="space-y-3">
         <div class="text-xs space-y-2">
           <div class="font-medium">日志过滤器:</div>
           <div class="flex flex-wrap gap-1">
-            <Badge 
-              v-for="filter in logFilters" 
+            <Badge
+              v-for="filter in logFilters"
               :key="filter.key"
               :variant="filter.active ? 'default' : 'outline'"
               class="cursor-pointer text-xs"
@@ -23,19 +23,13 @@
             </Badge>
           </div>
         </div>
-        
+
         <div class="text-xs space-y-2">
           <div class="font-medium">快捷操作:</div>
           <div class="flex flex-col gap-1">
-            <Button size="sm" variant="outline" @click="clearConsole">
-              清空控制台
-            </Button>
-            <Button size="sm" variant="outline" @click="showCurrentPhase">
-              显示当前阶段
-            </Button>
-            <Button size="sm" variant="outline" @click="showAutoConfig">
-              显示自动配置
-            </Button>
+            <Button size="sm" variant="outline" @click="clearConsole"> 清空控制台 </Button>
+            <Button size="sm" variant="outline" @click="showCurrentPhase"> 显示当前阶段 </Button>
+            <Button size="sm" variant="outline" @click="showAutoConfig"> 显示自动配置 </Button>
           </div>
         </div>
       </div>
@@ -68,7 +62,7 @@ const togglePanel = () => {
 }
 
 const toggleFilter = (key: string) => {
-  const filter = logFilters.value.find(f => f.key === key)
+  const filter = logFilters.value.find((f) => f.key === key)
   if (filter) {
     filter.active = !filter.active
     updateConsoleFilter()
@@ -77,7 +71,7 @@ const toggleFilter = (key: string) => {
 
 const updateConsoleFilter = () => {
   // 这里可以实现控制台日志过滤逻辑
-  const activeFilters = logFilters.value.filter(f => f.active).map(f => f.key)
+  const activeFilters = logFilters.value.filter((f) => f.active).map((f) => f.key)
   console.log('🔧 活跃的日志过滤器:', activeFilters)
 }
 

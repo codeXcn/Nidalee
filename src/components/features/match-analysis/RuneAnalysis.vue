@@ -106,12 +106,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const {
-  isLoaded: staticDataLoaded,
-  loadStaticData,
-  getRuneById,
-  getRecommendedRunes
-} = useStaticData()
+const { isLoaded: staticDataLoaded, loadStaticData, getRuneById, getRecommendedRunes } = useStaticData()
 
 // 队伍数据
 const allyTeam = computed(() => props.session?.myTeam || [])
@@ -128,7 +123,7 @@ const getPlayerMainRune = (player: any) => {
 // 符文分布统计
 const allyRuneDistribution = computed(() => {
   return {
-    domination: allyTeam.value.filter(player => {
+    domination: allyTeam.value.filter((player) => {
       const rune = getPlayerMainRune(player)
       return rune?.tree === '主宰'
     }).length
@@ -137,7 +132,7 @@ const allyRuneDistribution = computed(() => {
 
 const enemyRuneDistribution = computed(() => {
   return {
-    domination: enemyTeam.value.filter(player => {
+    domination: enemyTeam.value.filter((player) => {
       const rune = getPlayerMainRune(player)
       return rune?.tree === '主宰'
     }).length

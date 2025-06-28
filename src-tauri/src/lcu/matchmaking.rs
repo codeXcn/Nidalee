@@ -1,11 +1,16 @@
+use crate::lcu::request::{lcu_delete, lcu_get, lcu_post};
+use crate::lcu::types::{MatchInfo, MatchmakingState, PlayerInfo};
 use reqwest::Client;
-use crate::lcu::types::{MatchmakingState, MatchInfo, PlayerInfo};
-use crate::lcu::request::{lcu_get, lcu_post, lcu_delete};
 use serde_json::Value;
 
 /// 开始匹配
 pub async fn start_matchmaking(client: &Client) -> Result<(), String> {
-    lcu_post::<Value>(client, "/lol-lobby/v2/lobby/matchmaking/search", Value::Null).await?;
+    lcu_post::<Value>(
+        client,
+        "/lol-lobby/v2/lobby/matchmaking/search",
+        Value::Null,
+    )
+    .await?;
     Ok(())
 }
 
@@ -17,13 +22,23 @@ pub async fn stop_matchmaking(client: &Client) -> Result<(), String> {
 
 /// 接受匹配
 pub async fn accept_match(client: &Client) -> Result<(), String> {
-    lcu_post::<Value>(client, "/lol-matchmaking/v1/ready-check/accept", Value::Null).await?;
+    lcu_post::<Value>(
+        client,
+        "/lol-matchmaking/v1/ready-check/accept",
+        Value::Null,
+    )
+    .await?;
     Ok(())
 }
 
 /// 拒绝匹配
 pub async fn decline_match(client: &Client) -> Result<(), String> {
-    lcu_post::<Value>(client, "/lol-matchmaking/v1/ready-check/decline", Value::Null).await?;
+    lcu_post::<Value>(
+        client,
+        "/lol-matchmaking/v1/ready-check/decline",
+        Value::Null,
+    )
+    .await?;
     Ok(())
 }
 
@@ -37,10 +52,7 @@ pub async fn get_match_info(client: &Client) -> Result<MatchInfo, String> {
     let session: serde_json::Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
 
     // 解析对局信息
-    let match_id = session["gameId"]
-        .as_str()
-        .unwrap_or("unknown")
-        .to_string();
+    let match_id = session["gameId"].as_str().unwrap_or("unknown").to_string();
 
     let mut players = Vec::new();
     if let Some(team_members) = session["myTeam"].as_array() {
@@ -49,12 +61,8 @@ pub async fn get_match_info(client: &Client) -> Result<MatchInfo, String> {
                 .as_str()
                 .unwrap_or("Unknown")
                 .to_string();
-            let champion_id = member["championId"]
-                .as_i64()
-                .unwrap_or(0) as i32;
-            let team_id = member["team"]
-                .as_i64()
-                .unwrap_or(0) as i32;
+            let champion_id = member["championId"].as_i64().unwrap_or(0) as i32;
+            let team_id = member["team"].as_i64().unwrap_or(0) as i32;
 
             players.push(PlayerInfo {
                 summoner_name,
@@ -64,8 +72,5 @@ pub async fn get_match_info(client: &Client) -> Result<MatchInfo, String> {
         }
     }
 
-    Ok(MatchInfo {
-        match_id,
-        players,
-    })
+    Ok(MatchInfo { match_id, players })
 }

@@ -1,9 +1,9 @@
+use crate::lcu::types::LcuAuthInfo;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::sync::{RwLock, Mutex};
-use sysinfo::{ProcessRefreshKind, RefreshKind, System};
-use crate::lcu::types::LcuAuthInfo;
+use std::sync::{Mutex, RwLock};
 use std::time::{Duration, Instant};
+use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
 static SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
 static AUTH_INFO: Lazy<RwLock<Option<LcuAuthInfo>>> = Lazy::new(|| RwLock::new(None));
@@ -24,7 +24,10 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
         let ts = AUTH_TIMESTAMP.read().unwrap();
         if let (Some(a), Some(t)) = (auth.as_ref(), ts.as_ref()) {
             if t.elapsed() < AUTH_REFRESH_INTERVAL {
-                log::debug!("[LCU] 使用缓存的 AuthInfo，距离上次刷新: {:?}秒", t.elapsed().as_secs());
+                log::debug!(
+                    "[LCU] 使用缓存的 AuthInfo，距离上次刷新: {:?}秒",
+                    t.elapsed().as_secs()
+                );
                 return Some(a.clone());
             } else {
                 log::info!("[LCU] AuthInfo 缓存已过期，准备刷新");
@@ -33,7 +36,7 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
             log::debug!("[LCU] 当前无有效缓存，准备刷新");
         }
     }
-    
+
     // 2. 带重试的自动刷新（LOL 启动初期可能需要多次尝试）
     for attempt in 1..=3 {
         match refresh_auth_info() {
@@ -50,7 +53,7 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
             }
         }
     }
-    
+
     log::error!("[LCU] 多次尝试后仍无法获取有效的 AuthInfo");
     None
 }
@@ -122,32 +125,48 @@ pub fn refresh_auth_info() -> Result<LcuAuthInfo, String> {
 
 fn get_lcu_cmdline() -> Option<String> {
     let mut system = SYSTEM.lock().unwrap();
-    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
-    
+    system
+        .refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
+
     // 寻找所有可能的 LoL 客户端进程
-    let possible_names = ["LeagueClientUx.exe", "LeagueClient.exe", "LeagueOfLegends.exe"];
-    
+    let possible_names = [
+        "LeagueClientUx.exe",
+        "LeagueClient.exe",
+        "LeagueOfLegends.exe",
+    ];
+
     for (_pid, process) in system.processes() {
         let process_name = process.name();
-        
-        if possible_names.iter().any(|name| process_name.eq_ignore_ascii_case(name)) {
-            let cmdline = process.cmd()
+
+        if possible_names
+            .iter()
+            .any(|name| process_name.eq_ignore_ascii_case(name))
+        {
+            let cmdline = process
+                .cmd()
                 .iter()
                 .map(|s| s.to_string_lossy())
                 .collect::<Vec<_>>()
                 .join(" ");
-                
+
             // 检查命令行是否包含 LCU 相关参数
             if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
-                log::debug!("[LCU] 找到有效的 {} 进程，PID: {}", process_name.to_string_lossy(), _pid);
+                log::debug!(
+                    "[LCU] 找到有效的 {} 进程，PID: {}",
+                    process_name.to_string_lossy(),
+                    _pid
+                );
                 log::debug!("[LCU] 启动参数: {}", cmdline);
                 return Some(cmdline);
             } else {
-                log::debug!("[LCU] 找到 {} 进程但不包含 LCU 参数，跳过", process_name.to_string_lossy());
+                log::debug!(
+                    "[LCU] 找到 {} 进程但不包含 LCU 参数，跳过",
+                    process_name.to_string_lossy()
+                );
             }
         }
     }
-    
+
     log::debug!("[LCU] 未找到包含有效 LCU 参数的客户端进程");
     None
 }
@@ -166,19 +185,22 @@ pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
         .build();
-        
+
     let client = match client {
         Ok(c) => c,
         Err(_) => return false,
     };
-    
-    let url = format!("https://127.0.0.1:{}/lol-summoner/v1/current-summoner", auth.app_port);
+
+    let url = format!(
+        "https://127.0.0.1:{}/lol-summoner/v1/current-summoner",
+        auth.app_port
+    );
     let response = client
         .get(&url)
         .basic_auth("riot", Some(&auth.remoting_auth_token))
         .send()
         .await;
-        
+
     match response {
         Ok(resp) => {
             let success = resp.status().is_success();

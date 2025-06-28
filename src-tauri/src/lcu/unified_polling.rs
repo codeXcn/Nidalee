@@ -1,8 +1,4 @@
 // 统一轮询管理器 - 优化版本
-use std::sync::Arc;
-use std::time::Duration;
-use tauri::{AppHandle, Emitter};
-use tokio::sync::RwLock;
 use crate::lcu::{
     auth::ensure_valid_auth_info,
     champ_select::get_champ_select_session,
@@ -10,8 +6,12 @@ use crate::lcu::{
     lobby::get_lobby_info,
     matchmaking::{get_match_info, get_matchmaking_state},
     summoner::get_current_summoner,
-    types::{ChampSelectSession, LcuAuthInfo, MatchInfo, MatchmakingState, SummonerInfo}
+    types::{ChampSelectSession, LcuAuthInfo, MatchInfo, MatchmakingState, SummonerInfo},
 };
+use std::sync::Arc;
+use std::time::Duration;
+use tauri::{AppHandle, Emitter};
+use tokio::sync::RwLock;
 
 #[derive(Clone)]
 pub struct UnifiedPollingManager {
@@ -162,7 +162,10 @@ impl UnifiedPollingManager {
             }
             _ => {
                 // 其他状态，获取大厅和匹配数据
-                log::debug!("[统一轮询] 其他状态({:?})，获取大厅和匹配数据", current_phase);
+                log::debug!(
+                    "[统一轮询] 其他状态({:?})，获取大厅和匹配数据",
+                    current_phase
+                );
                 let _lobby_result = self.fetch_lobby_info().await;
                 let _matchmaking_result = self.fetch_matchmaking_state().await;
             }
@@ -198,7 +201,11 @@ impl UnifiedPollingManager {
             Ok(phase) => {
                 let mut state = self.state.write().await;
                 if state.gameflow_phase.as_ref() != Some(&phase) {
-                    log::info!("[统一轮询] 游戏阶段变化: {:?} -> {}", state.gameflow_phase, phase);
+                    log::info!(
+                        "[统一轮询] 游戏阶段变化: {:?} -> {}",
+                        state.gameflow_phase,
+                        phase
+                    );
 
                     // 检测游戏结束
                     let was_in_progress = state.gameflow_phase.as_deref() == Some("InProgress");
@@ -251,13 +258,18 @@ impl UnifiedPollingManager {
             Ok(matchmaking_state) => {
                 let mut state = self.state.write().await;
                 if state.matchmaking_state.as_ref() != Some(&matchmaking_state) {
-                    log::info!("[统一轮询] 匹配状态更新: {:?}", matchmaking_state.search_state);
+                    log::info!(
+                        "[统一轮询] 匹配状态更新: {:?}",
+                        matchmaking_state.search_state
+                    );
 
                     // 检查是否找到匹配（在移动值之前）
                     let found_match = matchmaking_state.search_state == "Found";
 
                     state.matchmaking_state = Some(matchmaking_state.clone());
-                    let _ = self.app.emit("matchmaking-state-changed", matchmaking_state);
+                    let _ = self
+                        .app
+                        .emit("matchmaking-state-changed", matchmaking_state);
 
                     // 找到匹配时获取匹配详情
                     if found_match {
@@ -306,7 +318,10 @@ impl UnifiedPollingManager {
 
                     match self.app.emit("champ-select-session-changed", &session) {
                         Ok(_) => log::info!("[统一轮询] champ-select-session-changed 事件发送成功"),
-                        Err(e) => log::error!("[统一轮询] champ-select-session-changed 事件发送失败: {}", e),
+                        Err(e) => log::error!(
+                            "[统一轮询] champ-select-session-changed 事件发送失败: {}",
+                            e
+                        ),
                     }
                 } else {
                     log::debug!("[统一轮询] 选人阶段会话无变化，跳过事件发送");
@@ -318,7 +333,10 @@ impl UnifiedPollingManager {
                 if state.champ_select_session.is_some() {
                     log::debug!("[统一轮询] 选人阶段会话获取失败，清除状态");
                     state.champ_select_session = None;
-                    let _ = self.app.emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
+                    let _ = self.app.emit(
+                        "champ-select-session-changed",
+                        Option::<ChampSelectSession>::None,
+                    );
                 }
             }
         }

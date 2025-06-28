@@ -197,6 +197,4 @@ const loadChampions = async () => {
 onMounted(() => {
   loadChampions()
 })
-
-
 </script>

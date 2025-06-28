@@ -35,7 +35,11 @@
             <span class="text-sm font-medium text-blue-600 dark:text-blue-400">物理防御装备</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <div v-for="item in armorItems.slice(0, 3)" :key="item.name" class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded">
+            <div
+              v-for="item in armorItems.slice(0, 3)"
+              :key="item.name"
+              class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded"
+            >
               <div class="w-6 h-6 bg-blue-200 dark:bg-blue-800 rounded"></div>
               <span class="text-xs">{{ item.name }}</span>
             </div>
@@ -52,7 +56,11 @@
             <span class="text-sm font-medium text-purple-600 dark:text-purple-400">魔法防御装备</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <div v-for="item in mrItems.slice(0, 3)" :key="item.name" class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded">
+            <div
+              v-for="item in mrItems.slice(0, 3)"
+              :key="item.name"
+              class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded"
+            >
               <div class="w-6 h-6 bg-purple-200 dark:bg-purple-800 rounded"></div>
               <span class="text-xs">{{ item.name }}</span>
             </div>
@@ -69,7 +77,11 @@
             <span class="text-sm font-medium text-amber-600 dark:text-amber-400">推荐核心装备</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <div v-for="item in coreItems.slice(0, 6)" :key="item.name" class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded">
+            <div
+              v-for="item in coreItems.slice(0, 6)"
+              :key="item.name"
+              class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded"
+            >
               <div class="w-6 h-6 bg-amber-200 dark:bg-amber-800 rounded"></div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium truncate">{{ item.name }}</p>
@@ -109,11 +121,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const {
-  isLoaded: staticDataLoaded,
-  loadStaticData,
-  getRecommendedItems
-} = useStaticData()
+const { isLoaded: staticDataLoaded, loadStaticData, getRecommendedItems } = useStaticData()
 
 // 当前游戏阶段（可以根据游戏时间或其他因素判断）
 const currentGamePhase = computed(() => 'early' as 'early' | 'mid' | 'late')
@@ -123,7 +131,7 @@ const enemyTeam = computed(() => props.session?.theirTeam || [])
 
 const enemyPhysicalThreat = computed(() => {
   // 分析敌方物理输出威胁（这里使用模拟逻辑）
-  return enemyTeam.value.filter(player => {
+  return enemyTeam.value.filter((player) => {
     // 这里应该根据英雄类型判断是否为物理输出
     // 暂时使用随机逻辑作为示例
     return Math.random() > 0.5
@@ -132,7 +140,7 @@ const enemyPhysicalThreat = computed(() => {
 
 const enemyMagicalThreat = computed(() => {
   // 分析敌方魔法输出威胁
-  return enemyTeam.value.filter(player => {
+  return enemyTeam.value.filter((player) => {
     // 这里应该根据英雄类型判断是否为魔法输出
     return Math.random() > 0.5
   }).length

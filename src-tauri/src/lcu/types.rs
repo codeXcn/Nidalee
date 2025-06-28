@@ -229,16 +229,16 @@ pub struct ChampSelectSession {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectAction {
-  pub actor_cell_id: Option<i32>,
-  pub champion_id: Option<i32>,
-  pub completed: bool,
-  pub id: i32,
-  pub is_ally_action: Option<bool>,
-  pub is_in_progress: Option<bool>,
-  pub pick_turn: Option<i32>,
-  #[serde(rename = "type")]
-  pub action_type: String, // "pick" 或 "ban"
-  pub is_current_user: Option<bool>,
+    pub actor_cell_id: Option<i32>,
+    pub champion_id: Option<i32>,
+    pub completed: bool,
+    pub id: i32,
+    pub is_ally_action: Option<bool>,
+    pub is_in_progress: Option<bool>,
+    pub pick_turn: Option<i32>,
+    #[serde(rename = "type")]
+    pub action_type: String, // "pick" 或 "ban"
+    pub is_current_user: Option<bool>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(rename_all = "camelCase")]

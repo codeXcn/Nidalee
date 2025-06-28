@@ -1,8 +1,8 @@
 // 应用配置模块 - 负责应用的初始化和配置
-use tauri::{App, Manager};
+use crate::{lcu, tray};
 use std::sync::Arc;
+use tauri::{App, Manager};
 use tokio::sync::RwLock;
-use crate::{tray, lcu};
 
 /// 应用启动时的设置函数
 pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
@@ -13,9 +13,9 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     tray::setup_system_tray(app).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
 
     // 初始化连接管理器
-    let connection_manager = Arc::new(RwLock::new(
-        lcu::ConnectionManager::new(app.handle().clone())
-    ));
+    let connection_manager = Arc::new(RwLock::new(lcu::ConnectionManager::new(
+        app.handle().clone(),
+    )));
     app.handle().manage(connection_manager.clone());
 
     // 启动连接监控和轮询服务
@@ -31,6 +31,6 @@ fn start_services(_app: &mut App, connection_manager: Arc<RwLock<lcu::Connection
         let manager = connection_manager.read().await;
         manager.start_monitoring().await;
     });
-    
+
     log::info!("[应用] 优化后的轮询系统已启动");
 }

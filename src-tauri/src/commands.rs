@@ -1,6 +1,6 @@
 // Tauri 命令模块 - 集中管理所有的 Tauri 命令
+use crate::{http_client, lcu};
 use std::collections::HashMap;
-use crate::{lcu, http_client};
 
 #[tauri::command]
 pub async fn get_game_version() -> Result<String, String> {
@@ -28,8 +28,6 @@ pub async fn get_game_version() -> Result<String, String> {
     // 备用默认版本
     Ok("14.23.1".to_string())
 }
-
-
 
 #[tauri::command]
 pub async fn get_match_history() -> Result<lcu::types::MatchStatistics, String> {
@@ -172,12 +170,19 @@ pub async fn get_champ_select_session_typed() -> Result<lcu::types::ChampSelectS
 }
 
 #[tauri::command]
-pub async fn pick_champion(action_id: u64, champion_id: u64, completed: bool) -> Result<String, String> {
+pub async fn pick_champion(
+    action_id: u64,
+    champion_id: u64,
+    completed: bool,
+) -> Result<String, String> {
     let client = http_client::get_lcu_client();
     match lcu::champ_select::pick_champion(client, action_id, champion_id, completed).await {
         Ok(()) => {
             let action_type = if completed { "锁定" } else { "预选" };
-            let message = format!("{}英雄成功 (ActionID: {}, ChampionID: {})", action_type, action_id, champion_id);
+            let message = format!(
+                "{}英雄成功 (ActionID: {}, ChampionID: {})",
+                action_type, action_id, champion_id
+            );
             log::info!("[Commands] {}", message);
             Ok(message)
         }
@@ -195,7 +200,10 @@ pub async fn ban_champion(action_id: u64, champion_id: u64) -> Result<String, St
     let client = http_client::get_lcu_client();
     match lcu::champ_select::ban_champion(client, action_id, champion_id).await {
         Ok(()) => {
-            let message = format!("禁用英雄成功 (ActionID: {}, ChampionID: {})", action_id, champion_id);
+            let message = format!(
+                "禁用英雄成功 (ActionID: {}, ChampionID: {})",
+                action_id, champion_id
+            );
             log::info!("[Commands] {}", message);
             Ok(message)
         }
@@ -206,5 +214,3 @@ pub async fn ban_champion(action_id: u64, champion_id: u64) -> Result<String, St
         }
     }
 }
-
-

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-background">
     <!-- 通知组件已移除，使用 toast 替代 -->
-    <div class="p-6 max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <!-- 标题和状态 -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 pb-6 border-b border-border">
         <div class="space-y-2">

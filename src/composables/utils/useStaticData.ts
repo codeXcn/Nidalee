@@ -60,9 +60,7 @@ export function useStaticData() {
   const currentVersion = ref<string>('15.4.1') // 默认版本
   const lastUpdateTime = ref<Date | null>(null)
 
-  const isLoaded = computed(() =>
-    runesData.value && itemsData.value && queuesData.value && skinsData.value
-  )
+  const isLoaded = computed(() => runesData.value && itemsData.value && queuesData.value && skinsData.value)
 
   // 检查数据是否需要更新（24小时检查一次）
   const shouldUpdateData = computed(() => {
@@ -144,7 +142,7 @@ export function useStaticData() {
 
       const [runes, items, queues, skins] = await Promise.all([
         // 从 Data Dragon API 获取符文数据
-        fetch(runeUrl).then(async res => {
+        fetch(runeUrl).then(async (res) => {
           console.log('符文API响应状态:', res.status, res.statusText)
           if (!res.ok) {
             throw new Error(`符文API失败: ${res.status} ${res.statusText}`)
@@ -155,7 +153,7 @@ export function useStaticData() {
         }),
 
         // 从 Data Dragon API 获取装备数据
-        fetch(itemUrl).then(async res => {
+        fetch(itemUrl).then(async (res) => {
           console.log('装备API响应状态:', res.status, res.statusText)
           if (!res.ok) {
             throw new Error(`装备API失败: ${res.status} ${res.statusText}`)
@@ -167,7 +165,7 @@ export function useStaticData() {
         }),
 
         // 从本地文件获取队列数据（变化不频繁）
-        fetch('/data/queue.json').then(async res => {
+        fetch('/data/queue.json').then(async (res) => {
           console.log('队列数据响应状态:', res.status, res.statusText)
           if (!res.ok) {
             throw new Error(`队列数据失败: ${res.status} ${res.statusText}`)
@@ -178,7 +176,7 @@ export function useStaticData() {
         }),
 
         // 从本地文件获取皮肤数据
-        fetch('/data/skins.json').then(async res => {
+        fetch('/data/skins.json').then(async (res) => {
           console.log('皮肤数据响应状态:', res.status, res.statusText)
           if (!res.ok) {
             throw new Error(`皮肤数据失败: ${res.status} ${res.statusText}`)
@@ -245,10 +243,10 @@ export function useStaticData() {
     try {
       console.log('Loading static data from local files as fallback')
       const [runes, items, queues, skins] = await Promise.all([
-        fetch('/data/runesReforged.json').then(res => res.json()),
-        fetch('/data/item.json').then(res => res.json()),
-        fetch('/data/queue.json').then(res => res.json()),
-        fetch('/data/skins.json').then(res => res.json())
+        fetch('/data/runesReforged.json').then((res) => res.json()),
+        fetch('/data/item.json').then((res) => res.json()),
+        fetch('/data/queue.json').then((res) => res.json()),
+        fetch('/data/skins.json').then((res) => res.json())
       ])
 
       runesData.value = runes
@@ -268,7 +266,7 @@ export function useStaticData() {
 
     for (const tree of runesData.value) {
       for (const slot of tree.slots) {
-        const rune = slot.runes.find(r => r.id === runeId)
+        const rune = slot.runes.find((r) => r.id === runeId)
         if (rune) return { ...rune, tree: tree.name }
       }
     }
@@ -284,14 +282,14 @@ export function useStaticData() {
   // 根据队列ID获取游戏模式信息
   const getQueueById = (queueId: number) => {
     if (!queuesData.value) return null
-    return queuesData.value.find(q => q.id === queueId) || null
+    return queuesData.value.find((q) => q.id === queueId) || null
   }
 
   // 根据英雄ID和皮肤编号获取皮肤信息
   const getSkinByChampionAndNum = (championId: number, skinNum: number) => {
     if (!skinsData.value) return null
     const skinId = `${championId}${skinNum.toString().padStart(3, '0')}`
-    return skinsData.value.find(s => s.id === skinId) || null
+    return skinsData.value.find((s) => s.id === skinId) || null
   }
 
   // 推荐符文（基于英雄和位置）
@@ -302,15 +300,15 @@ export function useStaticData() {
 
     // 根据位置推荐主符文系
     const positionRuneMap: Record<string, string> = {
-      'TOP': 'Resolve',
-      'JUNGLE': 'Domination',
-      'MIDDLE': 'Sorcery',
-      'BOTTOM': 'Precision',
-      'UTILITY': 'Inspiration'
+      TOP: 'Resolve',
+      JUNGLE: 'Domination',
+      MIDDLE: 'Sorcery',
+      BOTTOM: 'Precision',
+      UTILITY: 'Inspiration'
     }
 
     const recommendedTree = positionRuneMap[position] || 'Precision'
-    return runesData.value.find(tree => tree.key === recommendedTree)
+    return runesData.value.find((tree) => tree.key === recommendedTree)
   }
 
   // 推荐装备（基于英雄和游戏阶段）
@@ -320,7 +318,7 @@ export function useStaticData() {
     // 这里可以根据英雄类型和游戏阶段推荐装备
     // 示例：返回一些通用的核心装备
     const coreItems = Object.values(itemsData.value)
-      .filter(item => item.tags?.includes('Damage') || item.tags?.includes('Tank'))
+      .filter((item) => item.tags?.includes('Damage') || item.tags?.includes('Tank'))
       .slice(0, 6)
 
     return coreItems

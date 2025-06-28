@@ -10,10 +10,7 @@
             <span class="text-sm text-blue-700 dark:text-blue-300">{{ comp.type }}</span>
             <div class="flex items-center gap-2">
               <div class="w-12 h-2 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-blue-500 transition-all duration-300"
-                  :style="{ width: `${comp.score}%` }"
-                ></div>
+                <div class="h-full bg-blue-500 transition-all duration-300" :style="{ width: `${comp.score}%` }"></div>
               </div>
               <span class="text-xs font-medium text-blue-600 dark:text-blue-400 w-8">{{ comp.score }}</span>
             </div>
@@ -29,10 +26,7 @@
             <span class="text-sm text-red-700 dark:text-red-300">{{ comp.type }}</span>
             <div class="flex items-center gap-2">
               <div class="w-12 h-2 bg-red-200 dark:bg-red-800 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-red-500 transition-all duration-300"
-                  :style="{ width: `${comp.score}%` }"
-                ></div>
+                <div class="h-full bg-red-500 transition-all duration-300" :style="{ width: `${comp.score}%` }"></div>
               </div>
               <span class="text-xs font-medium text-red-600 dark:text-red-400 w-8">{{ comp.score }}</span>
             </div>
@@ -51,7 +45,13 @@
             <span class="text-sm font-medium text-foreground">{{ comparison.aspect }}</span>
             <span
               class="text-xs font-semibold"
-              :class="comparison.advantage === 'ally' ? 'text-blue-600 dark:text-blue-400' : comparison.advantage === 'enemy' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'"
+              :class="
+                comparison.advantage === 'ally'
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : comparison.advantage === 'enemy'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-muted-foreground'
+              "
             >
               {{ getAdvantageText(comparison.advantage) }}
             </span>
@@ -97,11 +97,29 @@
     <!-- 关键时间点 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <div v-for="timing in keyTimings" :key="timing.phase" class="text-center p-3 rounded-lg border">
-        <div class="text-lg font-bold" :class="timing.advantage === 'ally' ? 'text-blue-600 dark:text-blue-400' : timing.advantage === 'enemy' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'">
+        <div
+          class="text-lg font-bold"
+          :class="
+            timing.advantage === 'ally'
+              ? 'text-blue-600 dark:text-blue-400'
+              : timing.advantage === 'enemy'
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-muted-foreground'
+          "
+        >
           {{ timing.time }}
         </div>
         <div class="text-xs text-muted-foreground mb-1">{{ timing.phase }}</div>
-        <div class="text-xs" :class="timing.advantage === 'ally' ? 'text-blue-600 dark:text-blue-400' : timing.advantage === 'enemy' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'">
+        <div
+          class="text-xs"
+          :class="
+            timing.advantage === 'ally'
+              ? 'text-blue-600 dark:text-blue-400'
+              : timing.advantage === 'enemy'
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-muted-foreground'
+          "
+        >
           {{ timing.advantage === 'ally' ? '我方优势' : timing.advantage === 'enemy' ? '敌方优势' : '平衡' }}
         </div>
       </div>
