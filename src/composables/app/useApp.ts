@@ -1,5 +1,4 @@
 import { useConnection } from '@/composables/connection/useConnection'
-import { useConnectionEvents } from '@/composables/connection/useConnectionEvents'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useAppEvents } from './useAppEvents'
@@ -15,12 +14,10 @@ export function useApp() {
   const appEvents = useAppEvents()
   const { isConnected, connectionMessage, checkConnection } = useConnection()
 
-  // 初始化连接事件监听
-  useConnectionEvents()
-
   // 主题状态
   const isDark = computed(() => settingsStore.isDark)
-
+  // 启动事件监听
+  appEvents.startListening()
   // 应用生命周期管理
   onMounted(async () => {
     try {
@@ -51,7 +48,7 @@ export function useApp() {
     initializationError: appInit.initializationError,
 
     // 应用方法
-    fetchMatchHistory: appInit.fetchMatchHistory,
+    fetchMatchHistory: appEvents.updateMatchHistory,
     reinitialize: appInit.reinitialize
   }
 }

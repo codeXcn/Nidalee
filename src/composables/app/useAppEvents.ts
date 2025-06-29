@@ -1,12 +1,11 @@
 import { useChampSelectManager } from '@/composables/game/useChampSelectManager'
 import { useGamePhaseManager } from '@/composables/game/useGamePhaseManager'
+import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
 import { useActivityStore } from '@/stores'
 import { useConnectionStore } from '@/stores/core/connectionStore'
 import { useDataStore } from '@/stores/core/dataStore'
-import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { onMounted, onUnmounted } from 'vue'
-
+import { debounce } from 'radash'
 /**
  * 应用事件处理组合式函数
  * 职责：监听和处理游戏相关的事件
@@ -14,9 +13,11 @@ import { onMounted, onUnmounted } from 'vue'
 export function useAppEvents() {
   const gamePhaseManager = useGamePhaseManager()
   const champSelectManager = useChampSelectManager()
+  const { updateSummonerAndMatches, updateMatchHistory, updateSummonerInfo } = useSummonerAndMatchUpdater()
   const activityStore = useActivityStore()
   const connectionStore = useConnectionStore()
   const dataStore = useDataStore()
+  const isListening = ref(false)
 
   const { handleGamePhaseChange } = gamePhaseManager
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
@@ -69,6 +70,7 @@ export function useAppEvents() {
 
   // 连接状态变化处理
   const handleConnectionStateChange = async (event: any) => {
+    console.log('[AppEvents-handleConnectionStateChange] 连接状态变化:', event.payload)
     const connectionInfo = event.payload
     connectionStore.updateConnectionInfo(connectionInfo)
     if (connectionInfo.state === 'Disconnected') {
@@ -77,20 +79,8 @@ export function useAppEvents() {
       dataStore.clearMatchHistory()
     } else if (connectionInfo.state === 'Connected') {
       activityStore.addActivity('success', '已连接到客户端', 'connection')
-      // 自动拉取召唤师信息和战绩
       try {
-        dataStore.startLoadingSummoner()
-        const summonerInfo = await invoke('get_current_summoner')
-        if (summonerInfo) {
-          dataStore.setSummonerInfo(summonerInfo)
-          activityStore.addActivity('info', '召唤师信息已更新', 'data')
-        }
-        dataStore.startLoadingMatchHistory()
-        const matchHistory = await invoke('get_match_history')
-        if (matchHistory) {
-          dataStore.setMatchStatistics(matchHistory)
-          activityStore.addActivity('success', '对局历史记录已更新', 'data')
-        }
+        await updateSummonerAndMatches()
       } catch (error) {
         dataStore.clearSummonerInfo()
         dataStore.clearMatchHistory()
@@ -99,30 +89,35 @@ export function useAppEvents() {
     }
   }
 
-  // 开始监听游戏事件
+  // 防抖处理
+  const handleConnectionStateChangeDebounced = debounce({ delay: 300 }, handleConnectionStateChange)
+
+  // 新增：监听游戏结束事件
+  const handleGameFinished = () => {
+    console.log('[AppEvents] 游戏结束事件')
+    document.dispatchEvent(new CustomEvent('game-finished'))
+  }
+
+  // 统一的事件监听启动
   const startListening = async () => {
+    if (isListening.value) return
     try {
-      // 监听游戏阶段变化
       await listen('gameflow-phase-change', handleGameflowPhaseChange)
-
-      // 监听大厅变化
       await listen('lobby-change', handleLobbyChangeEvent)
-
-      // 监听英雄选择会话变化
       await listen('champ-select-session-changed', handleChampSelectSessionChanged)
-
-      // 监听连接状态变化
-      await listen('connection-state-changed', handleConnectionStateChange)
-
-      console.log('[AppEvents] 游戏事件监听已启动')
+      await listen('connection-state-changed', handleConnectionStateChangeDebounced)
+      await listen('game-finished', handleGameFinished)
+      isListening.value = true
+      console.log('[AppEvents] 全局事件监听已启动')
     } catch (error) {
-      console.error('[AppEvents] 启动游戏事件监听失败:', error)
+      console.error('[AppEvents] 启动全局事件监听失败:', error)
     }
   }
 
   // 停止监听
   const stopListening = () => {
-    console.log('[AppEvents] 停止游戏事件监听')
+    isListening.value = false
+    console.log('[AppEvents] 停止全局事件监听')
   }
 
   // 生命周期管理
@@ -135,6 +130,9 @@ export function useAppEvents() {
   })
 
   return {
+    updateMatchHistory,
+    updateSummonerInfo,
+    isListening,
     startListening,
     stopListening
   }

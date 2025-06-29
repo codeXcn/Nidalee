@@ -2,6 +2,7 @@ import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
 import { useGameStore } from '@/stores/features/gameStore'
 import { useMatchmaking } from './useMatchmaking'
+import { useSummonerAndMatchUpdater } from './useSummonerAndMatchUpdater'
 
 // 专门处理游戏阶段变化的逻辑
 export function useGamePhaseManager() {
@@ -9,6 +10,7 @@ export function useGamePhaseManager() {
   const activityLogger = useActivityLogger()
   const autoFunctionStore = useAutoFunctionStore()
   const { handleAcceptMatch } = useMatchmaking()
+  const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
 
   // 游戏阶段变更处理
   const handleGamePhaseChange = (phase: string | null) => {
@@ -34,6 +36,7 @@ export function useGamePhaseManager() {
         gameStore.updateChampSelectSession(null)
         gameStore.updateLobbyInfo(null)
         activityLogger.log.info('游戏已结束，已清理游戏状态', 'game')
+        updateSummonerAndMatches()
       }
     } else {
       console.log('[🎮 GamePhaseManager] 🔄 游戏阶段重置为空')

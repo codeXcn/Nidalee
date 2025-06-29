@@ -1,9 +1,9 @@
 import { useConnection } from '@/composables/connection/useConnection'
+import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
 import { getLatestVersion } from '@/lib'
 import { useActivityStore } from '@/stores/core/activityStore'
 import { useDataStore } from '@/stores/core/dataStore'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
-import { invoke } from '@tauri-apps/api/core'
 import { ref } from 'vue'
 
 /**
@@ -15,6 +15,7 @@ export function useAppInitialization() {
   const settingsStore = useSettingsStore()
   const activityStore = useActivityStore()
   const { isConnected } = useConnection()
+  const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
 
   const isInitialized = ref(false)
   const initializationError = ref<string | null>(null)
@@ -39,53 +40,17 @@ export function useAppInitialization() {
   const initializeConnection = async () => {
     try {
       console.log('[AppInit] 初始化连接状态...')
-      // 连接状态由 useConnectionEvents 处理，这里只需要确保连接检查
       if (isConnected.value) {
-        // 获取召唤师信息
         try {
-          dataStore.startLoadingSummoner()
-          const summonerInfo = await invoke('get_current_summoner')
-          if (summonerInfo) {
-            dataStore.setSummonerInfo(summonerInfo)
-            activityStore.addActivity('info', '召唤师信息已更新', 'data')
-          }
+          await updateSummonerAndMatches()
         } catch (error) {
-          console.error('[AppInit] 获取召唤师信息失败:', error)
+          console.error('[AppInit] 获取召唤师信息或战绩失败:', error)
           dataStore.clearSummonerInfo()
-        }
-
-        // 获取对局历史
-        try {
-          dataStore.startLoadingMatchHistory()
-          const matchHistory = await invoke('get_match_history')
-          if (matchHistory) {
-            dataStore.setMatchStatistics(matchHistory)
-            activityStore.addActivity('success', '对局历史记录已更新', 'data')
-          }
-        } catch (error) {
-          console.error('[AppInit] 获取对局历史失败:', error)
           dataStore.clearMatchHistory()
-          activityStore.addActivity('error', '获取对局历史失败', 'error')
         }
       }
     } catch (error) {
       console.error('[AppInit] 初始化连接状态失败:', error)
-    }
-  }
-
-  // 获取对局历史
-  const fetchMatchHistory = async () => {
-    try {
-      dataStore.startLoadingMatchHistory()
-      const matchHistory = await invoke('get_match_history')
-      if (matchHistory) {
-        dataStore.setMatchStatistics(matchHistory)
-        activityStore.addActivity('success', '对局历史记录已更新', 'data')
-      }
-    } catch (error) {
-      console.error('[AppInit] 获取对局历史失败:', error)
-      dataStore.clearMatchHistory()
-      activityStore.addActivity('error', '获取对局历史失败', 'error')
     }
   }
 
@@ -134,7 +99,6 @@ export function useAppInitialization() {
 
     // 方法
     initializeApp,
-    fetchMatchHistory,
     cleanup,
     reinitialize
   }

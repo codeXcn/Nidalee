@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Toaster } from 'vue-sonner'
 import 'vue-sonner/style.css'
-import { useConnectionStore } from './stores/core/connectionStore'
 import { appContextKey } from './types'
-const { isDark, checkConnection, fetchMatchHistory, isConnected } = useApp()
+const { isDark, checkConnection, isConnected, fetchMatchHistory } = useApp()
 const theme = computed(() => (isDark.value ? 'dark' : 'light'))
 
 // 提供方法给子组件使用
@@ -22,7 +21,6 @@ const randomTransition = () => {
 const handleRouteChange = () => {
   randomTransition()
 }
-useConnectionStore().checkConnection()
 </script>
 
 <template>
