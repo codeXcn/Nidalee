@@ -206,10 +206,14 @@
                     class="ml-2 px-2 py-0.5 rounded-full shadow text-xs font-bold select-none flex items-center gap-1 transition-transform duration-150 group-hover:scale-105 group-hover:shadow-lg"
                     :class="[
                       'bg-gradient-to-r',
-                      game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼') ? 'from-green-400 to-green-600 text-white' : '',
+                      game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼')
+                        ? 'from-green-400 to-green-600 text-white'
+                        : '',
                       game.performance_rating.includes('不错') ? 'from-yellow-400 to-yellow-500 text-white' : '',
                       game.performance_rating.includes('需要加油') ? 'from-red-500 to-red-700 text-white' : '',
-                      (game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')) ? 'from-purple-500 to-purple-700 text-white' : ''
+                      game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')
+                        ? 'from-purple-500 to-purple-700 text-white'
+                        : ''
                     ]"
                   >
                     <Award v-if="game.performance_rating.includes('超神')" class="w-3 h-3" />

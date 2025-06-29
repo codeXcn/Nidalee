@@ -23,7 +23,7 @@
               <p class="text-sm text-muted-foreground">自动接受匹配成功后的对局</p>
             </div>
           </div>
-          <Switch v-model="autoFunctions.acceptMatch" />
+          <Switch v-model="autoFunctions.acceptMatch.enabled" />
         </div>
 
         <!-- 自动选择英雄 -->
@@ -39,7 +39,7 @@
               <p class="text-sm text-muted-foreground">预设英雄自动选择</p>
             </div>
           </div>
-          <Switch v-model="autoFunctions.selectChampion" />
+          <Switch v-model="autoFunctions.selectChampion.enabled" />
         </div>
 
         <!-- 自动符文配置 -->
@@ -55,7 +55,7 @@
               <p class="text-sm text-muted-foreground">根据英雄自动配置最优符文</p>
             </div>
           </div>
-          <Switch v-model="autoFunctions.runeConfig" />
+          <Switch v-model="autoFunctions.runeConfig.enabled" />
         </div>
 
         <!-- 自动禁用英雄 -->
@@ -71,7 +71,7 @@
               <p class="text-sm text-muted-foreground">智能禁用敌方强势英雄</p>
             </div>
           </div>
-          <Switch v-model="autoFunctions.banChampion" />
+          <Switch v-model="autoFunctions.banChampion.enabled" />
         </div>
       </div>
     </div>
@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAutoFunctionStore } from '@/stores'
+import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
 import { Bookmark, Shield, User, Zap } from 'lucide-vue-next'
 
 const { autoFunctions } = storeToRefs(useAutoFunctionStore())

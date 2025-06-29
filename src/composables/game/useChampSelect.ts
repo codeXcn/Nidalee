@@ -85,7 +85,7 @@ export function useChampSelect() {
     let hasScheduledAction = false
     // 检查当前阶段是否是 BAN_PICK
     if (session?.timer?.phase === 'BAN_PICK') {
-    // 遍历所有 actions 查找当前玩家的操作
+      // 遍历所有 actions 查找当前玩家的操作
       for (const actionGroup of session.actions) {
         for (const action of actionGroup) {
           // 检查是否是当前玩家的操作
@@ -149,7 +149,6 @@ export function useChampSelect() {
         }
       }
     }
-  
 
     console.log('[🤖 AutoChampSelect] ===== 自动选人操作检查完成 =====\n')
     return hasScheduledAction

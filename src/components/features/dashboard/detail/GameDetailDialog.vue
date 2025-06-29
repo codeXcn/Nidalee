@@ -269,6 +269,7 @@
 </template>
 
 <script setup lang="ts">
+import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import {
   getChampionIconUrl,
   getChampionName,
@@ -278,7 +279,7 @@ import {
   getQueueName,
   getRankIconUrl
 } from '@/lib'
-import { useActivityStore, useAppSessionStore } from '@/stores'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { invoke } from '@tauri-apps/api/core'
 
 const props = defineProps<{
@@ -287,15 +288,15 @@ const props = defineProps<{
 
 const visible = defineModel<boolean>('visible')
 
-const activityStore = useActivityStore()
-const appSessionStore = useAppSessionStore()
+const activityLogger = useActivityLogger()
+const settingsStore = useSettingsStore()
 const { formatGameMode, formatRelativeTime, formatDuration } = useFormatters()
 
 const loading = ref(false)
 const gameDetailData = ref<GameDetailData | null>(null)
 
-// 获取游戏版本
-const { gameVersion } = storeToRefs(appSessionStore)
+// 获取游戏版本（使用默认值）
+const gameVersion = ref('15.12.1')
 
 // 监听游戏数据变化
 watch(
@@ -310,7 +311,7 @@ watch(
         gameDetailData.value = result
       } catch (err) {
         console.error('获取游戏详细信息失败:', err)
-        activityStore.addErrorActivity.apiError(`获取游戏详细信息失败: ${err}`)
+        activityLogger.logError.apiError(`获取游戏详细信息失败: ${err}`)
       } finally {
         loading.value = false
       }

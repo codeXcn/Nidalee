@@ -98,14 +98,18 @@
 </template>
 
 <script setup lang="ts">
-import { useActivityStore, useAutoFunctionStore } from '@/stores'
+import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
-import { appContextKey } from '@/types'
-import { CheckCircle, Info, X, XCircle } from 'lucide-vue-next'
-import { toast } from 'vue-sonner'
-const { isConnected } = inject(appContextKey)
+import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
+import { useConnectionStore } from '@/stores/core/connectionStore'
+import { appContextKey, type AppContext } from '@/types'
+import { X } from 'lucide-vue-next'
+
+const { isConnected } = inject(appContextKey) as AppContext
 const autoFunctionStore = useAutoFunctionStore()
-const activityStore = useActivityStore()
+const activityLogger = useActivityLogger()
+const connectionStore = useConnectionStore()
+
 // 计算属性 - 使用 toRef 确保响应式
 const autoFunctions = computed(() => {
   const functions = autoFunctionStore.autoFunctions
@@ -123,34 +127,35 @@ watch(
   ([acceptMatch, selectChampion, runeConfig, banChampion], [oldAccept, oldSelect, oldRune, oldBan]) => {
     if (acceptMatch !== oldAccept) {
       if (acceptMatch) {
-        activityStore.addSettingsActivity.autoFunctionEnabled('自动接受对局')
+        activityLogger.logSettings.autoFunctionEnabled('自动接受对局')
       } else {
-        activityStore.addSettingsActivity.autoFunctionDisabled('自动接受对局')
+        activityLogger.logSettings.autoFunctionDisabled('自动接受对局')
       }
     }
     if (selectChampion !== oldSelect) {
       if (selectChampion) {
-        activityStore.addSettingsActivity.autoFunctionEnabled('自动选择英雄')
+        activityLogger.logSettings.autoFunctionEnabled('自动选择英雄')
       } else {
-        activityStore.addSettingsActivity.autoFunctionDisabled('自动选择英雄')
+        activityLogger.logSettings.autoFunctionDisabled('自动选择英雄')
       }
     }
     if (runeConfig !== oldRune) {
       if (runeConfig) {
-        activityStore.addSettingsActivity.autoFunctionEnabled('自动符文配置')
+        activityLogger.logSettings.autoFunctionEnabled('自动符文配置')
       } else {
-        activityStore.addSettingsActivity.autoFunctionDisabled('自动符文配置')
+        activityLogger.logSettings.autoFunctionDisabled('自动符文配置')
       }
     }
     if (banChampion !== oldBan) {
       if (banChampion) {
-        activityStore.addSettingsActivity.autoFunctionEnabled('自动禁用英雄')
+        activityLogger.logSettings.autoFunctionEnabled('自动禁用英雄')
       } else {
-        activityStore.addSettingsActivity.autoFunctionDisabled('自动禁用英雄')
+        activityLogger.logSettings.autoFunctionDisabled('自动禁用英雄')
       }
     }
   }
 )
+
 const enabledFunctionsCount = computed(() => autoFunctionStore.enabledFunctionsCount)
 const isAnyFunctionEnabled = computed(() => autoFunctionStore.isAnyFunctionEnabled)
 const enabledFunctions = computed(() => autoFunctionStore.enabledFunctions)
@@ -159,27 +164,32 @@ const enabledFunctions = computed(() => autoFunctionStore.enabledFunctions)
 const handleDisableAll = async () => {
   console.log('Disabling all functions')
   autoFunctionStore.disableAllFunctions()
+  activityLogger.log.info('已禁用所有自动功能', 'settings')
 }
 
 // 英雄选择处理
 const handleChampionSelect = async (championInfo: ChampionInfo) => {
   console.log('Selecting champion:', championInfo)
   autoFunctionStore.setChampionSelect(championInfo)
+  activityLogger.logSettings.championSet(championInfo.name)
 }
 
 const handleClearSelect = async () => {
   console.log('Clearing champion select')
   autoFunctionStore.clearChampionSelect()
+  activityLogger.log.info('已清除自动选择英雄设置', 'settings')
 }
 
 // 英雄禁用处理
 const handleChampionBan = async (championInfo: ChampionInfo) => {
   console.log('Banning champion:', championInfo)
   autoFunctionStore.setChampionBan(championInfo)
+  activityLogger.log.success(`设置自动禁用英雄：${championInfo.name}`, 'settings')
 }
 
 const handleClearBan = async () => {
   console.log('Clearing champion ban')
   autoFunctionStore.clearChampionBan()
+  activityLogger.log.info('已清除自动禁用英雄设置', 'settings')
 }
 </script>

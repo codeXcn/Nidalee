@@ -29,9 +29,9 @@
   <ClientDisconnected v-else />
 </template>
 <script lang="ts" setup>
-import { appContextKey } from '@/types'
+import { appContextKey, type AppContext } from '@/types'
 
-const { isConnected } = inject(appContextKey)
+const { isConnected } = inject(appContextKey) as AppContext
 
 const { onSearch, cunrrentIndex, names, searchText, loading, currentRestult } = useSearchMatches()
 </script>

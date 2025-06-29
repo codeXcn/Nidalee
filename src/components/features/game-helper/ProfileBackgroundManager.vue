@@ -211,16 +211,17 @@
   </div>
 </template>
 
-<script setup lang="tsx">
-import { ref, computed, onMounted, watch } from 'vue'
-import { debounce } from 'radash'
-import { Users, X, Search, ArrowLeft } from 'lucide-vue-next'
-import { toast } from 'vue-sonner'
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
-import { getCommunityDragonUrl, getChampionIconUrlByAlias } from '@/lib'
-import { fetchChampionDetails, fetchChampionSummary } from '@/lib/dataApi'
+<script setup lang="ts">
 import { useGameHelper } from '@/composables/game-helper'
-import { useActivityStore } from '@/stores'
+import { useActivityLogger } from '@/composables/utils/useActivityLogger'
+import { getChampionIconUrlByAlias } from '@/lib'
+import { fetchChampionDetails, fetchChampionSummary } from '@/lib/dataApi'
+import type { ChampionInfo } from '@/stores/autoFunctionStore'
+import { ArrowLeft, Search, Users, X } from 'lucide-vue-next'
+import { debounce } from 'radash'
+import { computed, onMounted, ref, watch } from 'vue'
+import { toast } from 'vue-sonner'
+
 const { setSummonerBackgroundSkin } = useGameHelper()
 const searchText = ref('')
 const debouncedSearchText = ref('')
@@ -233,7 +234,8 @@ const loadingSkins = ref(false)
 const skinsError = ref<string | null>(null)
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
-const activity = useActivityStore()
+const activityLogger = useActivityLogger()
+
 // 使用 Radash 的防抖函数，更简洁可靠
 const debouncedUpdateSearch = debounce({ delay: 300 }, (value: string) => {
   debouncedSearchText.value = value
@@ -316,7 +318,7 @@ const applySkinBackground = async (skin: any) => {
     shakeSkinId.value = skin.id // 触发抖动
     // 调用后端API设置生涯背景皮肤
     await setSummonerBackgroundSkin(skin.id)
-    activity.addSettingsActivity.setCareerBackground(skin.name)
+    activityLogger.logSettings.setCareerBackground(skin.name)
     // 使用 Sonner 显示成功提示
     toast.success(`皮肤"${skin.name}"已设置为生涯背景`, {
       description: '生涯背景设置成功完成',
@@ -352,11 +354,13 @@ const getCard3DStyle = (idx: number) => {
 const LoadingSpinner = defineComponent({
   name: 'LoadingSpinner',
   setup() {
-    return () => (
-      <div className="flex items-center justify-center">
-        <span className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin animate__animated animate__fadeIn" />
-      </div>
-    )
+    return () =>
+      h('div', { class: 'flex items-center justify-center' }, [
+        h('span', {
+          class:
+            'inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin animate__animated animate__fadeIn'
+        })
+      ])
   }
 })
 

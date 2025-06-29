@@ -54,45 +54,34 @@
       </div>
 
       <!-- 活动内容 -->
-      <div class="max-h-[260px] overflow-hidden">
-        <div class="px-3 py-2">
+      <ScrollArea>
+        <div class="px-3 py-2 max-h-[260px]">
           <div class="space-y-2">
             <div
-              v-for="activity in activities.slice(0, 6)"
+              v-for="activity in (activities || []).slice(0, 6)"
               :key="activity.id"
-              class="flex items-start space-x-2 p-2 rounded-lg border border-border/30 bg-card/50 hover:bg-card transition-all duration-200 group"
+              class="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card/70 hover:bg-card transition-all duration-200 shadow-sm"
             >
-              <div
-                :class="[
-                  'h-2 w-2 rounded-full mt-2 flex-shrink-0 transition-all duration-200',
-                  activity.type === 'success'
-                    ? 'bg-green-500'
-                    : activity.type === 'info'
-                      ? 'bg-blue-500'
-                      : activity.type === 'warning'
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                ]"
-              ></div>
+              <!-- 类型icon+圆点 -->
+              <span
+                class="flex items-center justify-center w-7 h-7 rounded-full"
+                :class="[getActivityTypeConfig(activity.type).bg, getActivityTypeConfig(activity.type).text]"
+              >
+                <span class="text-base">{{ getActivityTypeConfig(activity.type).icon }}</span>
+              </span>
+              <!-- 内容 -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <p class="text-sm font-medium text-foreground leading-tight line-clamp-1">
-                    {{ activity.message }}
-                  </p>
-                  <div class="flex items-center space-x-1 ml-2">
-                    <span class="text-xs text-muted-foreground">
-                      {{ formatRelativeTime(activity.timestamp) }}
-                    </span>
-                    <div
-                      v-if="!activity.read"
-                      class="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 animate-pulse"
-                    ></div>
+                <div class="flex items-center">
+                  <span class="text-sm font-medium text-foreground truncate flex-1">{{ activity.message }}</span>
+                  <div class="flex items-center min-w-[48px] justify-end ml-2 gap-1">
+                    <span class="text-xs text-muted-foreground">{{ formatRelativeTime(activity.timestamp) }}</span>
+                    <span v-if="!activity.read" class="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div v-if="activities.length === 0" class="text-center py-8">
+            <div v-if="!activities || activities.length === 0" class="text-center py-8">
               <div class="p-3 rounded-full bg-muted/50 w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                 <Bell class="h-5 w-5 text-muted-foreground" />
               </div>
@@ -101,7 +90,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
       <!-- 底部操作栏 -->
       <div class="px-4 py-2 border-t border-border/30 bg-muted/20 rounded-b-2xl">
@@ -130,12 +119,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Bell, CheckCheck, ArrowRight } from 'lucide-vue-next'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
-import { useActivityStore } from '@/stores/activityStore'
 import { useFormatters } from '@/composables'
+import { useActivityStore } from '@/stores'
+import { ArrowRight, Bell, CheckCheck } from 'lucide-vue-next'
 
 const props = withDefaults(
   defineProps<{
@@ -168,7 +154,7 @@ const warningCount = computed(() => activityStore.warningCount)
 
 // 计算未读数量
 const unreadCount = computed(() => {
-  return activities.value.filter((activity) => !activity.read).length
+  return activities.value?.filter((activity) => !activity.read)?.length || 0
 })
 
 // 处理标记全部已读
@@ -186,10 +172,10 @@ const handleViewAll = () => {
 // 获取活动类型的颜色和图标
 const getActivityTypeConfig = (type: string) => {
   const configs = {
-    success: { color: 'bg-green-500', icon: '✓' },
-    info: { color: 'bg-blue-500', icon: 'ℹ' },
-    warning: { color: 'bg-yellow-500', icon: '⚠' },
-    error: { color: 'bg-red-500', icon: '✕' }
+    success: { bg: 'bg-green-100', text: 'text-green-600', icon: '✔️' },
+    info: { bg: 'bg-blue-100', text: 'text-blue-600', icon: 'ℹ️' },
+    warning: { bg: 'bg-yellow-100', text: 'text-yellow-600', icon: '⚠️' },
+    error: { bg: 'bg-red-100', text: 'text-red-600', icon: '✖️' }
   }
   return configs[type as keyof typeof configs] || configs.info
 }
@@ -201,28 +187,5 @@ const getActivityTypeConfig = (type: string) => {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* 自定义滚动条样式 */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 2px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
 }
 </style>

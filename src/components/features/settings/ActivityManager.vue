@@ -118,10 +118,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { ChevronDown, Download, Trash2 } from 'lucide-vue-next'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,10 +128,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import type { Activity, ActivityType, ActivityCategory } from '@/types'
-import { ActivityCategoryLabels, ActivityTypeStyles } from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useFormatters } from '@/composables'
-import { useActivityStore } from '@/stores/activityStore'
+import { useActivityStore } from '@/stores'
+import type { ActivityCategory, ActivityType } from '@/types'
+import { ActivityCategoryLabels, ActivityTypeStyles } from '@/types'
+import { ChevronDown, Download, Trash2 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 
 // 使用 activity store
 const activityStore = useActivityStore()

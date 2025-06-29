@@ -1,11 +1,12 @@
+import { useConnectionStore } from '@/stores/core/connectionStore'
+import { useDataStore } from '@/stores/core/dataStore'
+import { invoke } from '@tauri-apps/api/core'
 import { ref, watch } from 'vue'
-import { useMatchStatisticsStore } from '@/stores/matchStatisticsStore'
-import { useConnectStore } from '@/stores'
 
 // 专门处理战绩数据获取的 composable
 export function useMatchDataManager() {
-  const authStore = useConnectStore()
-  const matchStatisticsStore = useMatchStatisticsStore()
+  const connectionStore = useConnectionStore()
+  const dataStore = useDataStore()
 
   const lastFetchTime = ref(0)
   const minFetchInterval = 30000 // 30秒最小间隔
@@ -20,23 +21,32 @@ export function useMatchDataManager() {
       return
     }
 
-    if (!authStore.isConnected) {
+    if (!connectionStore.isConnected) {
       console.log('[MatchDataManager] 未连接，跳过战绩获取')
       return
     }
 
     try {
       console.log('[MatchDataManager] 开始获取战绩数据')
-      await matchStatisticsStore.fetchMatchHistory()
+
+      dataStore.startLoadingMatchHistory()
+      // 调用Tauri API获取战绩数据
+      const matchHistory = await invoke('get_match_history')
+      if (matchHistory) {
+        dataStore.setMatchStatistics(matchHistory)
+        console.log('[MatchDataManager] 战绩数据获取成功')
+      }
+
       lastFetchTime.value = now
     } catch (error) {
       console.error('[MatchDataManager] 获取战绩失败:', error)
+      dataStore.clearMatchHistory() // 清除加载状态
     }
   }
 
   // 监听连接状态变化，连接成功时自动获取一次
   watch(
-    () => authStore.isConnected,
+    () => connectionStore.isConnected,
     async (connected, wasConnected) => {
       if (connected && !wasConnected) {
         // 从未连接变为连接，延迟获取战绩

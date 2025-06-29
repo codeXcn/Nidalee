@@ -1,9 +1,9 @@
-import { useGameStatusStore } from '@/stores'
+import { useGameStore } from '@/stores/features/gameStore'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
 export function useMatchmaking() {
-  const gameStatusStore = useGameStatusStore()
+  const gameStore = useGameStore()
 
   const matchmakingState = ref<MatchmakingState | null>(null)
   const matchInfo = ref<MatchInfo | null>(null)
@@ -46,8 +46,8 @@ export function useMatchmaking() {
       matchmakingState.value = payload
 
       // 当匹配状态为 Invalid 且有选人阶段信息时，清除选人阶段信息
-      if (payload.searchState === 'Invalid' && gameStatusStore.currentChampSelectSession) {
-        gameStatusStore.updateChampSelectSession(null)
+      if (payload.searchState === 'Invalid' && gameStore.champSelectSession) {
+        gameStore.updateChampSelectSession(null)
         console.log('清除选人阶段信息')
       }
     })

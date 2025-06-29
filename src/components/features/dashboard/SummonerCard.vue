@@ -135,7 +135,14 @@
                           :class="`px-3 py-1 text-lg font-semibold rounded-2xl select-none shadow-lg border-2 transition-all duration-300 ${getRankColor(summonerInfo.soloRankTier)}`"
                           :style="getBadgeStyle(summonerInfo.soloRankTier)"
                         >
-                          <span style="text-shadow:0 2px 8px rgba(0,0,0,0.18),0 1px 0 #fff;">{{ formatRankTier(summonerInfo.soloRankTier) }}</span>
+                          <span
+                            style="
+                              text-shadow:
+                                0 2px 8px rgba(0, 0, 0, 0.18),
+                                0 1px 0 #fff;
+                            "
+                            >{{ formatRankTier(summonerInfo.soloRankTier) }}</span
+                          >
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -168,9 +175,7 @@
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger as-child>
-                    <span
-                      class="text-yellow-600 text-base font-bold flex items-center cursor-pointer"
-                    >
+                    <span class="text-yellow-600 text-base font-bold flex items-center cursor-pointer">
                       <span class="mr-1">{{
                         getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).icon
                       }}</span>
@@ -216,7 +221,14 @@
                           :class="`px-3 py-1 text-lg font-semibold rounded-2xl select-none shadow-lg border-2 transition-all duration-300 ${getRankColor(summonerInfo.flexRankTier)}`"
                           :style="getBadgeStyle(summonerInfo.flexRankTier)"
                         >
-                          <span style="text-shadow:0 2px 8px rgba(0,0,0,0.18),0 1px 0 #fff;">{{ formatRankTier(summonerInfo.flexRankTier) }}</span>
+                          <span
+                            style="
+                              text-shadow:
+                                0 2px 8px rgba(0, 0, 0, 0.18),
+                                0 1px 0 #fff;
+                            "
+                            >{{ formatRankTier(summonerInfo.flexRankTier) }}</span
+                          >
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="left">
@@ -243,15 +255,15 @@
                 </span>
               </div>
             </div>
-            <div class="flex flex-row-reverse items-center space-x-reverse space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2 w-full justify-end">
+            <div
+              class="flex flex-row-reverse items-center space-x-reverse space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2 w-full justify-end"
+            >
               <span class="text-green-600 text-base font-bold">{{ summonerInfo.flexRankWins }}胜</span>
               <span class="text-red-500 text-base font-bold">{{ summonerInfo.flexRankLosses }}负</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger as-child>
-                    <span
-                      class="text-yellow-600 text-base font-bold flex flex-row-reverse items-center cursor-pointer"
-                    >
+                    <span class="text-yellow-600 text-base font-bold flex flex-row-reverse items-center cursor-pointer">
                       <span class="ml-1">{{
                         getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).icon
                       }}</span>
@@ -532,13 +544,22 @@ const getLpBadgeStyle = (tier: string) => {
 <style scoped>
 @keyframes breath-glow {
   0% {
-    box-shadow: 0 0 0 2px #fff, 0 0 16px 4px var(--glow-color), 0 0 32px 8px var(--glow-color-a);
+    box-shadow:
+      0 0 0 2px #fff,
+      0 0 16px 4px var(--glow-color),
+      0 0 32px 8px var(--glow-color-a);
   }
   50% {
-    box-shadow: 0 0 0 4px #fff, 0 0 32px 12px var(--glow-color), 0 0 64px 16px var(--glow-color-a);
+    box-shadow:
+      0 0 0 4px #fff,
+      0 0 32px 12px var(--glow-color),
+      0 0 64px 16px var(--glow-color-a);
   }
   100% {
-    box-shadow: 0 0 0 2px #fff, 0 0 16px 4px var(--glow-color), 0 0 32px 8px var(--glow-color-a);
+    box-shadow:
+      0 0 0 2px #fff,
+      0 0 16px 4px var(--glow-color),
+      0 0 32px 8px var(--glow-color-a);
   }
 }
 .breath-glow {

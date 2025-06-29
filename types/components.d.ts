@@ -153,6 +153,7 @@ declare module 'vue' {
     TabsContent: typeof import('./../src/components/ui/tabs/TabsContent.vue')['default']
     TabsList: typeof import('./../src/components/ui/tabs/TabsList.vue')['default']
     TabsTrigger: typeof import('./../src/components/ui/tabs/TabsTrigger.vue')['default']
+    TeamCard: typeof import('./../src/components/features/match/TeamCard.vue')['default']
     TeamComposition: typeof import('./../src/components/features/match-analysis/TeamComposition.vue')['default']
     TeamPanel: typeof import('./../src/components/features/match/TeamPanel.vue')['default']
     TeamStats: typeof import('./../src/components/features/match-analysis/TeamStats.vue')['default']

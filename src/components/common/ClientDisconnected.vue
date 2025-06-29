@@ -10,7 +10,7 @@
       class="absolute inset-0"
       :quantity="100"
       :ease="100"
-      :color="useThemeStore().isDark ? '#FFF' : '#000'"
+      :color="useSettingsStore().isDark ? '#FFF' : '#000'"
       :staticity="10"
       refresh
     />
@@ -18,5 +18,5 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '@/stores'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
 </script>

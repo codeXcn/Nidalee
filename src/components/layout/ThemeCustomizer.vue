@@ -9,7 +9,7 @@
       <Button
         size="sm"
         variant="outline"
-        @click="themeStore.resetTheme"
+        @click="settingsStore.resetTheme"
         class="hover:bg-destructive/10 hover:text-destructive transition"
       >
         <RotateCcw class="h-4 w-4" />
@@ -21,17 +21,17 @@
       <Label class="text-sm font-semibold mb-2 block">主题主色</Label>
       <div class="grid grid-cols-3 gap-3">
         <button
-          v-for="color in themeStore.colors"
+          v-for="color in settingsStore.colors"
           :key="color.name"
           :class="
             cn(
               'flex h-10 w-full items-center justify-center rounded-lg border-2 text-xs font-medium transition-all duration-150',
-              themeStore.selectedColor === color.name
+              settingsStore.selectedColor === color.name
                 ? 'border-primary ring-2 ring-primary/60 shadow-lg scale-105'
                 : 'border-muted hover:border-primary/40 hover:scale-105'
             )
           "
-          @click="themeStore.setColor(color.name)"
+          @click="settingsStore.setColor(color.name)"
           type="button"
         >
           <div
@@ -39,7 +39,7 @@
               cn(
                 'h-5 w-5 rounded-full border',
                 color.bgClass,
-                themeStore.selectedColor === color.name ? 'border-primary' : 'border-muted'
+                settingsStore.selectedColor === color.name ? 'border-primary' : 'border-muted'
               )
             "
           />
@@ -53,17 +53,17 @@
       <Label class="text-sm font-semibold mb-2 block">圆角风格</Label>
       <div class="flex gap-2">
         <button
-          v-for="radius in themeStore.radiusOptions"
+          v-for="radius in settingsStore.radiusOptions"
           :key="radius.value"
           :class="
             cn(
               'flex h-9 w-12 items-center justify-center rounded-lg border text-xs font-medium transition-all duration-150',
-              themeStore.selectedRadius === radius.value
+              settingsStore.selectedRadius === radius.value
                 ? 'border-primary bg-accent shadow scale-105'
                 : 'border-muted hover:border-primary/40 hover:scale-105'
             )
           "
-          @click="themeStore.setRadius(radius.value)"
+          @click="settingsStore.setRadius(radius.value)"
           type="button"
         >
           {{ radius.label }}
@@ -75,15 +75,17 @@
     <div>
       <Label class="text-sm font-semibold mb-2 block">主题模式</Label>
       <div class="flex items-center gap-3">
-        <Switch :model-value="themeStore.isDark" @update:model-value="themeStore.toggleTheme" id="dark-mode" />
+        <Switch :model-value="settingsStore.isDark" @update:model-value="settingsStore.toggleTheme" id="dark-mode" />
         <Label for="dark-mode" class="text-sm font-medium">
           <transition name="fade">
-            <span :key="themeStore.isDark">{{ themeStore.isDark ? '深色模式' : '浅色模式' }}</span>
+            <span :key="settingsStore.isDark ? 'dark' : 'light'">{{
+              settingsStore.isDark ? '深色模式' : '浅色模式'
+            }}</span>
           </transition>
         </Label>
       </div>
       <div class="text-xs text-muted-foreground mt-1">
-        当前状态: <span class="font-semibold">{{ themeStore.isDark ? '深色' : '浅色' }}</span>
+        当前状态: <span class="font-semibold">{{ settingsStore.isDark ? '深色' : '浅色' }}</span>
         <span class="mx-2">|</span>
         HTML类:
         <span :class="htmlHasDarkClass ? 'text-green-500' : 'text-red-400'">{{
@@ -97,17 +99,17 @@
       <Label class="text-sm font-semibold mb-2 block">风格</Label>
       <div class="grid grid-cols-2 gap-3">
         <button
-          v-for="style in themeStore.styles"
+          v-for="style in settingsStore.styles"
           :key="style.name"
           :class="
             cn(
               'flex items-center justify-center rounded-lg border text-xs h-10 font-medium transition-all duration-150',
-              themeStore.selectedStyle === style.name
+              settingsStore.selectedStyle === style.name
                 ? 'border-primary bg-accent shadow scale-105'
                 : 'border-muted hover:border-primary/40 hover:scale-105'
             )
           "
-          @click="themeStore.setStyle(style.name)"
+          @click="settingsStore.setStyle(style.name)"
           type="button"
         >
           {{ style.label }}
@@ -119,10 +121,10 @@
 
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
-import { useThemeStore } from '@/stores'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { RotateCcw } from 'lucide-vue-next'
 
-const themeStore = useThemeStore()
+const settingsStore = useSettingsStore()
 
 const htmlHasDarkClass = ref(false)
 const updateHtmlClassStatus = () => {
@@ -130,7 +132,7 @@ const updateHtmlClassStatus = () => {
 }
 
 onMounted(() => {
-  themeStore.initTheme()
+  settingsStore.initTheme()
   updateHtmlClassStatus()
   const observer = new MutationObserver(updateHtmlClassStatus)
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })

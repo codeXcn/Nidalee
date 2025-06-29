@@ -1,13 +1,16 @@
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
-export * from './themeStore'
-export * from './connectStore'
-export * from './summonerStore'
-export * from './gameStatusStore'
-export * from './activityStore'
+// 核心stores
+export * from './core'
+
+// 功能stores
+export * from './features'
+
+// UI stores
+export * from './ui'
+
+// 自动功能store
 export * from './autoFunctionStore'
-export * from './matchStatisticsStore'
-export * from './appSessionStore'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

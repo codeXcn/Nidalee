@@ -13,7 +13,10 @@
       <div class="h-4 w-px bg-muted-foreground/20 mx-1" />
       <span class="text-xs text-muted-foreground">等级</span>
       <span class="font-bold text-base text-foreground">{{ summonerInfo.summonerLevel }}</span>
-      <span v-if="summonerInfo.soloRankTier" class="px-2 py-0.5 rounded bg-muted/60 text-primary font-semibold text-sm ml-1">
+      <span
+        v-if="summonerInfo.soloRankTier"
+        class="px-2 py-0.5 rounded bg-muted/60 text-primary font-semibold text-sm ml-1"
+      >
         {{ formatRankTier(summonerInfo.soloRankTier) }} {{ summonerInfo.soloRankDivision }}
       </span>
     </div>
@@ -21,14 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import { useSummonerStore, useConnectStore } from '@/stores'
-import { RotateCw } from 'lucide-vue-next'
+import { useConnectionStore } from '@/stores/core/connectionStore'
+import { useDataStore } from '@/stores/core/dataStore'
+
 // 直接从 store 获取状态
-const summonerStore = useSummonerStore()
-const connectionStore = useConnectStore()
+const dataStore = useDataStore()
+const connectionStore = useConnectionStore()
 
 // 从store中解构响应式状态
-const { summonerInfo } = storeToRefs(summonerStore)
+const { summonerInfo } = storeToRefs(dataStore)
 const { isConnected } = storeToRefs(connectionStore)
 
 // 格式化段位

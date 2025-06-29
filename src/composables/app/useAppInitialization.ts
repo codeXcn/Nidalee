@@ -1,46 +1,141 @@
-import { useConnection } from '../utils/useConnection'
-import { useMatchDataManager } from '../utils/useMatchDataManager'
-import { useDisconnectionHandler } from '../utils/useDisconnectionHandler'
+import { useConnection } from '@/composables/connection/useConnection'
+import { getLatestVersion } from '@/lib'
+import { useActivityStore } from '@/stores/core/activityStore'
+import { useDataStore } from '@/stores/core/dataStore'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
+import { invoke } from '@tauri-apps/api/core'
+import { ref } from 'vue'
 
-// 应用级别的初始化管理
+/**
+ * 应用初始化组合式函数
+ * 职责：处理应用启动时的初始化逻辑
+ */
 export function useAppInitialization() {
-  const connection = useConnection()
-  const matchDataManager = useMatchDataManager()
-  const disconnectionHandler = useDisconnectionHandler()
+  const dataStore = useDataStore()
+  const settingsStore = useSettingsStore()
+  const activityStore = useActivityStore()
+  const { isConnected } = useConnection()
+
+  const isInitialized = ref(false)
+  const initializationError = ref<string | null>(null)
+
+  // 初始化游戏版本
+  const initializeGameVersion = async () => {
+    try {
+      console.log('[AppInit] 获取游戏版本...')
+      const latestVersion = await getLatestVersion()
+
+      if (latestVersion !== dataStore.gameVersion) {
+        dataStore.setGameVersion(latestVersion)
+        console.log('[AppInit] 游戏版本已更新:', latestVersion)
+      }
+    } catch (error) {
+      console.error('[AppInit] 获取游戏版本失败:', error)
+      activityStore.addActivity('error', '获取游戏版本失败', 'error')
+    }
+  }
+
+  // 初始化连接状态
+  const initializeConnection = async () => {
+    try {
+      console.log('[AppInit] 初始化连接状态...')
+      // 连接状态由 useConnectionEvents 处理，这里只需要确保连接检查
+      if (isConnected.value) {
+        // 获取召唤师信息
+        try {
+          dataStore.startLoadingSummoner()
+          const summonerInfo = await invoke('get_current_summoner')
+          if (summonerInfo) {
+            dataStore.setSummonerInfo(summonerInfo)
+            activityStore.addActivity('info', '召唤师信息已更新', 'data')
+          }
+        } catch (error) {
+          console.error('[AppInit] 获取召唤师信息失败:', error)
+          dataStore.clearSummonerInfo()
+        }
+
+        // 获取对局历史
+        try {
+          dataStore.startLoadingMatchHistory()
+          const matchHistory = await invoke('get_match_history')
+          if (matchHistory) {
+            dataStore.setMatchStatistics(matchHistory)
+            activityStore.addActivity('success', '对局历史记录已更新', 'data')
+          }
+        } catch (error) {
+          console.error('[AppInit] 获取对局历史失败:', error)
+          dataStore.clearMatchHistory()
+          activityStore.addActivity('error', '获取对局历史失败', 'error')
+        }
+      }
+    } catch (error) {
+      console.error('[AppInit] 初始化连接状态失败:', error)
+    }
+  }
+
+  // 获取对局历史
+  const fetchMatchHistory = async () => {
+    try {
+      dataStore.startLoadingMatchHistory()
+      const matchHistory = await invoke('get_match_history')
+      if (matchHistory) {
+        dataStore.setMatchStatistics(matchHistory)
+        activityStore.addActivity('success', '对局历史记录已更新', 'data')
+      }
+    } catch (error) {
+      console.error('[AppInit] 获取对局历史失败:', error)
+      dataStore.clearMatchHistory()
+      activityStore.addActivity('error', '获取对局历史失败', 'error')
+    }
+  }
 
   // 初始化应用
   const initializeApp = async () => {
-    console.log('[AppInit] 开始初始化应用')
-
     try {
-      // 1. 启动连接监听
-      await connection.startListening()
+      console.log('[AppInit] 开始应用初始化...')
 
-      // 2. 设置战绩数据管理
-      matchDataManager.setupGameFinishedListener()
+      // 1. 初始化主题
+      settingsStore.initTheme()
 
-      // 3. 设置断开连接监听
-      document.addEventListener('connection-lost', () => {
-        console.log('[AppInit] 处理连接丢失事件')
-        disconnectionHandler.handleDisconnection()
-      })
+      // 2. 初始化游戏版本
+      await initializeGameVersion()
+
+      // 3. 初始化连接状态
+      await initializeConnection()
+
+      isInitialized.value = true
       console.log('[AppInit] 应用初始化完成')
+      activityStore.addActivity('success', '应用初始化完成', 'system')
     } catch (error) {
       console.error('[AppInit] 应用初始化失败:', error)
+      initializationError.value = error instanceof Error ? error.message : '未知错误'
+      activityStore.addActivity('error', '应用初始化失败', 'system')
     }
   }
 
   // 清理资源
   const cleanup = () => {
-    connection.stopListening()
+    console.log('[AppInit] 清理应用资源...')
+    isInitialized.value = false
+    initializationError.value = null
+  }
+
+  // 重新初始化
+  const reinitialize = async () => {
+    console.log('[AppInit] 重新初始化应用...')
+    cleanup()
+    await initializeApp()
   }
 
   return {
-    initializeApp,
-    cleanup,
+    // 状态
+    isInitialized,
+    initializationError,
 
-    connectionMessage: connection.connectionMessage,
-    refreshConnection: connection.refreshConnection,
-    fetchMatchHistory: matchDataManager.fetchMatchHistoryWithDebounce
+    // 方法
+    initializeApp,
+    fetchMatchHistory,
+    cleanup,
+    reinitialize
   }
 }

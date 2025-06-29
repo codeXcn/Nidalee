@@ -1,8 +1,9 @@
-import { useGameStatusStore, useSummonerStore } from '@/stores'
+import { useDataStore } from '@/stores/core/dataStore'
+import { useGameStore } from '@/stores/features/gameStore'
 
 export function useChampSelectSession() {
-  const gameStatusStore = useGameStatusStore()
-  const summonerStore = useSummonerStore()
+  const gameStore = useGameStore()
+  const dataStore = useDataStore()
   const { getChampionIconUrl, getProfileIconUrl, getRankIconUrl } = useGameAssets()
 
   const error = ref<string | null>(null)
@@ -31,7 +32,7 @@ export function useChampSelectSession() {
     const isLocal = player.cellId === localPlayerCellId
     let summonerInfo = null
     if (isLocal) {
-      summonerInfo = summonerStore.summonerInfo
+      summonerInfo = dataStore.summonerInfo
     }
     return {
       ...player,
@@ -52,7 +53,7 @@ export function useChampSelectSession() {
 
   // 富集 session
   const enrichedSession = computed(() => {
-    const session = gameStatusStore.currentChampSelectSession
+    const session = gameStore.champSelectSession
     if (!session) return null
     const localPlayerCellId = session.localPlayerCellId
     return {
@@ -63,8 +64,8 @@ export function useChampSelectSession() {
     }
   })
 
-  const session = computed(() => gameStatusStore.currentChampSelectSession)
-  const loading = computed(() => !gameStatusStore.currentChampSelectSession)
+  const session = computed(() => gameStore.champSelectSession)
+  const loading = computed(() => !gameStore.champSelectSession)
 
   return {
     session,

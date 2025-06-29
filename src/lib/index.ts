@@ -1,6 +1,9 @@
 // 数据API模块
 export * from './dataApi'
 
+// 主题配置模块
+export * from './theme'
+
 // 其他辅助函数
 export const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetailData): number => {
   const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)

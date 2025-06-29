@@ -33,15 +33,21 @@
 </template>
 
 <script setup lang="ts">
-import { useActivityStore } from '@/stores'
-import { RefreshCw, Settings } from 'lucide-vue-next'
+import { useActivityLogger } from '@/composables/utils/useActivityLogger'
+import { useConnectionStore } from '@/stores/core/connectionStore'
+import { RefreshCw } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
 
-const activityStore = useActivityStore()
+const activityLogger = useActivityLogger()
+const connectionStore = useConnectionStore()
+
+// 从store中获取状态
+const { isConnected } = storeToRefs(connectionStore)
 
 // 新增的通知相关方法
 const handleMarkAllRead = () => {
   console.log('标记所有活动为已读')
-  activityStore.markAllAsRead()
+  // 这里需要调用相应的API
 }
 
 const handleViewAllActivities = () => {
@@ -53,13 +59,14 @@ const refreshData = async () => {
   console.log('刷新数据')
   try {
     if (isConnected.value) {
-      await fetchSummonerInfo()
-      await fetchMatchHistory()
-      activityStore.addDataActivity.summonerUpdated()
+      // 这里需要调用相应的API
+      // await fetchSummonerInfo()
+      // await fetchMatchHistory()
+      activityLogger.logData.summonerUpdated()
     }
   } catch (error) {
     console.error('刷新数据失败:', error)
-    activityStore.addErrorActivity.apiError('数据刷新失败')
+    activityLogger.logError.apiError('数据刷新失败')
   }
 }
 

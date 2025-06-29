@@ -6,69 +6,14 @@
       <div
         class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 animate-in fade-in-0 duration-700 slide-in-from-bottom-4"
       >
-        <!-- 我方队伍 -->
-        <Card
-          class="p- case 'ChampSelect': return '正在加载选人阶段数据，请稍候...' case 'GameStart': return '选人阶段结束，游戏即将加载。' case 'InProgress': return '游戏正在进行中，可以查看队伍分析。' case 'WaitingForStats': return '游戏已结束，正在等待战绩统计。' case 'PreEndOfGame': case 'EndOfGame': return '游戏已结束，可以查看本局详细数据。'imate-in fade-in-0 duration-500 slide-in-from-left-4"
-          style="animation-delay: 100ms"
-        >
-          <div class="flex items-center justify-between mb-4 lg:mb-6">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 lg:w-4 lg:h-4 bg-blue-500 rounded-full animate-pulse"></div>
-              <h3 class="text-lg lg:text-xl font-bold text-blue-600 dark:text-blue-400">我方队伍</h3>
-            </div>
-            <Badge variant="outline" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600">
-              {{ session.myTeam.length }} 人
-            </Badge>
-          </div>
-
-          <div class="space-y-2 lg:space-y-3">
-            <PlayerCard
-              v-for="(player, index) in session.myTeam"
-              :key="player.summonerId + '-' + player.cellId"
-              :player="player"
-              :is-local="player.cellId === session.localPlayerCellId"
-              :is-ally="true"
-              @select="openSummonerDetails"
-              class="cursor-pointer animate-in fade-in-0 duration-500 slide-in-from-left-2"
-              :style="`animation-delay: ${200 + index * 100}ms;`"
-            />
-          </div>
-
-          <!-- 队伍统计信息 -->
-          <div class="mt-4 lg:mt-6 pt-4 border-t border-border">
-            <TeamStats :team="session.myTeam" team-type="ally" />
-          </div>
-        </Card>
-
-        <!-- 敌方队伍 -->
-        <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-right-4" style="animation-delay: 200ms">
-          <div class="flex items-center justify-between mb-4 lg:mb-6">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 lg:w-4 lg:h-4 bg-red-500 rounded-full animate-pulse"></div>
-              <h3 class="text-lg lg:text-xl font-bold text-red-600 dark:text-red-400">敌方队伍</h3>
-            </div>
-            <Badge variant="outline" class="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600">
-              {{ session.theirTeam.length }} 人
-            </Badge>
-          </div>
-
-          <div class="space-y-2 lg:space-y-3">
-            <PlayerCard
-              v-for="(player, index) in session.theirTeam"
-              :key="player.summonerId + '-' + player.cellId"
-              :player="player"
-              :is-ally="false"
-              @select="openSummonerDetails"
-              class="cursor-pointer animate-in fade-in-0 duration-500 slide-in-from-right-2"
-              :style="`animation-delay: ${300 + index * 100}ms;`"
-            />
-          </div>
-
-          <!-- 队伍统计信息 -->
-          <div class="mt-4 lg:mt-6 pt-4 border-t border-border">
-            <TeamStats :team="session.theirTeam" team-type="enemy" />
-          </div>
-        </Card>
+        <!-- 统一队伍卡片 -->
+        <TeamCard
+          :team="session.myTeam"
+          team-type="ally"
+          :local-player-cell-id="session.localPlayerCellId"
+          @select="openSummonerDetails"
+        />
+        <TeamCard :team="session.theirTeam" team-type="enemy" @select="openSummonerDetails" />
       </div>
 
       <!-- 对局建议 -->
@@ -212,14 +157,15 @@
 </template>
 
 <script setup lang="ts">
+import TeamCard from '@/components/features/match/TeamCard.vue'
 import { useChampSelectSession } from '@/composables'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
-import { useGameStatusStore } from '@/stores'
-import { appContextKey } from '@/types'
+import { useGameStore } from '@/stores/features/gameStore'
+import { appContextKey, type AppContext } from '@/types'
 import { invoke } from '@tauri-apps/api/core'
 import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
 
-const { isConnected } = inject(appContextKey)
+const { isConnected } = inject(appContextKey) as AppContext
 const { session: rawSession, enrichedSession, loading } = useChampSelectSession()
 const session = computed(() => enrichedSession.value)
 const shouldShowMatchAnalysis = ref(false)
@@ -227,8 +173,8 @@ const shouldShowMatchAnalysis = ref(false)
 const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
 
 // 使用游戏状态 store 来监听状态变化
-const gameStatusStore = useGameStatusStore()
-const { currentPhase, isInChampSelect } = storeToRefs(gameStatusStore)
+const gameStore = useGameStore()
+const { currentPhase, isInChampSelect } = storeToRefs(gameStore)
 // 召唤师详情相关 - 必须在 watchEffect 之前声明
 const isDetailsOpen = ref(false)
 const selectedPlayer = ref<any>(null)
@@ -237,14 +183,13 @@ watchEffect(() => {
   console.log('Session data:', session.value)
   const phase = currentPhase.value
   console.log('Current game phase:', phase)
-  shouldShowMatchAnalysis.value = !!session.value &&
-    phase === 'ChampSelect' ||
+  shouldShowMatchAnalysis.value =
+    (!!session.value && phase === 'ChampSelect') ||
     phase === 'GameStart' ||
     phase === 'InProgress' ||
     phase === 'WaitingForStats' ||
     phase === 'PreEndOfGame' ||
     phase === 'EndOfGame'
-
 })
 
 const openSummonerDetails = async (player: any) => {
@@ -265,7 +210,7 @@ const openSummonerDetails = async (player: any) => {
     console.log('Trying to get summoner info by summonerId:', player.summonerId)
     try {
       // 使用 summonerId 获取召唤师基本信息
-      const summonerInfo = await invoke('get_summoner_by_id', { id: parseInt(player.summonerId) })
+      const summonerInfo = (await invoke('get_summoner_by_id', { id: parseInt(player.summonerId) })) as any
       console.log('Summoner info by ID:', summonerInfo)
 
       if (summonerInfo && summonerInfo.displayName) {
