@@ -110,10 +110,10 @@
         排位统计
       </h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 justify-items-center items-start">
         <!-- 单人排位 -->
-        <div class="space-y-3">
-          <h4 class="font-medium text-foreground flex items-center">
+        <div class="space-y-3 flex flex-col items-center min-w-[260px] max-w-[320px] w-full">
+          <h4 class="font-medium text-foreground flex items-center justify-center">
             <User class="h-4 w-4 mr-2" />
             单人排位
           </h4>
@@ -123,17 +123,19 @@
                 v-if="summonerInfo.soloRankTier"
                 :src="getTierIconUrl(summonerInfo.soloRankTier)"
                 :alt="formatRankTier(summonerInfo.soloRankTier)"
-                class="w-14 h-14 drop-shadow-xl ring-2 ring-yellow-400 bg-white rounded-full animate-pulse"
+                class="w-20 h-20 rounded-full border-2 shadow-lg transition-all duration-500 breath-glow"
+                :style="getRankGlowBreathStyle(summonerInfo.soloRankTier)"
               />
-              <div class="flex flex-col justify-center">
-                <div class="flex items-baseline gap-2">
+              <div class="flex flex-col justify-center min-w-[140px]">
+                <div class="flex items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger as-child>
                         <span
-                          :class="`text-xl font-bold cursor-pointer px-3 py-1 rounded-lg shadow-sm transition-colors duration-200 ${getRankColor(summonerInfo.soloRankTier)}`"
+                          :class="`px-3 py-1 text-lg font-semibold rounded-2xl select-none shadow-lg border-2 transition-all duration-300 ${getRankColor(summonerInfo.soloRankTier)}`"
+                          :style="getBadgeStyle(summonerInfo.soloRankTier)"
                         >
-                          {{ formatRankTier(summonerInfo.soloRankTier) }}
+                          <span style="text-shadow:0 2px 8px rgba(0,0,0,0.18),0 1px 0 #fff;">{{ formatRankTier(summonerInfo.soloRankTier) }}</span>
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -141,33 +143,33 @@
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <span class="text-base font-semibold text-gray-400 tracking-wider ml-2">{{
+                  <span class="text-base font-medium text-gray-300 tracking-wider ml-1 opacity-80">{{
                     summonerInfo.soloRankDivision
                   }}</span>
                 </div>
                 <span
-                  class="mt-1 inline-flex items-center px-3 py-1 rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 shadow text-white font-extrabold text-base tracking-wide"
-                  style="min-width: 60px; justify-content: center"
+                  class="mt-2 inline-flex items-center px-3 py-1 rounded-xl border-2 shadow-md font-semibold text-sm tracking-wide min-w-[110px] max-w-[140px] w-full justify-center"
+                  :style="getLpBadgeStyle(summonerInfo.soloRankTier)"
                 >
-                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 20 20">
+                  <svg class="w-4 h-4 mr-1 opacity-90" fill="none" viewBox="0 0 20 20">
                     <path
                       d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.77l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2z"
                       fill="currentColor"
                     />
                   </svg>
-                  <span class="text-lg font-bold">{{ summonerInfo.soloRankLp }}</span>
-                  <span class="ml-1 text-xs font-semibold" style="opacity: 0.85">LP</span>
+                  <span class="text-base font-bold mx-1">{{ summonerInfo.soloRankLp }}</span>
+                  <span class="ml-1 text-xs font-medium opacity-70">LP</span>
                 </span>
               </div>
             </div>
-            <div class="flex items-center space-x-6 mt-2">
-              <span class="text-green-600 text-xl font-bold">{{ summonerInfo.soloRankWins }}胜</span>
-              <span class="text-red-600 text-xl font-bold">{{ summonerInfo.soloRankLosses }}负</span>
+            <div class="flex items-center space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2">
+              <span class="text-green-600 text-base font-bold">{{ summonerInfo.soloRankWins }}胜</span>
+              <span class="text-red-500 text-base font-bold">{{ summonerInfo.soloRankLosses }}负</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger as-child>
                     <span
-                      :class="`${getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).color} text-lg font-semibold flex items-center cursor-pointer`"
+                      class="text-yellow-600 text-base font-bold flex items-center cursor-pointer"
                     >
                       <span class="mr-1">{{
                         getWinRateStyle(getRankWinRate(summonerInfo.soloRankWins, summonerInfo.soloRankLosses)).icon
@@ -190,82 +192,82 @@
           </div>
         </div>
 
-        <!-- 灵活排位 -->
-        <div class="space-y-3">
-          <h4 class="font-medium text-foreground flex items-center">
+        <!-- 灵活排位（镜像对称） -->
+        <div class="space-y-3 flex flex-col items-center min-w-[260px] max-w-[320px] w-full">
+          <h4 class="font-medium text-foreground flex items-center justify-center">
             <Users class="h-4 w-4 mr-2" />
             灵活排位
           </h4>
           <div v-if="summonerInfo.flexRankTier" class="space-y-2">
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-row-reverse items-center space-x-reverse space-x-4 w-full justify-end">
               <img
                 v-if="summonerInfo.flexRankTier"
                 :src="getTierIconUrl(summonerInfo.flexRankTier)"
                 :alt="formatRankTier(summonerInfo.flexRankTier)"
-                class="w-14 h-14 drop-shadow-xl ring-2 ring-yellow-400 bg-white rounded-full animate-pulse"
+                class="w-20 h-20 rounded-full border-2 shadow-lg transition-all duration-500 breath-glow"
+                :style="getRankGlowBreathStyle(summonerInfo.flexRankTier)"
               />
-              <div class="flex flex-col justify-center">
-                <div class="flex items-baseline gap-2">
+              <div class="flex flex-col justify-center min-w-[140px] items-end text-right">
+                <div class="flex flex-row-reverse items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger as-child>
                         <span
-                          :class="`text-xl font-bold cursor-pointer px-3 py-1 rounded-lg shadow-sm transition-colors duration-200 ${getRankColor(summonerInfo.flexRankTier)}`"
+                          :class="`px-3 py-1 text-lg font-semibold rounded-2xl select-none shadow-lg border-2 transition-all duration-300 ${getRankColor(summonerInfo.flexRankTier)}`"
+                          :style="getBadgeStyle(summonerInfo.flexRankTier)"
                         >
-                          {{ formatRankTier(summonerInfo.flexRankTier) }}
+                          <span style="text-shadow:0 2px 8px rgba(0,0,0,0.18),0 1px 0 #fff;">{{ formatRankTier(summonerInfo.flexRankTier) }}</span>
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="left">
                         {{ _getTierTooltip(summonerInfo.flexRankTier) }}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <span class="text-base font-semibold text-gray-400 tracking-wider ml-2">{{
+                  <span class="text-base font-medium text-gray-300 tracking-wider mr-1 opacity-80">{{
                     summonerInfo.flexRankDivision
                   }}</span>
                 </div>
                 <span
-                  class="mt-1 inline-flex items-center px-3 py-1 rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 shadow text-white font-extrabold text-base tracking-wide"
-                  style="min-width: 60px; justify-content: center"
+                  class="mt-2 inline-flex flex-row-reverse items-center px-3 py-1 rounded-xl border-2 shadow-md font-semibold text-sm tracking-wide min-w-[110px] max-w-[140px] w-full justify-center"
+                  :style="getLpBadgeStyle(summonerInfo.flexRankTier)"
                 >
-                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 20 20">
+                  <svg class="w-4 h-4 ml-1 opacity-90" fill="none" viewBox="0 0 20 20">
                     <path
                       d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.77l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2z"
                       fill="currentColor"
                     />
                   </svg>
-                  <span class="text-lg font-bold">{{ summonerInfo.flexRankLp }}</span>
-                  <span class="ml-1 text-xs font-semibold" style="opacity: 0.85">LP</span>
+                  <span class="text-base font-bold mx-1">{{ summonerInfo.flexRankLp }}</span>
+                  <span class="mr-1 text-xs font-medium opacity-70">LP</span>
                 </span>
               </div>
             </div>
-            <div class="flex items-center space-x-6 mt-2">
-              <span class="text-green-600 text-xl font-bold">{{ summonerInfo.flexRankWins }}胜</span>
-              <span class="text-red-600 text-xl font-bold">{{ summonerInfo.flexRankLosses }}负</span>
+            <div class="flex flex-row-reverse items-center space-x-reverse space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2 w-full justify-end">
+              <span class="text-green-600 text-base font-bold">{{ summonerInfo.flexRankWins }}胜</span>
+              <span class="text-red-500 text-base font-bold">{{ summonerInfo.flexRankLosses }}负</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger as-child>
                     <span
-                      :class="`${getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).color} text-lg font-semibold flex items-center cursor-pointer`"
+                      class="text-yellow-600 text-base font-bold flex flex-row-reverse items-center cursor-pointer"
                     >
-                      <span class="mr-1">{{
+                      <span class="ml-1">{{
                         getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).icon
                       }}</span>
                       胜率 {{ getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses) }}%
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent side="right">
+                  <TooltipContent side="left">
                     {{ getWinRateStyle(getRankWinRate(summonerInfo.flexRankWins, summonerInfo.flexRankLosses)).tip }}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
           </div>
-          <div v-else class="text-sm text-muted-foreground">
-            <div class="flex items-center">
-              <Shield class="h-4 w-4 mr-2" />
-              <span>未定级</span>
-            </div>
+          <div v-else class="text-sm text-muted-foreground w-full flex flex-row-reverse items-center justify-end">
+            <Shield class="h-4 w-4 ml-2" />
+            <span>未定级</span>
           </div>
         </div>
       </div>
@@ -458,4 +460,88 @@ const getTierTooltip = (tier: string) => {
 }
 
 const _getTierTooltip = getTierTooltip
+
+// 段位主色发光映射
+const rankGlowColorMap: Record<string, string> = {
+  IRON: '#6e6e6e',
+  BRONZE: '#b87333',
+  SILVER: '#bfc1c2',
+  GOLD: '#f7c873',
+  PLATINUM: '#3fd8e0',
+  EMERALD: '#34d399',
+  DIAMOND: '#60a5fa',
+  MASTER: '#a78bfa',
+  GRANDMASTER: '#f87171',
+  CHALLENGER: '#ffe066'
+}
+// 获取rank徽章发光style
+const getRankGlowStyle = (tier: string) => {
+  const color = rankGlowColorMap[tier] || '#a3a3a3'
+  return {
+    boxShadow: `0 0 0 2px #fff, 0 0 16px 4px ${color}, 0 0 32px 8px ${color}80`,
+    borderColor: color,
+    background: '#fff',
+    transition: 'box-shadow 0.5s, border-color 0.5s'
+  }
+}
+
+// 呼吸发光动画style（主色变量）
+const getRankGlowBreathStyle = (tier: string) => {
+  const color = rankGlowColorMap[tier] || '#a3a3a3'
+  return {
+    '--glow-color': color,
+    '--glow-color-a': color + '80',
+    borderColor: color,
+    background: '#fff',
+    transition: 'box-shadow 0.5s, border-color 0.5s'
+  } as any
+}
+
+// 段位名badge主色渐变风格
+const getBadgeStyle = (tier: string) => {
+  const color = rankGlowColorMap[tier] || '#a3a3a3'
+  return {
+    background: `linear-gradient(135deg, ${color}, ${color}cc, ${color}aa)`, // 主色多层渐变
+    color: '#fff',
+    boxShadow: `0 3px 12px ${color}55, 0 0 0 1px ${color}`, // 阴影+描边
+    border: 'none',
+    filter: 'brightness(1.08)',
+    letterSpacing: '0.02em',
+    fontWeight: '700',
+    textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+    transition: 'all 0.3s ease'
+  }
+}
+// LP区块渐变风格
+const getLpBadgeStyle = (tier: string) => {
+  const color = rankGlowColorMap[tier] || '#f7c873'
+  return {
+    background: `linear-gradient(135deg, #ffffff, #f8fafc, #f1f5f9)`, // 白色到浅灰渐变
+    color: color,
+    border: `2px solid ${color}`,
+    boxShadow: `0 3px 10px ${color}35`,
+    filter: 'brightness(1.05)',
+    letterSpacing: '0.01em',
+    fontWeight: '700',
+    textShadow: `0 1px 2px ${color}30`,
+    transition: 'all 0.3s ease'
+  }
+}
 </script>
+
+<style scoped>
+@keyframes breath-glow {
+  0% {
+    box-shadow: 0 0 0 2px #fff, 0 0 16px 4px var(--glow-color), 0 0 32px 8px var(--glow-color-a);
+  }
+  50% {
+    box-shadow: 0 0 0 4px #fff, 0 0 32px 12px var(--glow-color), 0 0 64px 16px var(--glow-color-a);
+  }
+  100% {
+    box-shadow: 0 0 0 2px #fff, 0 0 16px 4px var(--glow-color), 0 0 32px 8px var(--glow-color-a);
+  }
+}
+.breath-glow {
+  animation: breath-glow 2.4s ease-in-out infinite;
+}
+</style>

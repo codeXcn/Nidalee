@@ -167,52 +167,63 @@
             <div
               v-for="game in matchStatistics.recent_performance.slice(0, 10)"
               :key="game.game_creation"
-              :class="[
-                game.win
-                  ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
-                  : 'bg-red-500/10 border-red-500/30 hover:border-red-500/50'
-              ]"
-              class="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] relative"
+              class="group relative flex bg-gradient-to-br from-card/80 to-muted/60 rounded-xl shadow-sm cursor-pointer transition-transform duration-150 will-change-transform hover:-translate-y-1 hover:shadow-lg backdrop-blur-sm"
               @click="openGameDetail(game)"
             >
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium">{{ getChampionName(game.champion_id) }}</span>
-                <Badge :variant="game.win ? 'default' : 'destructive'" class="text-xs">
-                  {{ game.win ? '胜利' : '失败' }}
-                </Badge>
-              </div>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-mono">{{ game.kills }}/{{ game.deaths }}/{{ game.assists }}</span>
-                <span class="text-muted-foreground">{{ formatGameTime(game.game_duration) }}</span>
-              </div>
-              <div class="flex items-center text-xs text-gray-400 mt-1">
-                <Clock class="w-3 h-3 mr-1" />
-                <span>{{ formatRelativeTime(game.game_creation) }}</span>
-              </div>
-              <div class="text-xs text-muted-foreground mt-1">
-                {{ getQueueName(game.queue_id) }}
-              </div>
-              <div
-                class="absolute right-2 bottom-2 rotate-12 px-3 py-0.5 rounded-full shadow text-xs font-bold select-none flex items-center gap-1"
-                :class="{
-                  'bg-green-500 text-white':
-                    game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼'),
-                  'bg-yellow-400 text-white': game.performance_rating.includes('不错'),
-                  'bg-red-500 text-white': game.performance_rating.includes('需要加油'),
-                  'bg-purple-500 text-white':
-                    game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')
-                }"
-              >
-                <Award v-if="game.performance_rating.includes('超神')" class="w-4 h-4" />
-                <Star v-else-if="game.performance_rating.includes('亮眼')" class="w-4 h-4" />
-                <Flame
-                  v-else-if="game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')"
-                  class="w-4 h-4"
-                />
-                <Smile v-else-if="game.performance_rating.includes('不错')" class="w-4 h-4" />
-                <Meh v-else-if="game.performance_rating.includes('一般')" class="w-4 h-4" />
-                <AlertCircle v-else-if="game.performance_rating.includes('需要加油')" class="w-4 h-4" />
-                <span>{{ game.performance_rating }}</span>
+              <!-- 左侧彩色竖条 -->
+              <div :class="game.win ? 'bg-green-400' : 'bg-red-400'" class="w-1 rounded-l-xl"></div>
+              <div class="flex-1 p-4 flex flex-col">
+                <!-- 标题区 -->
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-base font-semibold text-foreground">{{ getChampionName(game.champion_id) }}</span>
+                  <Badge :variant="game.win ? 'default' : 'destructive'" class="text-xs px-2 py-0.5">
+                    {{ game.win ? '胜利' : '失败' }}
+                  </Badge>
+                </div>
+                <!-- KDA区 -->
+                <div class="flex items-center justify-between text-sm mb-3">
+                  <span class="font-mono font-bold text-lg">
+                    <span class="text-red-500">{{ game.kills }}</span>
+                    <span class="text-gray-400">/</span>
+                    <span class="text-gray-400">{{ game.deaths }}</span>
+                    <span class="text-gray-400">/</span>
+                    <span class="text-blue-500">{{ game.assists }}</span>
+                  </span>
+                  <span class="text-muted-foreground">{{ formatGameTime(game.game_duration) }}</span>
+                </div>
+                <!-- 只保留一条淡色分割线 -->
+                <div class="border-t border-white/10 my-2"></div>
+                <!-- 底部信息和标签 -->
+                <div class="flex items-end justify-between mt-1">
+                  <div class="flex flex-col text-xs text-muted-foreground">
+                    <div class="flex items-center">
+                      <Clock class="w-3 h-3 mr-1" />
+                      <span>{{ formatRelativeTime(game.game_creation) }}</span>
+                    </div>
+                    <span>{{ getQueueName(game.queue_id) }}</span>
+                  </div>
+                  <div
+                    class="ml-2 px-2 py-0.5 rounded-full shadow text-xs font-bold select-none flex items-center gap-1 transition-transform duration-150 group-hover:scale-105 group-hover:shadow-lg"
+                    :class="[
+                      'bg-gradient-to-r',
+                      game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼') ? 'from-green-400 to-green-600 text-white' : '',
+                      game.performance_rating.includes('不错') ? 'from-yellow-400 to-yellow-500 text-white' : '',
+                      game.performance_rating.includes('需要加油') ? 'from-red-500 to-red-700 text-white' : '',
+                      (game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')) ? 'from-purple-500 to-purple-700 text-white' : ''
+                    ]"
+                  >
+                    <Award v-if="game.performance_rating.includes('超神')" class="w-3 h-3" />
+                    <Star v-else-if="game.performance_rating.includes('亮眼')" class="w-3 h-3" />
+                    <Flame
+                      v-else-if="game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')"
+                      class="w-3 h-3"
+                    />
+                    <Smile v-else-if="game.performance_rating.includes('不错')" class="w-3 h-3" />
+                    <Meh v-else-if="game.performance_rating.includes('一般')" class="w-3 h-3" />
+                    <AlertCircle v-else-if="game.performance_rating.includes('需要加油')" class="w-3 h-3" />
+                    <span>{{ game.performance_rating }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

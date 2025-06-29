@@ -1,5 +1,5 @@
 import { getLatestVersion } from '@/lib'
-import { useThemeStore, useAppSessionStore, useSummonerStore } from '@/stores'
+import { useThemeStore, useAppSessionStore, useSummonerStore, useConnectStore } from '@/stores'
 import { useAppInitialization } from './useAppInitialization'
 import { useGamePhaseManager } from '@/composables/game/useGamePhaseManager'
 import { useChampSelectManager } from '@/composables/game/useChampSelectManager'
@@ -22,14 +22,22 @@ export function useApp() {
   themeStore.initTheme()
   watch(
     isConnected,
-    (isConnected) => {
-      if (isConnected) {
-        console.log('[App] 连接已建立，更新主题')
-        // 如果已连接，自动获取召唤师信息和对局历史
-        summonerStore.fetchSummonerInfo()
-        appInit.fetchMatchHistory()
-      } else {
-        console.log('[App] 客户端未连接')
+    async (isConnected) => {
+      try {
+        if (isConnected) {
+          console.log('[App] 连接已建立，更新主题')
+          // 如果已连接，自动获取召唤师信息和对局历史
+          summonerStore.fetchSummonerInfo()
+          appInit.fetchMatchHistory()
+        } else {
+          await summonerStore.fetchSummonerInfo()
+
+          console.log('[App] 客户端未连接')
+        }
+        useConnectStore().isConnected = true
+      } catch (error) {
+        console.error('[App] 连接状态变化处理失败:', error)
+        useConnectStore().isConnected = false
       }
     },
     {

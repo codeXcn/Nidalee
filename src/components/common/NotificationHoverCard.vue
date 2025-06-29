@@ -5,7 +5,7 @@
         class="cursor-pointer relative p-3 rounded-2xl bg-gradient-to-br from-background/80 to-muted/60 backdrop-blur-sm border border-border/50 hover:border-border transition-all duration-200 focus:outline-none shadow-lg hover:shadow-xl group"
         aria-label="查看活动通知"
       >
-        <Bell :size="16" class="text-muted-foreground group-hover:text-foreground transition-colors" />
+        <Bell :size="17" class="text-muted-foreground group-hover:text-foreground transition-colors" />
         <!-- 通知数量徽章 -->
         <span
           v-if="unreadCount > 0"

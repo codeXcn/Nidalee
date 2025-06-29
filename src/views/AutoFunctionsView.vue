@@ -28,7 +28,7 @@
       <!-- 功能卡片网格 -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <!-- 自动接受对局 -->
-        <div class="transition-transform hover:scale-[1.02]">
+        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
           <FunctionCard
             title="自动接受对局"
             description="自动接受匹配到的对局，避免错过游戏机会"
@@ -38,7 +38,7 @@
         </div>
 
         <!-- 自动选择英雄 -->
-        <div class="transition-transform hover:scale-[1.02]">
+        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
           <ChampionFunctionCard
             title="自动选择英雄"
             description="在选择阶段自动选择指定英雄，快速完成英雄选择"
@@ -53,7 +53,7 @@
         </div>
 
         <!-- 自动符文配置 -->
-        <div class="transition-transform hover:scale-[1.02]">
+        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
           <FunctionCard
             title="自动符文配置"
             description="根据选择的英雄自动配置最优符文页面"
@@ -63,7 +63,7 @@
         </div>
 
         <!-- 自动禁用英雄 -->
-        <div class="transition-transform hover:scale-[1.02]">
+        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
           <ChampionFunctionCard
             title="自动禁用英雄"
             description="在禁用阶段自动禁用指定英雄，防止对手选择"

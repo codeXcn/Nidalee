@@ -17,7 +17,7 @@
         @click="refreshData"
         title="刷新数据"
       >
-        <RefreshCw :size="16" class="text-muted-foreground group-hover:text-foreground transition-colors" />
+        <RefreshCw :size="17" class="text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
 
       <!-- 设置按钮 -->

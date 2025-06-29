@@ -220,72 +220,36 @@ import { invoke } from '@tauri-apps/api/core'
 import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
 
 const { isConnected } = inject(appContextKey)
-console.log(isConnected)
 const { session: rawSession, enrichedSession, loading } = useChampSelectSession()
 const session = computed(() => enrichedSession.value)
-
-// 判断是否应该显示对局分析
-const shouldShowMatchAnalysis = computed(() => {
-  const phase = currentPhase.value
-  // 在选人阶段、游戏开始、游戏中、等待结算、游戏结束等阶段都显示对局分析
-  // 这样用户可以在整个游戏流程中查看对局数据
-  return (
-    phase === 'ChampSelect' ||
-    phase === 'GameStart' ||
-    phase === 'InProgress' ||
-    phase === 'WaitingForStats' ||
-    phase === 'PreEndOfGame' ||
-    phase === 'EndOfGame'
-  )
-})
-
+const shouldShowMatchAnalysis = ref(false)
 // 使用搜索召唤师战绩的钩子
 const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
 
 // 使用游戏状态 store 来监听状态变化
 const gameStatusStore = useGameStatusStore()
 const { currentPhase, isInChampSelect } = storeToRefs(gameStatusStore)
-
 // 召唤师详情相关 - 必须在 watchEffect 之前声明
 const isDetailsOpen = ref(false)
 const selectedPlayer = ref<any>(null)
-
-// 监听游戏状态变化
-watchEffect(() => {
-  console.log('Game phase changed:', currentPhase.value)
-  console.log('Is in champion select:', isInChampSelect.value)
-
-  // 只有当会话数据不存在且详情抽屉打开时，才关闭抽屉
-  // 这样用户可以在 None、Lobby、Matchmaking 等状态下查看召唤师详情
-  // if (!session.value && isDetailsOpen.value) {
-  //   console.log('No session data available, closing summoner details')
-  //   isDetailsOpen.value = false
-  //   selectedPlayer.value = null
-  // }
-})
-
 // 添加调试信息和会话监听
 watchEffect(() => {
   console.log('Session data:', session.value)
-  if (session.value) {
-    console.log('My team:', session.value.myTeam)
-    console.log('Their team:', session.value.theirTeam)
-  } else {
-    console.log('No session data - possibly exited champion select')
-  }
+  const phase = currentPhase.value
+  console.log('Current game phase:', phase)
+  shouldShowMatchAnalysis.value = !!session.value &&
+    phase === 'ChampSelect' ||
+    phase === 'GameStart' ||
+    phase === 'InProgress' ||
+    phase === 'WaitingForStats' ||
+    phase === 'PreEndOfGame' ||
+    phase === 'EndOfGame'
+
 })
 
 const openSummonerDetails = async (player: any) => {
-  console.log('Opening summoner details for:', player)
-  console.log('Player keys:', Object.keys(player))
-  console.log('Player displayName:', player.displayName)
-  console.log('Player summonerId:', player.summonerId)
-  console.log('Player cellId:', player.cellId)
-
   selectedPlayer.value = player
   isDetailsOpen.value = true
-  console.log('isDetailsOpen set to:', isDetailsOpen.value)
-
   // 首先尝试使用 displayName 搜索
   if (player.displayName && player.displayName !== '未知玩家' && player.displayName !== '未知召唤师') {
     console.log('Searching match history by displayName:', player.displayName)

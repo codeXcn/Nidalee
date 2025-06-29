@@ -9,10 +9,11 @@
     </div>
 
     <!-- 等级和段位信息 -->
-    <div v-if="isConnected && summonerInfo" class="flex items-center gap-2 text-sm">
-      <div class="h-4 w-px bg-muted-foreground/30" />
-      <span class="text-foreground/80">等级 {{ summonerInfo.summonerLevel }}</span>
-      <span v-if="summonerInfo.soloRankTier" class="text-foreground/80">
+    <div v-if="isConnected && summonerInfo" class="flex items-center gap-2">
+      <div class="h-4 w-px bg-muted-foreground/20 mx-1" />
+      <span class="text-xs text-muted-foreground">等级</span>
+      <span class="font-bold text-base text-foreground">{{ summonerInfo.summonerLevel }}</span>
+      <span v-if="summonerInfo.soloRankTier" class="px-2 py-0.5 rounded bg-muted/60 text-primary font-semibold text-sm ml-1">
         {{ formatRankTier(summonerInfo.soloRankTier) }} {{ summonerInfo.soloRankDivision }}
       </span>
     </div>

@@ -9,6 +9,7 @@ export function useDisconnectionHandler() {
 
   // 断开连接时的清理
   const handleDisconnection = () => {
+    console.log('[🔌 Disconnection Handler] 处理断开连接...')
     connectionStore.clearAuthInfo()
     summonerStore.clearSummonerInfo()
     gameStatusStore.clearGameState()
