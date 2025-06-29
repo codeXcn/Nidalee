@@ -20,7 +20,7 @@ export function useGamePhaseManager() {
     gameStatusStore.updateGamePhase(phase)
 
     if (phase) {
-      activityStore.addActivity('info', `游戏阶段变更: ${previousPhase} → ${phase}`)
+      activityStore.addActivity('info', `游戏阶段变更: ${previousPhase} → ${phase}`, 'game')
 
       // 只处理接受对局，选人/禁用由 gameStatusStore 处理
       if (phase === 'ReadyCheck') {
@@ -32,11 +32,11 @@ export function useGamePhaseManager() {
         console.log('[🎮 GamePhaseManager] 🏁 检测到游戏退出，清理选人和房间状态')
         gameStatusStore.updateChampSelectSession(null)
         gameStatusStore.updateLobbyInfo(null)
-        activityStore.addActivity('info', '游戏已结束，已清理游戏状态')
+        activityStore.addActivity('info', '游戏已结束，已清理游戏状态', 'game')
       }
     } else {
       console.log('[🎮 GamePhaseManager] 🔄 游戏阶段重置为空')
-      activityStore.addActivity('info', '游戏阶段重置')
+      activityStore.addActivity('info', '游戏阶段重置', 'game')
       // 阶段为空时也清理游戏状态
       gameStatusStore.updateChampSelectSession(null)
       gameStatusStore.updateLobbyInfo(null)
@@ -56,10 +56,10 @@ export function useGamePhaseManager() {
           console.log('[🤖 GamePhaseManager] 🚀 开始执行自动接受对局')
           await handleAcceptMatch()
           console.log('[🤖 GamePhaseManager] ✅ 自动接受对局执行成功')
-          activityStore.addActivity('success', '自动接受对局已触发')
+          activityStore.addAutoFunctionActivity.acceptMatch.success()
         } catch (error) {
           console.error('[🤖 GamePhaseManager] ❌ 自动接受对局失败:', error)
-          activityStore.addActivity('error', `自动接受对局失败: ${error}`)
+          activityStore.addAutoFunctionActivity.acceptMatch.failed(String(error))
         }
       }, autoFunctions.acceptMatch.delay)
     } else {

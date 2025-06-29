@@ -220,6 +220,7 @@ import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { getCommunityDragonUrl, getChampionIconUrlByAlias } from '@/lib'
 import { fetchChampionDetails, fetchChampionSummary } from '@/lib/dataApi'
 import { useGameHelper } from '@/composables/game-helper'
+import { useActivityStore } from '@/stores'
 const { setSummonerBackgroundSkin } = useGameHelper()
 const searchText = ref('')
 const debouncedSearchText = ref('')
@@ -232,7 +233,7 @@ const loadingSkins = ref(false)
 const skinsError = ref<string | null>(null)
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
-
+const activity = useActivityStore()
 // 使用 Radash 的防抖函数，更简洁可靠
 const debouncedUpdateSearch = debounce({ delay: 300 }, (value: string) => {
   debouncedSearchText.value = value
@@ -315,7 +316,7 @@ const applySkinBackground = async (skin: any) => {
     shakeSkinId.value = skin.id // 触发抖动
     // 调用后端API设置生涯背景皮肤
     await setSummonerBackgroundSkin(skin.id)
-
+    activity.addSettingsActivity.setCareerBackground(skin.name)
     // 使用 Sonner 显示成功提示
     toast.success(`皮肤"${skin.name}"已设置为生涯背景`, {
       description: '生涯背景设置成功完成',

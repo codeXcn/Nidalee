@@ -84,41 +84,6 @@ const {
   step: 100
 })
 
-// 添加日志监听 enabled 状态变化
-watch(
-  enabled,
-  (newVal, oldVal) => {
-    console.log(`[FunctionCard] ${props.title} - enabled changed:`, {
-      from: oldVal,
-      to: newVal,
-      title: props.title
-    })
-  },
-  { immediate: true }
-)
-
-// 添加日志监听 delay 状态变化（实际保存的值）
-watch(
-  delay,
-  (newVal, oldVal) => {
-    console.log(`[FunctionCard] ${props.title} - delay saved:`, {
-      from: oldVal,
-      to: newVal,
-      title: props.title
-    })
-  },
-  { immediate: true }
-)
-
-// 监听防抖状态
-watch(isDelayPending, (pending) => {
-  if (pending) {
-    console.log(`[FunctionCard] ${props.title} - delay change pending...`)
-  } else {
-    console.log(`[FunctionCard] ${props.title} - delay change saved`)
-  }
-})
-
 // Slider 需要数组格式，创建计算属性处理转换
 const delayModel = computed({
   get: () => {

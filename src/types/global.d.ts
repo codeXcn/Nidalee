@@ -205,6 +205,7 @@ interface Activity {
   type: 'success' | 'info' | 'warning' | 'error'
   message: string
   timestamp: number
+  category: 'connection' | 'game' | 'auto' | 'data' | 'settings' | 'error' | 'system'
 }
 
 interface GameStatus {

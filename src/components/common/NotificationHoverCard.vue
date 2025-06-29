@@ -35,9 +35,21 @@
             </div>
             <h3 class="text-base font-semibold text-foreground">{{ title }}</h3>
           </div>
-          <Badge v-if="unreadCount > 0" variant="secondary" class="text-xs bg-red-500/10 text-red-600 border-red-200">
-            {{ unreadCount }} 条未读
-          </Badge>
+          <div class="flex items-center space-x-2">
+            <!-- 错误/警告统计 -->
+            <div v-if="errorCount > 0" class="flex items-center space-x-1">
+              <div class="h-2 w-2 bg-red-500 rounded-full"></div>
+              <span class="text-xs text-red-600 font-medium">{{ errorCount }}</span>
+            </div>
+            <div v-if="warningCount > 0" class="flex items-center space-x-1">
+              <div class="h-2 w-2 bg-yellow-500 rounded-full"></div>
+              <span class="text-xs text-yellow-600 font-medium">{{ warningCount }}</span>
+            </div>
+            <!-- 未读徽章 -->
+            <Badge v-if="unreadCount > 0" variant="secondary" class="text-xs bg-red-500/10 text-red-600 border-red-200">
+              {{ unreadCount }} 条未读
+            </Badge>
+          </div>
         </div>
       </div>
 
@@ -122,18 +134,11 @@ import { computed } from 'vue'
 import { Bell, CheckCheck, ArrowRight } from 'lucide-vue-next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
-
-export interface Activity {
-  id: string | number
-  type: 'success' | 'info' | 'warning' | 'error'
-  message: string
-  timestamp: number
-  read?: boolean
-}
+import { useActivityStore } from '@/stores/activityStore'
+import { useFormatters } from '@/composables'
 
 const props = withDefaults(
   defineProps<{
-    activities: Activity[]
     title?: string
     side?: 'top' | 'right' | 'bottom' | 'left'
     align?: 'start' | 'center' | 'end'
@@ -150,21 +155,43 @@ const emit = defineEmits<{
   viewAll: []
 }>()
 
+// 使用 ActivityStore
+const activityStore = useActivityStore()
 const { formatRelativeTime } = useFormatters()
+
+// 从 store 获取活动数据
+const activities = computed(() => activityStore.recentActivities)
+
+// 计算统计信息
+const errorCount = computed(() => activityStore.errorCount)
+const warningCount = computed(() => activityStore.warningCount)
 
 // 计算未读数量
 const unreadCount = computed(() => {
-  return props.activities.filter((activity) => !activity.read).length
+  return activities.value.filter((activity) => !activity.read).length
 })
 
 // 处理标记全部已读
 const handleMarkAllRead = () => {
+  // 这里可以实现标记已读的逻辑
+  // 暂时先触发事件，后续可以直接调用 store 方法
   emit('markAllRead')
 }
 
 // 处理查看全部
 const handleViewAll = () => {
   emit('viewAll')
+}
+
+// 获取活动类型的颜色和图标
+const getActivityTypeConfig = (type: string) => {
+  const configs = {
+    success: { color: 'bg-green-500', icon: '✓' },
+    info: { color: 'bg-blue-500', icon: 'ℹ' },
+    warning: { color: 'bg-yellow-500', icon: '⚠' },
+    error: { color: 'bg-red-500', icon: '✕' }
+  }
+  return configs[type as keyof typeof configs] || configs.info
 }
 </script>
 

@@ -69,7 +69,7 @@ const toggleAutoFunction = (key: keyof typeof autoFunctions.value) => {
 
 const simulateMatchResult = (won: boolean) => {
   matchStatisticsStore.simulateMatchResult(won)
-  activityStore.addActivity(won ? 'success' : 'info', won ? '对局胜利！' : '对局结束')
+  activityStore.addGameActivity.gameEnd(won ? 'win' : 'lose')
 }
 
 const fetchMatchHistory = inject('fetchMatchHistory', async () => {

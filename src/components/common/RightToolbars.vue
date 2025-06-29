@@ -4,7 +4,6 @@
     <div class="flex items-center space-x-2">
       <!-- 通知弹出框 -->
       <NotificationHoverCard
-        :activities="activities"
         title="系统活动"
         side="bottom"
         align="end"
@@ -36,15 +35,13 @@
 <script setup lang="ts">
 import { useActivityStore } from '@/stores'
 import { RefreshCw, Settings } from 'lucide-vue-next'
-const { activities } = storeToRefs(useActivityStore())
+
+const activityStore = useActivityStore()
 
 // 新增的通知相关方法
 const handleMarkAllRead = () => {
   console.log('标记所有活动为已读')
-  // 这里可以添加标记所有活动为已读的逻辑
-  activities.value.forEach((activity) => {
-    activity.read = true
-  })
+  activityStore.markAllAsRead()
 }
 
 const handleViewAllActivities = () => {
@@ -58,11 +55,11 @@ const refreshData = async () => {
     if (isConnected.value) {
       await fetchSummonerInfo()
       await fetchMatchHistory()
-      activityStore.addActivity('info', '数据刷新完成')
+      activityStore.addDataActivity.summonerUpdated()
     }
   } catch (error) {
     console.error('刷新数据失败:', error)
-    activityStore.addActivity('error', '数据刷新失败')
+    activityStore.addErrorActivity.apiError('数据刷新失败')
   }
 }
 

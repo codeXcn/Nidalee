@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-background">
+  <div v-if="isConnected" class="min-h-screen bg-background">
     <!-- 通知组件已移除，使用 toast 替代 -->
     <div class="max-w-7xl mx-auto">
       <!-- 标题和状态 -->
@@ -94,16 +94,18 @@
       </div>
     </div>
   </div>
+  <ClientDisconnected v-else />
 </template>
 
 <script setup lang="ts">
+import { useActivityStore, useAutoFunctionStore } from '@/stores'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
-import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
+import { appContextKey } from '@/types'
 import { CheckCircle, Info, X, XCircle } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
-
+const { isConnected } = inject(appContextKey)
 const autoFunctionStore = useAutoFunctionStore()
-
+const activityStore = useActivityStore()
 // 计算属性 - 使用 toRef 确保响应式
 const autoFunctions = computed(() => {
   const functions = autoFunctionStore.autoFunctions
@@ -111,67 +113,44 @@ const autoFunctions = computed(() => {
   return functions
 })
 
-// 添加更详细的响应式监听
 watch(
-  () => autoFunctionStore.autoFunctions,
-  (newVal, oldVal) => {
-    console.log('[AutoFunctionsView] Store autoFunctions changed:', {
-      old: oldVal,
-      new: newVal,
-      acceptMatch: {
-        old: oldVal?.acceptMatch,
-        new: newVal?.acceptMatch
-      },
-      selectChampion: {
-        old: oldVal?.selectChampion,
-        new: newVal?.selectChampion
-      },
-      runeConfig: {
-        old: oldVal?.runeConfig,
-        new: newVal?.runeConfig
-      },
-      banChampion: {
-        old: oldVal?.banChampion,
-        new: newVal?.banChampion
+  [
+    () => autoFunctionStore.autoFunctions.acceptMatch.enabled,
+    () => autoFunctionStore.autoFunctions.selectChampion.enabled,
+    () => autoFunctionStore.autoFunctions.runeConfig.enabled,
+    () => autoFunctionStore.autoFunctions.banChampion.enabled
+  ],
+  ([acceptMatch, selectChampion, runeConfig, banChampion], [oldAccept, oldSelect, oldRune, oldBan]) => {
+    if (acceptMatch !== oldAccept) {
+      if (acceptMatch) {
+        activityStore.addSettingsActivity.autoFunctionEnabled('自动接受对局')
+      } else {
+        activityStore.addSettingsActivity.autoFunctionDisabled('自动接受对局')
       }
-    })
-  },
-  { deep: true, immediate: true }
+    }
+    if (selectChampion !== oldSelect) {
+      if (selectChampion) {
+        activityStore.addSettingsActivity.autoFunctionEnabled('自动选择英雄')
+      } else {
+        activityStore.addSettingsActivity.autoFunctionDisabled('自动选择英雄')
+      }
+    }
+    if (runeConfig !== oldRune) {
+      if (runeConfig) {
+        activityStore.addSettingsActivity.autoFunctionEnabled('自动符文配置')
+      } else {
+        activityStore.addSettingsActivity.autoFunctionDisabled('自动符文配置')
+      }
+    }
+    if (banChampion !== oldBan) {
+      if (banChampion) {
+        activityStore.addSettingsActivity.autoFunctionEnabled('自动禁用英雄')
+      } else {
+        activityStore.addSettingsActivity.autoFunctionDisabled('自动禁用英雄')
+      }
+    }
+  }
 )
-
-// 监听每个功能的enabled状态变化
-watch(
-  () => autoFunctionStore.autoFunctions.acceptMatch.enabled,
-  (newVal, oldVal) => {
-    console.log('[AutoFunctionsView] acceptMatch.enabled changed:', { from: oldVal, to: newVal })
-  },
-  { immediate: true }
-)
-
-watch(
-  () => autoFunctionStore.autoFunctions.selectChampion.enabled,
-  (newVal, oldVal) => {
-    console.log('[AutoFunctionsView] selectChampion.enabled changed:', { from: oldVal, to: newVal })
-  },
-  { immediate: true }
-)
-
-watch(
-  () => autoFunctionStore.autoFunctions.runeConfig.enabled,
-  (newVal, oldVal) => {
-    console.log('[AutoFunctionsView] runeConfig.enabled changed:', { from: oldVal, to: newVal })
-  },
-  { immediate: true }
-)
-
-watch(
-  () => autoFunctionStore.autoFunctions.banChampion.enabled,
-  (newVal, oldVal) => {
-    console.log('[AutoFunctionsView] banChampion.enabled changed:', { from: oldVal, to: newVal })
-  },
-  { immediate: true }
-)
-
 const enabledFunctionsCount = computed(() => autoFunctionStore.enabledFunctionsCount)
 const isAnyFunctionEnabled = computed(() => autoFunctionStore.isAnyFunctionEnabled)
 const enabledFunctions = computed(() => autoFunctionStore.enabledFunctions)
@@ -203,15 +182,4 @@ const handleClearBan = async () => {
   console.log('Clearing champion ban')
   autoFunctionStore.clearChampionBan()
 }
-
-// 调试信息
-onMounted(() => {
-  console.log('[AutoFunctionsView] Component mounted')
-  console.log('[AutoFunctionsView] Initial store functions:', autoFunctions.value)
-  console.log('[AutoFunctionsView] Initial enabled count:', enabledFunctionsCount.value)
-})
-
-console.log('[AutoFunctionsView] Component setup')
-console.log('[AutoFunctionsView] Store functions at setup:', autoFunctions.value)
-console.log('[AutoFunctionsView] Enabled count at setup:', enabledFunctionsCount.value)
 </script>

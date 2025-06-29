@@ -109,12 +109,12 @@ const menuItems = [
     title: '自动功能',
     url: '/auto-functions',
     icon: Zap
-  },
-  {
-    title: '安全设置',
-    url: '/security',
-    icon: Shield
   }
+  // {
+  //   title: '安全设置',
+  //   url: '/security',
+  //   icon: Shield
+  // }
 ]
 
 const devItems = [

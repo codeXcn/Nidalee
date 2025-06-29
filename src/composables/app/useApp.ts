@@ -18,7 +18,6 @@ export function useApp() {
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
 
   const isDark = computed(() => themeStore.isDark)
-
   // 初始化主题（在onMounted之前）
   themeStore.initTheme()
   watch(
@@ -78,7 +77,7 @@ export function useApp() {
   return {
     isDark,
     // 暴露连接相关的状态和方法，供组件使用
-    isConnected: appInit.isConnected,
+    isConnected,
     connectionMessage: appInit.connectionMessage,
     refreshConnection: appInit.refreshConnection,
     fetchMatchHistory: appInit.fetchMatchHistory

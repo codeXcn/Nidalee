@@ -30,11 +30,11 @@ const router = createRouter({
       name: 'auto-functions',
       component: () => import('../views/AutoFunctionsView.vue')
     },
-    {
-      path: '/security',
-      name: 'security',
-      component: () => import('../views/SecurityView.vue')
-    },
+    // {
+    //   path: '/security',
+    //   name: 'security',
+    //   component: () => import('../views/SecurityView.vue')
+    // },
     {
       path: '/settings',
       name: 'settings',

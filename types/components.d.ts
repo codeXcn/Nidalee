@@ -9,6 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ActivityLog: typeof import('./../src/components/features/dashboard/ActivityLog.vue')['default']
+    ActivityManager: typeof import('./../src/components/features/settings/ActivityManager.vue')['default']
+    ActivityPanel: typeof import('./../src/components/features/dashboard/ActivityPanel.vue')['default']
     AlertDialog: typeof import('./../src/components/ui/alert-dialog/AlertDialog.vue')['default']
     AlertDialogAction: typeof import('./../src/components/ui/alert-dialog/AlertDialogAction.vue')['default']
     AlertDialogCancel: typeof import('./../src/components/ui/alert-dialog/AlertDialogCancel.vue')['default']
@@ -34,7 +36,7 @@ declare module 'vue' {
     CardTitle: typeof import('./../src/components/ui/card/CardTitle.vue')['default']
     ChampionFunctionCard: typeof import('./../src/components/features/auto-function/ChampionFunctionCard.vue')['default']
     ChampionSelector: typeof import('./../src/components/features/auto-function/ChampionSelector.vue')['default']
-    ClientDisconnected: typeof import('../src/components/common/ClientDisconnected.vue')['default']
+    ClientDisconnected: typeof import('./../src/components/common/ClientDisconnected.vue')['default']
     CLientDisconnected: typeof import('../src/components/common/ClientDisconnected.vue')['default']
     ConnectionStatus: typeof import('./../src/components/layout/ConnectionStatus.vue')['default']
     DashboardHeader: typeof import('./../src/components/features/dashboard/DashboardHeader.vue')['default']
@@ -68,6 +70,7 @@ declare module 'vue' {
     MatchmakingPanel: typeof import('./../src/components/features/game/MatchmakingPanel.vue')['default']
     MatchSuggestions: typeof import('./../src/components/features/match-analysis/MatchSuggestions.vue')['default']
     NotificationHoverCard: typeof import('./../src/components/common/NotificationHoverCard.vue')['default']
+    ParticlesBg: typeof import('./../src/components/ui/particles-bg/ParticlesBg.vue')['default']
     PlayerCard: typeof import('./../src/components/features/match/PlayerCard.vue')['default']
     Popover: typeof import('./../src/components/ui/popover/Popover.vue')['default']
     PopoverAnchor: typeof import('./../src/components/ui/popover/PopoverAnchor.vue')['default']

@@ -54,7 +54,7 @@ export const useGameStatusStore = defineStore('gameStatus', () => {
       }
     } catch (error) {
       console.error('[🤖 GameStatusStore] ❌ 自动操作检查失败:', error)
-      activityStore.addActivity('error', `自动操作检查失败: ${error}`)
+      activityStore.addErrorActivity.apiError(`自动操作检查失败: ${error}`)
     }
 
     console.log('[🤖 GameStatusStore] ===== 自动选人操作检查完成 =====\n')

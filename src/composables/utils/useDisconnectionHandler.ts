@@ -12,7 +12,7 @@ export function useDisconnectionHandler() {
     connectionStore.clearAuthInfo()
     summonerStore.clearSummonerInfo()
     gameStatusStore.clearGameState()
-    activityStore.addActivity('warning', 'LCU 连接已断开')
+    activityStore.addConnectionActivity.disconnected()
   }
 
   return {

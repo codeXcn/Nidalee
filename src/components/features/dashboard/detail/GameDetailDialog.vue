@@ -310,7 +310,7 @@ watch(
         gameDetailData.value = result
       } catch (err) {
         console.error('获取游戏详细信息失败:', err)
-        activityStore.addActivity('error', `获取游戏详细信息失败: ${err}`)
+        activityStore.addErrorActivity.apiError(`获取游戏详细信息失败: ${err}`)
       } finally {
         loading.value = false
       }

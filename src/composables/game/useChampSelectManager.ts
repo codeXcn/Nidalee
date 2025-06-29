@@ -9,9 +9,9 @@ export function useChampSelectManager() {
   const handleChampSelectChange = async (session: ChampSelectSession | null) => {
     await gameStatusStore.updateChampSelectSession(session)
     if (session) {
-      activityStore.addActivity('info', '进入英雄选择阶段')
+      activityStore.addGameActivity.champSelect()
     } else {
-      activityStore.addActivity('info', '离开英雄选择阶段')
+      activityStore.addActivity('info', '离开英雄选择阶段', 'game')
     }
   }
 
@@ -19,9 +19,9 @@ export function useChampSelectManager() {
   const handleLobbyChange = (lobby: LobbyInfo | null) => {
     gameStatusStore.updateLobbyInfo(lobby)
     if (lobby) {
-      activityStore.addActivity('info', `进入房间: ${lobby.partyType} (${lobby.members.length}人)`)
+      activityStore.addActivity('info', `进入房间: ${lobby.partyType} (${lobby.members.length}人)`, 'game')
     } else {
-      activityStore.addActivity('info', '离开房间')
+      activityStore.addActivity('info', '离开房间', 'game')
     }
   }
 

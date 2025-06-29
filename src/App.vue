@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { Toaster } from 'vue-sonner'
 import 'vue-sonner/style.css'
-import DebugPanel from '@/components/common/DebugPanel.vue'
-
-const { isDark, refreshConnection, fetchMatchHistory } = useApp()
+import { appContextKey } from './types'
+const { isDark, refreshConnection, fetchMatchHistory, isConnected } = useApp()
 const theme = computed(() => (isDark.value ? 'dark' : 'light'))
 
-// 提供刷新连接方法给子组件使用
-provide('refreshConnection', refreshConnection)
-provide('fetchMatchHistory', fetchMatchHistory)
-
+// 提供方法给子组件使用
+provide(appContextKey, {
+  refreshConnection,
+  fetchMatchHistory,
+  isConnected,
+  isDark
+})
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
 const currentTransition = ref(transitions[0])
 const randomTransition = () => {

@@ -53,13 +53,7 @@
 
 <script setup lang="ts">
 import { Clock } from 'lucide-vue-next'
-
-interface Activity {
-  id: string | number
-  type: 'success' | 'info' | 'warning' | 'error'
-  message: string
-  timestamp: number
-}
+import type { Activity } from '@/types'
 
 const props = defineProps<{
   activities: Activity[]

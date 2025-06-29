@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div v-if="isConnected" class="min-h-screen">
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->
@@ -208,14 +208,19 @@
       </SheetContent>
     </Sheet>
   </div>
+  <ClientDisconnected v-else />
 </template>
 
 <script setup lang="ts">
 import { useChampSelectSession } from '@/composables'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import { useGameStatusStore } from '@/stores'
+import { appContextKey } from '@/types'
 import { invoke } from '@tauri-apps/api/core'
 import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
+
+const { isConnected } = inject(appContextKey)
+console.log(isConnected)
 const { session: rawSession, enrichedSession, loading } = useChampSelectSession()
 const session = computed(() => enrichedSession.value)
 
