@@ -23,8 +23,29 @@ export function useGamePhaseManager() {
     gameStore.updateGamePhase(phase || 'None')
 
     if (phase) {
-      activityLogger.log.info(`游戏阶段变更: ${previousPhase} → ${phase}`, 'game')
-
+      if (phase && previousPhase !== phase) {
+        // 只记录具体阶段活动
+        switch (phase) {
+          case 'None':
+            activityLogger.log.info('返回客户端主界面', 'game')
+            break
+          case 'Lobby':
+            activityLogger.log.info('进入队列匹配中', 'game')
+            break
+          case 'ReadyCheck':
+            activityLogger.log.success('找到对局，等待接受', 'game')
+            break
+          case 'ChampSelect':
+            activityLogger.log.info('进入英雄选择阶段', 'game')
+            break
+          case 'InProgress':
+            activityLogger.log.success('游戏开始', 'game')
+            break
+          case 'WaitingForStats':
+            activityLogger.log.info('游戏结束', 'game')
+            break
+        }
+      }
       // 只处理接受对局，选人/禁用由 gameStore 处理
       if (phase === 'ReadyCheck') {
         handleAutoAcceptMatch()
@@ -40,7 +61,6 @@ export function useGamePhaseManager() {
       }
     } else {
       console.log('[🎮 GamePhaseManager] 🔄 游戏阶段重置为空')
-      activityLogger.log.info('游戏阶段重置', 'game')
       // 阶段为空时也清理游戏状态
       gameStore.updateChampSelectSession(null)
       gameStore.updateLobbyInfo(null)

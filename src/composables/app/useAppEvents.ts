@@ -26,32 +26,7 @@ export function useAppEvents() {
   const handleGameflowPhaseChange = (event: any) => {
     console.log('[AppEvents] 游戏阶段变化:', event.payload)
     const phase = event.payload as string | null
-
     handleGamePhaseChange(phase as any)
-
-    // 记录活动
-    if (phase) {
-      switch (phase) {
-        case 'None':
-          activityStore.addActivity('info', '返回客户端主界面', 'game')
-          break
-        case 'Lobby':
-          activityStore.addActivity('info', '进入队列匹配中', 'game')
-          break
-        case 'ReadyCheck':
-          activityStore.addActivity('success', '找到对局，等待接受', 'game')
-          break
-        case 'ChampSelect':
-          activityStore.addActivity('info', '进入英雄选择阶段', 'game')
-          break
-        case 'InProgress':
-          activityStore.addActivity('success', '游戏开始', 'game')
-          break
-        case 'WaitingForStats':
-          activityStore.addActivity('info', '游戏结束', 'game')
-          break
-      }
-    }
   }
 
   // 处理大厅变化
@@ -73,20 +48,6 @@ export function useAppEvents() {
     console.log('[AppEvents-handleConnectionStateChange] 连接状态变化:', event.payload)
     const connectionInfo = event.payload
     connectionStore.updateConnectionInfo(connectionInfo)
-    if (connectionInfo.state === 'Disconnected') {
-      activityStore.addActivity('error', '已断开与客户端的连接', 'connection')
-      dataStore.clearSummonerInfo()
-      dataStore.clearMatchHistory()
-    } else if (connectionInfo.state === 'Connected') {
-      activityStore.addActivity('success', '已连接到客户端', 'connection')
-      try {
-        await updateSummonerAndMatches()
-      } catch (error) {
-        dataStore.clearSummonerInfo()
-        dataStore.clearMatchHistory()
-        activityStore.addActivity('error', '获取召唤师信息或战绩失败', 'error')
-      }
-    }
   }
 
   // 防抖处理

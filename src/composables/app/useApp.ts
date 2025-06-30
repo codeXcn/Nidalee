@@ -13,7 +13,8 @@ export function useApp() {
   const appInit = useAppInitialization()
   const appEvents = useAppEvents()
   const { isConnected, connectionMessage, checkConnection } = useConnection()
-
+  // 初始化时主动检测连接
+  checkConnection()
   // 主题状态
   const isDark = computed(() => settingsStore.isDark)
   // 启动事件监听

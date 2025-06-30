@@ -1,3 +1,5 @@
+import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
+import { useActivityStore, useDataStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 
 export const useConnectionStore = defineStore(
@@ -9,7 +11,8 @@ export const useConnectionStore = defineStore(
     const connectionError = ref<string | null>(null)
     const connectionState = ref<string>('Disconnected')
     const consecutiveFailures = ref(0)
-
+    const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
+    const dataStore = useDataStore()
     /**
      * 手动检查连接状态
      */
@@ -18,6 +21,7 @@ export const useConnectionStore = defineStore(
         const info = await invoke('check_connection_state_command')
         updateConnectionInfo(info)
       } catch (error) {
+        clearAuthInfo()
         console.error('[ConnectionStore] 检查连接状态失败:', error)
         connectionError.value = error instanceof Error ? error.message : '检查连接失败'
       }
@@ -27,6 +31,7 @@ export const useConnectionStore = defineStore(
      * 根据 ConnectionInfo 更新认证信息
      */
     const updateConnectionInfo = (info: any) => {
+      const activityStore = useActivityStore()
       console.log('[ConnectionStore] 更新连接信息:', info)
       connectionState.value = info.state
       consecutiveFailures.value = info.consecutive_failures
@@ -37,17 +42,24 @@ export const useConnectionStore = defineStore(
         case 'Connected':
           isConnected.value = true
           authInfo.value = info.auth_info
+          activityStore.addActivity('success', '已连接到客户端', 'connection')
+          updateSummonerAndMatches()
           break
         case 'Disconnected':
         case 'ProcessFound':
         case 'AuthExpired':
           isConnected.value = false
           authInfo.value = null
+          if (state === 'Disconnected') {
+            activityStore.addActivity('error', '已断开与客户端的连接', 'connection')
+            dataStore.clearAllData()
+          }
           break
         case 'Unstable':
           // 不稳定状态保持当前认证信息，但标记为未连接
           isConnected.value = false
           // 保留 authInfo 以便重连时使用
+          activityStore.addActivity('warning', '连接不稳定，正在重试...', 'connection')
           break
       }
     }

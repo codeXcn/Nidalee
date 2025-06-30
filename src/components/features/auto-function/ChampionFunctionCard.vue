@@ -101,7 +101,7 @@
               :min="0"
               :max="10000"
               :step="100"
-              class="w-28 text-center text-sm"
+              class="w-28 text-center text-sm "
             />
             <span class="text-xs text-muted-foreground font-medium">毫秒</span>
           </div>
@@ -125,9 +125,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { getChampionIconUrlByAlias } from '@/lib'
-import { Plus, X, AlertTriangle } from 'lucide-vue-next'
+import type { ChampionInfo } from '@/stores/autoFunctionStore'
+import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 
 import { useDebouncedNumberModel } from '@/composables/utils/useDebouncedModel'
 

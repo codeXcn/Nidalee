@@ -6,7 +6,7 @@
       <Input
         v-model="searchText"
         placeholder="搜索英雄名称或别名..."
-        class="pl-12 h-12 text-base bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background transition-all duration-200 shadow-sm focus:shadow-md"
+        class="text-foreground pl-12 h-12 text-base bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background transition-all duration-200 shadow-sm focus:shadow-md"
       />
       <div v-if="searchText" class="absolute right-3 top-1/2 transform -translate-y-1/2">
         <button
@@ -115,9 +115,9 @@
 </template>
 
 <script setup lang="ts">
+import { getChampionIconUrlByAlias } from '@/lib'
 import { fetchChampionSummary } from '@/lib/dataApi'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
-import { getChampionIconUrlByAlias } from '@/lib'
 import { Search, X } from 'lucide-vue-next'
 
 interface Emits {

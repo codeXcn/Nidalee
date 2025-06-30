@@ -4,7 +4,6 @@ import 'vue-sonner/style.css'
 import { appContextKey } from './types'
 const { isDark, checkConnection, isConnected, fetchMatchHistory } = useApp()
 const theme = computed(() => (isDark.value ? 'dark' : 'light'))
-
 // 提供方法给子组件使用
 provide(appContextKey, {
   checkConnection,

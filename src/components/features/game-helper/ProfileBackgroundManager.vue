@@ -88,7 +88,7 @@
                     </div>
                     <div class="w-full text-center mt-1">
                       <span
-                        class="text-[11px] text-foreground font-medium leading-tight inline-block w-full overflow-hidden text-ellipsis whitespace-nowrap group-hover:text-primary transition-colors duration-200"
+                        class="text-sm text-foreground/90 font-bold leading-tight inline-block w-full overflow-hidden text-ellipsis whitespace-nowrap group-hover:text-primary transition-colors duration-200"
                         :title="champion.name"
                       >
                         {{ champion.name }}

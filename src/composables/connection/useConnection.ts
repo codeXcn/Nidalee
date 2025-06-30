@@ -38,6 +38,7 @@ export function useConnection() {
 
   // 手动检查连接
   const checkConnection = async () => {
+    console.log('手动检查连接🙌')
     await connectionStore.checkConnection()
   }
 
