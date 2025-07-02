@@ -159,13 +159,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Activity, CheckCircle, AlertTriangle, XCircle, Filter, Trash2 } from 'lucide-vue-next'
+import { Activity, AlertTriangle, CheckCircle, Filter, Trash2, XCircle } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { Activity as ActivityType, ActivityCategory, ActivityType as ActivityTypeEnum } from '@/types'
-import { ActivityCategoryLabels, ActivityTypeStyles, ActivityCategoryColors } from '@/types'
+import { ActivityCategoryColors, ActivityCategoryLabels, ActivityTypeStyles } from '@/types'
 import { useFormatters } from '@/composables'
 
 const props = defineProps<{
