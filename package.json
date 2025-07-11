@@ -17,6 +17,7 @@
   "dependencies": {
     "@tanstack/vue-table": "^8.21.3",
     "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-log": "^2.6.0",
     "@tauri-apps/plugin-websocket": "~2",
     "@types/uuid": "^10.0.0",
     "@vueuse/core": "^13.3.0",

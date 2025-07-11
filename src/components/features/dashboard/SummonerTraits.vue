@@ -7,30 +7,18 @@
 
     <!-- 特征标签 -->
     <div class="flex flex-wrap gap-2">
-      <Tooltip v-for="trait in traits" :key="trait.name">
-        <TooltipTrigger as-child>
-          <Badge
-            :variant="trait.variant"
-            class="flex items-center gap-1 px-3 py-1 cursor-pointer transition-all duration-200 hover:scale-105 group"
-            :class="{ 'ring-2 ring-primary ring-offset-2': selectedTrait?.name === trait.name }"
-            @click="selectTrait(trait)"
-          >
-            <component :is="trait.icon" class="h-3 w-3" />
-            {{ trait.name }}
-            <span class="text-xs opacity-75">({{ trait.score }})</span>
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="top" class="max-w-sm">
-          <div class="space-y-2">
-            <div class="flex items-center gap-2">
-              <component :is="trait.icon" class="h-4 w-4" />
-              <span class="font-medium">{{ trait.name }}</span>
-            </div>
-            <p class="text-sm">{{ trait.description }}</p>
-            <!-- <p class="text-xs text-muted-foreground">{{ trait.detail }}</p> -->
-          </div>
-        </TooltipContent>
-      </Tooltip>
+      <template v-for="trait in traits" :key="trait.name">
+        <Badge
+          :variant="trait.variant"
+          class="flex items-center gap-1 px-3 py-1 cursor-pointer transition-colors duration-200 border border-transparent group-hover:bg-primary/10 group-hover:text-primary"
+          :class="{ 'ring-2 ring-primary ring-offset-2 border-primary/40': selectedTrait?.name === trait.name }"
+          @click="selectTrait(trait)"
+        >
+          <component :is="trait.icon" class="h-3 w-3" />
+          {{ trait.name }}
+          <span class="text-xs opacity-75">({{ trait.score }})</span>
+        </Badge>
+      </template>
     </div>
 
     <!-- 特征详情 -->
@@ -44,7 +32,11 @@
             <h5 class="font-semibold">
               {{ selectedTrait.name }}
             </h5>
-            <Badge variant="outline" class="text-xs">
+            <Badge
+              :variant="selectedTrait.name === primaryTrait?.name ? 'default' : 'outline'"
+              class="text-xs px-2 py-0.5 font-bold border-2"
+              :class="selectedTrait.name === primaryTrait?.name ? 'border-primary/400' : 'border-gray-300'"
+            >
               {{ selectedTrait.name === primaryTrait?.name ? '主要特征' : '特征详情' }}
             </Badge>
           </div>
@@ -69,7 +61,6 @@
 import {
   AlertTriangle,
   Award,
-  Brain,
   Clock,
   Coffee,
   Crown,
@@ -109,6 +100,7 @@ interface Props {
     avg_kda: number
     recent_performance: Array<{
       game_mode: string
+      queue_id: number
       win: boolean
       kills: number
       deaths: number
@@ -150,7 +142,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `胜率${stats.win_rate.toFixed(1)}%，表现稳定可靠`,
       score: Math.round(stats.win_rate),
       variant: 'secondary',
-      icon: TrendingUp
+      icon: Award // 更换为奖章，突出稳定荣誉
     })
   } else if (stats.win_rate <= 40) {
     traits.push({
@@ -159,7 +151,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `胜率${stats.win_rate.toFixed(1)}%，需要提升游戏水平`,
       score: Math.round(stats.win_rate),
       variant: 'destructive',
-      icon: Meh
+      icon: Meh // 保持无语表情
     })
   }
 
@@ -171,7 +163,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `平均KDA ${stats.avg_kda.toFixed(2)}，经常carry全场`,
       score: Math.round(stats.avg_kda * 10),
       variant: 'default',
-      icon: Trophy
+      icon: Flame // 用火焰突出carry
     })
   } else if (stats.avg_kda >= 2.5) {
     traits.push({
@@ -180,7 +172,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `平均KDA ${stats.avg_kda.toFixed(2)}，输出表现不错`,
       score: Math.round(stats.avg_kda * 10),
       variant: 'secondary',
-      icon: Target
+      icon: Zap // 用闪电突出输出
     })
   } else if (stats.avg_deaths > stats.avg_kills * 2) {
     traits.push({
@@ -210,7 +202,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `平均击杀${stats.avg_kills.toFixed(1)}个，输出表现良好`,
       score: Math.round(stats.avg_kills),
       variant: 'secondary',
-      icon: Target
+      icon: Zap // 统一输出类用闪电
     })
   }
 
@@ -236,27 +228,102 @@ const analyzeTraits = (): Trait[] => {
   }
 
   // 5. 游戏模式特征
-  const aramGames = stats.recent_performance.filter(
-    (game) => game.game_mode.includes('ARAM') || game.game_mode.includes('大乱斗')
-  ).length
   const totalRecentGames = stats.recent_performance.length
-
-  if (totalRecentGames > 0 && aramGames / totalRecentGames >= 0.7) {
+  if (totalRecentGames < 5) {
     traits.push({
-      name: '乱斗选手',
-      description: '热爱大乱斗模式的玩家',
-      detail: `最近${totalRecentGames}场中有${aramGames}场大乱斗，占比${((aramGames / totalRecentGames) * 100).toFixed(0)}%`,
-      score: Math.round((aramGames / totalRecentGames) * 100),
+      name: '数据不足',
+      description: '最近对局场次过少',
+      detail: '最近对局不足5场，特征仅供参考',
+      score: 0,
       variant: 'outline',
-      icon: Gamepad2
+      icon: AlertTriangle
     })
+  } else {
+    const soloGames = stats.recent_performance.filter((g) => g.queue_id === 420).length
+    const flexGames = stats.recent_performance.filter((g) => g.queue_id === 440).length
+    const aramGames = stats.recent_performance.filter((g) => g.queue_id === 450).length
+    const cherryGames = stats.recent_performance.filter((g) => g.queue_id === 1700).length
+    const urfGames = stats.recent_performance.filter((g) => g.queue_id === 900).length
+    const tftGames = stats.recent_performance.filter((g) =>
+      [1090, 1100, 1130, 1150, 1160, 1170, 1180, 1190].includes(g.queue_id)
+    ).length
+    const cloneGames = stats.recent_performance.filter((g) => g.queue_id === 700).length
+
+    const modeArr = [
+      {
+        name: '单双选手',
+        count: soloGames,
+        min: 10,
+        icon: Swords,
+        desc: '偏爱单双排的玩家',
+        detail: `最近${soloGames}场单双排，专注于竞技排位`
+      },
+      {
+        name: '灵活选手',
+        count: flexGames,
+        min: 10,
+        icon: Users,
+        desc: '偏爱灵活组排的玩家',
+        detail: `最近${flexGames}场灵活组排，团队协作能力强`
+      },
+      {
+        name: '大乱斗达人',
+        count: aramGames,
+        min: 7,
+        icon: Gamepad2,
+        desc: '热爱大乱斗的玩家',
+        detail: `最近${aramGames}场大乱斗`
+      },
+      {
+        name: '斗魂选手',
+        count: cherryGames,
+        min: 7,
+        icon: Flame,
+        desc: '热爱斗魂竞技场的玩家',
+        detail: `最近${cherryGames}场斗魂竞技场`
+      },
+      {
+        name: '火力达人',
+        count: urfGames,
+        min: 5,
+        icon: Zap,
+        desc: '热爱无限火力的玩家',
+        detail: `最近${urfGames}场无限火力`
+      },
+      {
+        name: '云顶玩家',
+        count: tftGames,
+        min: 5,
+        icon: Trophy,
+        desc: '热爱云顶之弈的玩家',
+        detail: `最近${tftGames}场云顶之弈`
+      },
+      {
+        name: '克隆达人',
+        count: cloneGames,
+        min: 3,
+        icon: Star,
+        desc: '喜欢克隆模式的玩家',
+        detail: `最近${cloneGames}场克隆模式`
+      }
+    ]
+    const mainMode = modeArr.filter((m) => m.count >= m.min).sort((a, b) => b.count - a.count)[0]
+    if (mainMode) {
+      traits.push({
+        name: mainMode.name,
+        description: mainMode.desc,
+        detail: mainMode.detail,
+        score: mainMode.count,
+        variant: 'outline',
+        icon: mainMode.icon
+      })
+    }
   }
 
   // 6. 游戏时长特征
   const avgGameDuration =
     stats.recent_performance.reduce((sum, game) => sum + game.game_duration, 0) / stats.recent_performance.length
   if (avgGameDuration >= 1800) {
-    // 30分钟以上
     traits.push({
       name: '持久战',
       description: '喜欢长时间对局的玩家',
@@ -266,7 +333,6 @@ const analyzeTraits = (): Trait[] => {
       icon: Clock
     })
   } else if (avgGameDuration <= 1200) {
-    // 20分钟以下
     traits.push({
       name: '快节奏',
       description: '喜欢快速结束游戏的玩家',
@@ -286,7 +352,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `最近${winStreak}连胜，状态极佳`,
       score: winStreak,
       variant: 'default',
-      icon: Flame
+      icon: TrendingUp // 用趋势上升图标
     })
   } else if (winStreak <= -3) {
     traits.push({
@@ -295,28 +361,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `最近${Math.abs(winStreak)}连败，需要调整状态`,
       score: Math.abs(winStreak),
       variant: 'destructive',
-      icon: Coffee
-    })
-  }
-
-  // 8. 游戏场次特征
-  if (stats.total_games >= 100) {
-    traits.push({
-      name: '老玩家',
-      description: '游戏经验丰富的玩家',
-      detail: `总共${stats.total_games}场游戏，经验丰富`,
-      score: Math.min(stats.total_games, 200),
-      variant: 'outline',
-      icon: Star
-    })
-  } else if (stats.total_games <= 20) {
-    traits.push({
-      name: '新手',
-      description: '游戏场次较少的玩家',
-      detail: `总共${stats.total_games}场游戏，还在学习阶段`,
-      score: stats.total_games,
-      variant: 'outline',
-      icon: Brain
+      icon: Coffee // 咖啡表示需要休息调整
     })
   }
 
@@ -341,7 +386,7 @@ const analyzeTraits = (): Trait[] => {
       detail: `综合评分${overallScore}分，各项能力都很出色`,
       score: overallScore,
       variant: 'default',
-      icon: Award
+      icon: Crown // 用皇冠突出全能
     })
   }
 

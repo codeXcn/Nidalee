@@ -18,7 +18,7 @@ pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, Strin
 
     // 第2步：使用PUUID获取对局列表
     println!("\n📍 第2步：使用PUUID获取对局列表");
-    let match_list_url = format!("/lol-match-history/v1/products/lol/{}/matches", puuid);
+    let match_list_url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex=20", puuid);
     let match_list_data: Value = lcu_get(client, &match_list_url).await?;
 
     // 第3步：直接分析对局列表数据
@@ -214,9 +214,7 @@ pub async fn get_recent_matches_by_summoner_id(
         puuid, count
     );
     let match_list_data: Value = lcu_get(client, &url).await?;
-
-    // 第3步：直接分析对局列表数据
-    println!("\n📍 第3步：分析对局列表数据");
+    log::info!("match_list_data (查询到的战绩): {:#}", match_list_data);    // 第3步：直接分析对局列表数据
     let statistics = analyze_match_list_data(match_list_data, puuid)?;
     Ok(statistics)
 }
@@ -245,8 +243,8 @@ fn analyze_match_list_data(
     let mut champion_stats = std::collections::HashMap::new();
     let mut recent_performance = Vec::new();
 
-    // 只分析前10场游戏
-    let games_to_analyze = games.iter().take(10);
+    // 只分析前20场游戏
+    let games_to_analyze = games.iter().take(20);
 
     for (index, game) in games_to_analyze.enumerate() {
         println!("\n🎮 分析第 {} 场游戏", index + 1);
@@ -386,11 +384,7 @@ fn analyze_match_list_data(
         0.0
     };
 
-    let avg_kda = if avg_deaths > 0.0 {
-        (avg_kills + avg_assists) / avg_deaths
-    } else {
-        avg_kills + avg_assists
-    };
+    let avg_kda = (avg_kills + avg_assists) / avg_deaths.max(1.0);
 
     // 转换英雄统计
     let mut favorite_champions: Vec<ChampionStats> = champion_stats
@@ -409,7 +403,7 @@ fn analyze_match_list_data(
 
     // 按游戏数排序
     favorite_champions.sort_by(|a, b| b.games_played.cmp(&a.games_played));
-    favorite_champions.truncate(5); // 只保留前5个
+    favorite_champions.truncate(6); // 只保留前6个
 
     Ok(MatchStatistics {
         total_games,

@@ -226,12 +226,12 @@ pub async fn get_champselect_team_players_info(
         }
     }
 
-    // 4. 批量查最近10场战绩
+    // 4. 批量查最近战绩
     let mut match_map = HashMap::new();
     log::info!("准备批量查最近10场战绩, 总人数: {}", info_map.len());
     for (sid, info) in &info_map {
         log::info!("查找召唤师 {} recent matches", sid);
-        if let Ok(matches) = get_recent_matches_by_summoner_id(client, &info.puuid, 10).await {
+        if let Ok(matches) = get_recent_matches_by_summoner_id(client, &info.puuid, 20).await {
             log::info!("查到 {:?} 场", matches);
             match_map.insert(sid.clone(), matches);
         } else {

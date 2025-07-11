@@ -1,9 +1,7 @@
 import { useChampSelectManager } from '@/composables/game/useChampSelectManager'
 import { useGamePhaseManager } from '@/composables/game/useGamePhaseManager'
 import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
-import { useActivityStore } from '@/stores'
 import { useConnectionStore } from '@/stores/core/connectionStore'
-import { useDataStore } from '@/stores/core/dataStore'
 import { listen } from '@tauri-apps/api/event'
 import { debounce } from 'radash'
 /**
@@ -13,10 +11,8 @@ import { debounce } from 'radash'
 export function useAppEvents() {
   const gamePhaseManager = useGamePhaseManager()
   const champSelectManager = useChampSelectManager()
-  const { updateSummonerAndMatches, updateMatchHistory, updateSummonerInfo } = useSummonerAndMatchUpdater()
-  const activityStore = useActivityStore()
+  const { updateMatchHistory, updateSummonerInfo } = useSummonerAndMatchUpdater()
   const connectionStore = useConnectionStore()
-  const dataStore = useDataStore()
   const isListening = ref(false)
 
   const { handleGamePhaseChange } = gamePhaseManager

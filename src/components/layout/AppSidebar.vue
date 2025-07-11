@@ -78,10 +78,9 @@
 
 <script setup lang="ts">
 import { BarChart3, Gamepad2, Search, Settings, Shield, TrendingUp, Zap, TestTube } from 'lucide-vue-next'
-
 const route = useRoute()
 
-// 检测是否为开发环境
+// @ts-expect-error 跳过检查
 const isDev = import.meta.env.DEV
 
 const menuItems = [
@@ -110,11 +109,6 @@ const menuItems = [
     url: '/auto-functions',
     icon: Zap
   }
-  // {
-  //   title: '安全设置',
-  //   url: '/security',
-  //   icon: Shield
-  // }
 ]
 
 const devItems = [

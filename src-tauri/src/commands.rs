@@ -115,7 +115,7 @@ pub async fn get_summoners_and_histories(
         println!("[get_summoners_and_histories] summoner puuid: {}", puuid);
         if !puuid.is_empty() {
             fill_summoner_extra_info(client, summoner).await;
-            match lcu::match_history::get_recent_matches_by_summoner_id(client, &puuid, 10).await {
+            match lcu::match_history::get_recent_matches_by_summoner_id(client, &puuid, 20).await {
                 Ok(matches) => {
                     result.push(lcu::types::SummonerWithMatches {
                         display_name: summoner.display_name.clone(),

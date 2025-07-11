@@ -40,7 +40,7 @@ export function useAppInitialization() {
   const initializeConnection = async () => {
     try {
       console.log('[AppInit] 初始化连接状态...')
-      if (isConnected.value) {
+      if (isConnected.value && dataStore.summonerInfo === null) {
         try {
           await updateSummonerAndMatches()
         } catch (error) {

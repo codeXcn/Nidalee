@@ -169,7 +169,10 @@
                 </span>
               </div>
             </div>
-            <div class="flex items-center space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2">
+            <div
+              v-if="isDashboard"
+              class="flex items-center space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2"
+            >
               <span class="text-green-600 text-base font-bold">{{ summonerInfo.soloRankWins }}胜</span>
               <span class="text-red-500 text-base font-bold">{{ summonerInfo.soloRankLosses }}负</span>
               <TooltipProvider>
@@ -256,6 +259,7 @@
               </div>
             </div>
             <div
+              v-if="isDashboard"
               class="flex flex-row-reverse items-center space-x-reverse space-x-6 mt-2 border-t border-dashed border-gray-300/40 pt-2 w-full justify-end"
             >
               <span class="text-green-600 text-base font-bold">{{ summonerInfo.flexRankWins }}胜</span>
@@ -304,6 +308,10 @@
 <script setup lang="ts">
 import { getTierIconUrl } from '@/lib'
 import { Shield, Trophy, User, Users } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const isDashboard = computed(() => route.name === 'dashboard')
 
 const props = defineProps<{
   summonerInfo: any

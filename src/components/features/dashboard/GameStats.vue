@@ -165,7 +165,7 @@
           </h4>
           <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))">
             <div
-              v-for="game in matchStatistics.recent_performance.slice(0, 10)"
+              v-for="game in matchStatistics.recent_performance.slice(0, showCount)"
               :key="game.game_creation"
               class="group relative flex bg-gradient-to-br from-card/80 to-muted/60 rounded-xl shadow-sm cursor-pointer transition-transform duration-150 will-change-transform hover:-translate-y-1 hover:shadow-lg backdrop-blur-sm"
               @click="openGameDetail(game)"
@@ -230,6 +230,9 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div v-if="matchStatistics.recent_performance.length > showCount" class="flex justify-center mt-4">
+            <Button @click="loadMore" variant="outline" size="sm"> 加载更多 </Button>
           </div>
         </div>
         <div v-else class="text-center text-muted-foreground py-8">
@@ -298,4 +301,10 @@ const queueMap: Record<number, string> = {
   1700: '斗魂竞技场' // Arena 2v2v2v2
 }
 const getQueueName = (queueId: number) => queueMap[queueId] || '其它模式'
+
+const initialShowCount = 10
+const showCount = ref(initialShowCount)
+const loadMore = () => {
+  showCount.value += 10
+}
 </script>
