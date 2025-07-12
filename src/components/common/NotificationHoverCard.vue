@@ -107,9 +107,9 @@
 
           <button
             class="inline-flex items-center px-2 py-1.5 text-xs text-primary hover:text-primary/80 font-medium rounded-md hover:bg-primary/10 transition-all duration-200"
-            @click="handleViewAll"
+            @click="handleClearAll"
           >
-            查看全部活动
+            清理全部活动
             <ArrowRight :size="13" class="ml-1" />
           </button>
         </div>
@@ -123,7 +123,7 @@ import { useFormatters } from '@/composables'
 import { useActivityStore } from '@/stores'
 import { ArrowRight, Bell, CheckCheck } from 'lucide-vue-next'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     title?: string
     side?: 'top' | 'right' | 'bottom' | 'left'
@@ -135,11 +135,6 @@ const props = withDefaults(
     align: 'end'
   }
 )
-
-const emit = defineEmits<{
-  markAllRead: []
-  viewAll: []
-}>()
 
 // 使用 ActivityStore
 const activityStore = useActivityStore()
@@ -159,14 +154,12 @@ const unreadCount = computed(() => {
 
 // 处理标记全部已读
 const handleMarkAllRead = () => {
-  // 这里可以实现标记已读的逻辑
-  // 暂时先触发事件，后续可以直接调用 store 方法
-  emit('markAllRead')
+  activityStore.markAllAsRead()
 }
 
-// 处理查看全部
-const handleViewAll = () => {
-  emit('viewAll')
+// 处理查看全部（此处实现为清理全部活动）
+const handleClearAll = () => {
+  activityStore.clearActivities()
 }
 
 // 获取活动类型的颜色和图标
