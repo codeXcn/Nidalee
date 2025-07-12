@@ -1,7 +1,7 @@
 <template>
   <div v-if="isConnected" class="flex flex-col gap-4">
     <!-- 用户信息卡片 -->
-    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" :session-duration="sessionDuration" />
+    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" />
 
     <!-- 顶部统计卡片 -->
     <StatisticsCards
@@ -9,7 +9,6 @@
       :today-matches="todayMatches"
       :win-rate="winRate"
       :enabled-functions-count="enabledFunctionsCount"
-      :session-duration="sessionDuration"
     />
 
     <!-- 游戏统计 -->
@@ -55,9 +54,9 @@ const todayMatches = computed(() => {
   }
 })
 // 包装带日志的手动刷新方法
-const handleFetchMatchHistory = async () => {
+const handleFetchMatchHistory = () => {
   activityLogger.log.info('手动刷新对局历史', 'data')
-  await fetchMatchHistory()
+  fetchMatchHistory()
 }
 const winRate = computed(() => {
   if (matchHistory.value.length === 0) return 0
@@ -67,12 +66,4 @@ const winRate = computed(() => {
 
 // 使用明确的加载状态，而不是依赖"未加载完成"
 const matchHistoryLoading = computed(() => isDataLoading.value)
-
-// 模拟会话持续时间（暂时保留，后续可以移到专门的session store）
-const sessionDuration = ref('0分钟')
-
-// 监听连接状态变化
-watchEffect(() => {
-  console.log('连接状态:', isConnected.value)
-})
 </script>

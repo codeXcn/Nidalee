@@ -77,9 +77,9 @@
               {{ formatChallengePoints(summonerInfo.challengePoints) }}
             </p>
           </div>
-          <div v-if="sessionDuration">
-            <p class="text-white/80 text-sm">会话时长</p>
-            <p class="text-xl font-bold">{{ sessionDuration }}</p>
+          <div>
+            <p class="text-white/80 text-sm">累计活跃时长</p>
+            <p class="text-xl font-bold">{{ sessionStore.formattedTotal }}</p>
           </div>
         </div>
       </div>
@@ -309,16 +309,17 @@
 import { getTierIconUrl } from '@/lib'
 import { Shield, Trophy, User, Users } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
+import { useSessionStore } from '@/stores/features/sessionStore'
 
 const route = useRoute()
 const isDashboard = computed(() => route.name === 'dashboard')
 
 const props = defineProps<{
   summonerInfo: any
-  sessionDuration?: string
 }>()
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
+const sessionStore = useSessionStore()
 
 // 头像相关状态
 const imageLoadError = ref(false)

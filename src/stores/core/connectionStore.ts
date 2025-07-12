@@ -1,5 +1,5 @@
 import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
-import { useActivityStore, useDataStore } from '@/stores'
+import { useActivityStore, useDataStore, useSessionStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 
 export const useConnectionStore = defineStore(
@@ -32,6 +32,7 @@ export const useConnectionStore = defineStore(
      */
     const updateConnectionInfo = (info: any) => {
       const activityStore = useActivityStore()
+      const sessionStore = useSessionStore()
       console.log('[ConnectionStore] 更新连接信息:', info)
       connectionState.value = info.state
       consecutiveFailures.value = info.consecutive_failures
@@ -44,21 +45,22 @@ export const useConnectionStore = defineStore(
           authInfo.value = info.auth_info
           activityStore.addActivity('success', '已连接到客户端', 'connection')
           updateSummonerAndMatches()
+          sessionStore.startSession()
           break
         case 'Disconnected':
         case 'ProcessFound':
         case 'AuthExpired':
           isConnected.value = false
           authInfo.value = null
+          sessionStore.stopSession()
           if (state === 'Disconnected') {
             activityStore.addActivity('error', '已断开与客户端的连接', 'connection')
             dataStore.clearAllData()
           }
           break
         case 'Unstable':
-          // 不稳定状态保持当前认证信息，但标记为未连接
           isConnected.value = false
-          // 保留 authInfo 以便重连时使用
+          sessionStore.stopSession()
           activityStore.addActivity('warning', '连接不稳定，正在重试...', 'connection')
           break
       }

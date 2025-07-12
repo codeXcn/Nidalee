@@ -3,113 +3,98 @@
     <!-- 游戏连接状态 -->
     <Card
       :class="[
-        'relative p-6 transition-all duration-300',
+        'relative p-6 rounded-xl shadow-sm border-l-4 transition-all duration-300',
         isConnected
-          ? 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20'
-          : 'border-l-red-500 bg-red-50/50 dark:bg-red-950/20'
+          ? 'border-l-green-400 bg-green-50/60 dark:bg-green-950/10'
+          : 'border-l-red-400 bg-red-50/60 dark:bg-red-950/10'
       ]"
     >
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-muted-foreground">游戏连接</p>
-          <h2
-            :class="[
-              'text-2xl font-bold',
-              isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-            ]"
-          >
-            {{ isConnected ? '已连接' : '离线' }}
-          </h2>
-          <p class="text-xs text-muted-foreground mt-1">
-            {{ isConnected ? '客户端已就绪' : '等待连接至League客户端' }}
-          </p>
-        </div>
-        <div class="absolute top-4 right-4">
-          <div :class="['h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse']"></div>
-        </div>
+      <div>
+        <p class="text-sm font-medium text-muted-foreground flex items-center mb-1">
+          <Wifi class="h-4 w-4 mr-1 text-green-400" />游戏连接
+        </p>
+        <h2
+          class="text-2xl font-extrabold tracking-tight leading-tight"
+          :class="isConnected ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'"
+        >
+          {{ isConnected ? '已连接' : '离线' }}
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">
+          {{ isConnected ? '客户端已就绪' : '等待连接至League客户端' }}
+        </p>
       </div>
-      <div class="mt-4">
-        <Button v-if="!isConnected" size="sm" variant="outline" class="text-xs">
-          <RefreshCw class="h-3 w-3 mr-1" />
-          重新连接
-        </Button>
-        <div v-else class="text-sm text-green-600 dark:text-green-400">
-          <Wifi class="h-3 w-3 inline mr-1" />
-          连接正常
-        </div>
+      <div class="mt-4 flex items-center text-xs text-muted-foreground">
+        <Wifi class="h-3 w-3 mr-1" />
+        <span>{{ isConnected ? '连接正常' : '未连接' }}</span>
       </div>
     </Card>
 
     <!-- 今日对局 -->
-    <Card class="relative p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-muted-foreground">今日对局</p>
-          <h2 class="text-2xl font-bold">{{ todayMatches.total }}</h2>
-          <p class="text-xs text-muted-foreground mt-1">胜率 {{ winRate }}%</p>
-        </div>
-        <div class="absolute top-4 right-4">
-          <TrendingUp class="h-4 w-4 text-muted-foreground" />
-        </div>
+    <Card class="relative p-6 rounded-xl shadow-sm border-l-4 border-l-blue-400 bg-blue-50/60 dark:bg-blue-950/10">
+      <div>
+        <p class="text-sm font-medium text-muted-foreground flex items-center mb-1">
+          <TrendingUp class="h-4 w-4 mr-1 text-blue-400" />今日对局
+        </p>
+        <h2 class="text-2xl font-extrabold text-blue-500 dark:text-blue-400 tracking-tight leading-tight">
+          {{ todayMatches.total }}
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">胜率 {{ winRate }}%</p>
       </div>
-      <div class="mt-4 flex items-center space-x-4 text-sm">
+      <div class="mt-4 flex items-center space-x-4 text-xs text-muted-foreground">
         <div class="flex items-center">
           <div class="h-2 w-2 rounded-full bg-green-500 mr-1"></div>
-          <span class="text-green-600 dark:text-green-400">{{ todayMatches.wins }}胜</span>
+          <span class="text-green-500 dark:text-green-400">{{ todayMatches.wins }}胜</span>
         </div>
         <div class="flex items-center">
           <div class="h-2 w-2 rounded-full bg-red-500 mr-1"></div>
-          <span class="text-red-600 dark:text-red-400">{{ todayMatches.losses }}负</span>
+          <span class="text-red-500 dark:text-red-400">{{ todayMatches.losses }}负</span>
         </div>
       </div>
     </Card>
 
     <!-- 自动功能 -->
-    <Card class="relative p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-muted-foreground">自动功能</p>
-          <h2 class="text-2xl font-bold">{{ enabledFunctionsCount }}</h2>
-          <p class="text-xs text-muted-foreground mt-1">功能运行中</p>
-        </div>
-        <div class="absolute top-4 right-4">
-          <Settings class="h-4 w-4 text-muted-foreground" />
-        </div>
+    <Card
+      class="relative p-6 rounded-xl shadow-sm border-l-4 border-l-purple-400 bg-purple-50/60 dark:bg-purple-950/10"
+    >
+      <div>
+        <p class="text-sm font-medium text-muted-foreground flex items-center mb-1">
+          <Settings class="h-4 w-4 mr-1 text-purple-400" />自动功能
+        </p>
+        <h2 class="text-2xl font-extrabold text-purple-500 dark:text-purple-400 tracking-tight leading-tight">
+          {{ enabledFunctionsCount }}
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">功能运行中</p>
       </div>
-      <div class="mt-4 text-sm">
-        <div class="flex items-center space-x-1">
-          <div :class="['h-2 w-2 rounded-full', enabledFunctionsCount > 0 ? 'bg-green-500' : 'bg-gray-400']"></div>
-          <span :class="[enabledFunctionsCount > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground']">
-            {{ enabledFunctionsCount > 0 ? '自动化已启用' : '所有功能已停用' }}
-          </span>
-        </div>
+      <div class="mt-4 text-xs text-muted-foreground flex items-center space-x-1">
+        <div :class="['h-2 w-2 rounded-full', enabledFunctionsCount > 0 ? 'bg-green-400' : 'bg-gray-300']"></div>
+        <span :class="[enabledFunctionsCount > 0 ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground']">
+          {{ enabledFunctionsCount > 0 ? '自动化已启用' : '所有功能已停用' }}
+        </span>
       </div>
     </Card>
 
     <!-- 活跃时长 -->
-    <Card class="relative p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-muted-foreground">活跃时长</p>
-          <h2 class="text-2xl font-bold">{{ sessionDuration }}</h2>
-          <p class="text-xs text-muted-foreground mt-1">本次会话</p>
-        </div>
-        <div class="absolute top-4 right-4">
-          <Clock class="h-4 w-4 text-muted-foreground" />
-        </div>
+    <Card class="relative p-6 rounded-xl shadow-sm border-l-4 border-l-pink-400 bg-pink-50/60 dark:bg-pink-950/10">
+      <div>
+        <p class="text-sm font-medium text-muted-foreground flex items-center mb-1">
+          <Clock class="h-4 w-4 mr-1 text-pink-400" />活跃时长
+        </p>
+        <h2 class="text-2xl font-extrabold text-pink-500 dark:text-pink-400 tracking-tight leading-tight">
+          {{ sessionStore.formattedTotal }}
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">累计</p>
       </div>
-      <div class="mt-4 text-sm text-muted-foreground">
-        <div class="flex items-center">
-          <Play class="h-3 w-3 mr-1" />
-          <span>{{ formatTime(new Date()) }}</span>
-        </div>
+      <div class="mt-4 text-xs text-muted-foreground flex items-center">
+        <Play class="h-3 w-3 mr-1" />
+        <span>{{ formatTime(new Date()) }}</span>
       </div>
     </Card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Clock, Play, RefreshCw, Settings, TrendingUp, Wifi } from 'lucide-vue-next'
+import { Clock, Play, Settings, TrendingUp, Wifi } from 'lucide-vue-next'
+import { useSessionStore } from '@/stores/features/sessionStore'
 
 const props = defineProps<{
   isConnected: boolean
@@ -120,7 +105,6 @@ const props = defineProps<{
   }
   winRate: number
   enabledFunctionsCount: number
-  sessionDuration: string
 }>()
 
 const emit = defineEmits<{
@@ -128,4 +112,5 @@ const emit = defineEmits<{
 }>()
 
 const { formatTime } = useFormatters()
+const sessionStore = useSessionStore()
 </script>
