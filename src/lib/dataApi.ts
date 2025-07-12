@@ -526,3 +526,81 @@ export async function fetchChampionSummary(): Promise<ApiResponse<CommunityDrago
     }
   }
 }
+
+// =============================================================================
+// 官方 Data Dragon 及 Riot 静态数据 API 调用函数补全
+// =============================================================================
+
+/**
+ * 地图数据类型
+ */
+export interface RiotMap {
+  mapId: number
+  mapName: string
+  notes?: string
+  description?: string
+}
+
+/**
+ * 游戏模式类型
+ */
+export interface RiotGameMode {
+  gameMode: string
+  description: string
+}
+
+/**
+ * 游戏类型类型
+ */
+export interface RiotGameType {
+  gametype: string
+  description: string
+}
+
+/**
+ * 获取地图数据
+ */
+export async function fetchMaps(): Promise<ApiResponse<RiotMap[]>> {
+  try {
+    const url = 'https://static.developer.riotgames.com/docs/lol/maps.json'
+    const { data, error, statusCode } = await useApiFetch(url).json<RiotMap[]>()
+    if (error.value) throw new Error(error.value)
+    if (statusCode.value !== 200) throw new Error(`HTTP ${statusCode.value}`)
+    if (!data.value) throw new Error('No data received')
+    return { success: true, data: data.value, version: 'static' }
+  } catch (error) {
+    return { success: false, data: null, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+/**
+ * 获取游戏模式数据
+ */
+export async function fetchGameModes(): Promise<ApiResponse<RiotGameMode[]>> {
+  try {
+    const url = 'https://static.developer.riotgames.com/docs/lol/gameModes.json'
+    const { data, error, statusCode } = await useApiFetch(url).json<RiotGameMode[]>()
+    if (error.value) throw new Error(error.value)
+    if (statusCode.value !== 200) throw new Error(`HTTP ${statusCode.value}`)
+    if (!data.value) throw new Error('No data received')
+    return { success: true, data: data.value, version: 'static' }
+  } catch (error) {
+    return { success: false, data: null, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+/**
+ * 获取游戏类型数据
+ */
+export async function fetchGameTypes(): Promise<ApiResponse<RiotGameType[]>> {
+  try {
+    const url = 'https://static.developer.riotgames.com/docs/lol/gameTypes.json'
+    const { data, error, statusCode } = await useApiFetch(url).json<RiotGameType[]>()
+    if (error.value) throw new Error(error.value)
+    if (statusCode.value !== 200) throw new Error(`HTTP ${statusCode.value}`)
+    if (!data.value) throw new Error('No data received')
+    return { success: true, data: data.value, version: 'static' }
+  } catch (error) {
+    return { success: false, data: null, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}

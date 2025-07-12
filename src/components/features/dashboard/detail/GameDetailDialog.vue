@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="visible" @update:open="$emit('update:visible', $event)">
-    <DialogContent class="!max-w-[80vw] w-[80vw] bg-background text-foreground">
+    <DialogContent class="!max-w-[90vw] w-[85vw] h-[85vh] bg-background text-foreground">
       <DialogHeader>
         <DialogTitle>游戏详细信息</DialogTitle>
         <DialogDescription v-if="selectedGame">
@@ -20,7 +20,7 @@
         <div v-else-if="gameDetailData" class="space-y-6 px-2.5 will-change-auto">
           <!-- 基本游戏信息 -->
           <Card>
-            <div class="p-4">
+            <div class="px-4">
               <h4 class="font-semibold mb-3">基本信息</h4>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
@@ -54,9 +54,9 @@
           <!-- 队伍信息 -->
           <div class="grid grid-cols-1 gap-6">
             <!-- 蓝队 -->
-            <Card class="bg-blue-50/50 dark:bg-blue-950/30">
+            <Card class="bg-blue-50/50 dark:bg-blue-950/30 px-2">
               <div
-                class="px-4 py-2 flex items-center font-bold text-blue-700 dark:text-blue-200 border-b border-blue-200 dark:border-blue-800"
+                class="p-2 flex items-center font-bold text-blue-700 dark:text-blue-200 border-b border-blue-200 dark:border-blue-800"
               >
                 <span class="mr-2">蓝队 ({{ getTeamResult('100') }})</span>
                 <span class="ml-auto text-xs font-normal flex items-center">
@@ -95,13 +95,56 @@
                         :src="getProfileIconUrl(getPlayerProfileIcon(participant.participantId, gameDetailData))"
                         class="h-8 w-8 rounded-full"
                       />
-                      <span class="font-medium truncate">{{
-                        getPlayerDisplayName(participant.participantId, gameDetailData)
-                      }}</span>
-                      <img v-if="participant.rankTier" :src="getRankIconUrl(participant.rankTier)" class="h-6 w-6" />
+                      <div class="flex-1 flex items-center justify-between min-w-0">
+                        <span class="font-medium truncate">{{
+                          getPlayerDisplayName(participant.participantId, gameDetailData)
+                        }}</span>
+                        <div class="flex items-center gap-1">
+                          <button
+                            class="text-primary hover:text-primary/80 focus:outline-none"
+                            @click="copyName(getPlayerDisplayName(participant.participantId, gameDetailData))"
+                            title="复制召唤师名"
+                          >
+                            <!-- 更直观的复制icon（双重方框） -->
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="inline h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <rect
+                                x="9"
+                                y="9"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                              <rect
+                                x="3"
+                                y="3"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                            </svg>
+                          </button>
+                          <img
+                            v-if="participant.rankTier"
+                            :src="getRankIconUrl(participant.rankTier)"
+                            class="h-6 w-6"
+                          />
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell class="relative">
-                      <div class="flex items-center gap-1">
+                    <TableCell class="relative text-center">
+                      <div class="flex items-center gap-1 justify-center">
                         <div class="relative">
                           <img
                             :src="getChampionIconUrl(participant.championId)"
@@ -147,11 +190,11 @@
             </Card>
 
             <!-- 红队 -->
-            <Card class="bg-red-50/50 dark:bg-red-950/30">
+            <Card class="bg-red-50/50 dark:bg-red-950/30 px-2">
               <div
-                class="px-4 py-2 flex items-center font-bold text-red-700 dark:text-red-200 border-b border-red-200 dark:border-red-800"
+                class="p-2 flex items-center font-bold text-red-700 dark:text-red-200 border-b border-red-200 dark:border-red-800"
               >
-                <span class="mr-2">红队 ({{ getTeamResult('200') }})</span>
+                <span class="mr-2">红队 (败方)</span>
                 <span class="ml-auto text-xs font-normal flex items-center">
                   击杀: {{ gameDetailData?.redTeamStats?.kills || 0 }} | 经济:
                   {{ formatNumber(gameDetailData?.redTeamStats?.gold_earned || 0) }} | 伤害:
@@ -188,13 +231,51 @@
                         :src="getProfileIconUrl(getPlayerProfileIcon(participant.participantId, gameDetailData))"
                         class="h-8 w-8 rounded-full"
                       />
-                      <span class="font-medium truncate">{{
-                        getPlayerDisplayName(participant.participantId, gameDetailData)
-                      }}</span>
-                      <img v-if="participant.rankTier" :src="getRankIconUrl(participant.rankTier)" class="h-6 w-6" />
+                      <div class="flex-1 flex items-center justify-between min-w-0">
+                        <span class="font-medium truncate">{{
+                          getPlayerDisplayName(participant.participantId, gameDetailData)
+                        }}</span>
+                        <div class="flex items-center gap-1">
+                          <button
+                            class="text-primary hover:text-primary/80 focus:outline-none"
+                            @click="copyName(getPlayerDisplayName(participant.participantId, gameDetailData))"
+                            title="复制召唤师名"
+                          >
+                            <!-- 更直观的复制icon（双重方框） -->
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="inline h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <rect
+                                x="9"
+                                y="9"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                              <rect
+                                x="3"
+                                y="3"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell class="relative">
-                      <div class="flex items-center gap-1">
+                    <TableCell class="relative text-center">
+                      <div class="flex items-center gap-1 justify-center">
                         <div class="relative">
                           <img
                             :src="getChampionIconUrl(participant.championId)"
@@ -281,9 +362,11 @@ import {
 } from '@/lib'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { invoke } from '@tauri-apps/api/core'
+import { useClipboard } from '@vueuse/core'
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-  selectedGame: RecentGame | null
+  selectedGame: any | null
 }>()
 
 const visible = defineModel<boolean>('visible')
@@ -320,9 +403,9 @@ watch(
 )
 
 // 表格列定义
-const columns = ref<Column[]>([
-  { key: 'summoner', label: '召唤师', class: 'w-[200px]' },
-  { key: 'champion', label: '英雄/等级', class: 'w-[120px]' },
+const columns = ref<any[]>([
+  { key: 'summoner', label: '召唤师', class: 'w-[260px]' },
+  { key: 'champion', label: '英雄/等级', class: 'w-[90px]' },
   { key: 'items', label: '装备', class: 'w-[250px] text-center' },
   { key: 'kda', label: 'KDA', class: 'w-[100px] text-center' },
   { key: 'gold', label: '经济', class: 'w-[100px] text-center' },
@@ -385,4 +468,11 @@ const formatNumber = (num: number): string => {
 //   }
 //   return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/${itemId}.png`
 // }
+
+const clipboard = useClipboard()
+
+function copyName(name: string) {
+  clipboard.copy(name)
+  toast.success('已复制召唤师名到剪贴板')
+}
 </script>

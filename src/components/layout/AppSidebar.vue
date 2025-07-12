@@ -35,7 +35,7 @@
           <SidebarMenuItem v-for="item in menuItems" :key="item.title">
             <SidebarMenuButton class="text-md" asChild :tooltip="item.title" :is-active="isActiveRoute(item.url)">
               <router-link :to="item.url">
-                <component :is="item.icon" />
+                <component :is="item.icon" :class="{ 'text-primary': isActiveRoute(item.url) }" />
                 <span>{{ item.title }}</span>
               </router-link>
             </SidebarMenuButton>
@@ -50,7 +50,7 @@
           <SidebarMenuItem v-for="item in devItems" :key="item.title">
             <SidebarMenuButton class="text-md" asChild :tooltip="item.title" :is-active="isActiveRoute(item.url)">
               <router-link :to="item.url">
-                <component :is="item.icon" />
+                <component :is="item.icon" :class="{ 'text-primary': isActiveRoute(item.url) }" />
                 <span>{{ item.title }}</span>
               </router-link>
             </SidebarMenuButton>

@@ -37,7 +37,31 @@ export function useFormatters() {
       ONEFORALL: '克隆大作战',
       ARSR: '极地大乱斗',
       PRACTICETOOL: '训练工具',
-      NEXUSBLITZ: '极地大乱斗'
+      NEXUSBLITZ: '极地突围',
+      ODIN: '统治战场',
+      FIRSTBLOOD: '血月杀',
+      ASCENSION: '飞升模式',
+      HEXAKILL: '六杀争夺战',
+      KINGPORO: '魄罗王',
+      SIEGE: '守卫雅典娜',
+      ASSASSINATE: '暗杀模式',
+      DARKSTAR: '暗星乱斗',
+      STARGUARDIAN: '星之守护者',
+      PROJECT: '源计划：超越',
+      GAMEMODEX: '极限闪击',
+      CHERRY: '斗魂竞技场',
+      ULTBOOK: '终极魔典',
+      ARENA: '斗魂竞技场',
+      BLITZ: '极地突围',
+      // 其他常见自定义/活动模式
+      SNOWURF: '雪地无限火力',
+      ALLRANDOM: '全随机',
+      // 兼容部分服务端返回
+      CLASSIC_5V5: '召唤师峡谷',
+      ARAM_5V5: '嚎哭深渊',
+      TUTORIAL_MODULE_1: '教程1',
+      TUTORIAL_MODULE_2: '教程2',
+      TUTORIAL_MODULE_3: '教程3'
     }
     return modeMap[mode] || mode
   }
