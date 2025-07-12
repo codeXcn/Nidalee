@@ -28,7 +28,8 @@ pub fn run() {
             commands::set_summoner_background_skin,
             commands::get_champ_select_session,
             commands::pick_champion,
-            commands::ban_champion
+            commands::ban_champion,
+            commands::set_summoner_chat_profile
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -156,6 +156,17 @@ pub async fn set_summoner_background_skin(skin_id: u64) -> Result<(), String> {
     lcu::summoner::set_summoner_background(client, skin_id).await
 }
 
+#[tauri::command]
+pub async fn set_summoner_chat_profile(
+    status_message: Option<String>,
+    queue: Option<String>,
+    tier: Option<String>,
+    division: Option<String>,
+) -> Result<(), String> {
+    let client = http_client::get_lcu_client();
+    lcu::summoner::set_summoner_chat_profile(client, status_message, queue, tier, division).await
+}
+
 // 选人相关 API
 #[tauri::command]
 pub async fn get_champ_select_session() -> Result<serde_json::Value, String> {

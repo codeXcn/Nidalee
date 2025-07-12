@@ -147,3 +147,48 @@ pub async fn set_summoner_background(client: &Client, skin_id: u64) -> Result<()
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct ChatProfileLolInfo {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rankedLeagueQueue: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rankedLeagueTier: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rankedLeagueDivision: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct ChatProfileUpdateRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub statusMessage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lol: Option<ChatProfileLolInfo>,
+}
+
+/// 通用设置聊天资料（签名/段位信息，均可选）
+pub async fn set_summoner_chat_profile(
+    client: &Client,
+    status_message: Option<String>,
+    queue: Option<String>,
+    tier: Option<String>,
+    division: Option<String>,
+) -> Result<(), String> {
+    let path = "/lol-chat/v1/me";
+    let lol = if queue.is_some() || tier.is_some() || division.is_some() {
+        Some(ChatProfileLolInfo {
+            rankedLeagueQueue: queue,
+            rankedLeagueTier: tier,
+            rankedLeagueDivision: division,
+        })
+    } else {
+        None
+    };
+    let body = ChatProfileUpdateRequest {
+        statusMessage: status_message,
+        lol,
+    };
+    lcu_put::<serde_json::Value>(client, path, to_value(body).unwrap())
+        .await
+        .map(|_| ())
+}

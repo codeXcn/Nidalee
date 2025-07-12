@@ -134,6 +134,8 @@ declare module 'vue' {
     SuggestionPanel: typeof import('./../src/components/features/match/SuggestionPanel.vue')['default']
     SummonerCard: typeof import('./../src/components/features/dashboard/SummonerCard.vue')['default']
     SummonerDetailsView: typeof import('./../src/components/features/match-analysis/SummonerDetailsView.vue')['default']
+    SummonerNoteEditor: typeof import('./../src/components/features/game-helper/SummonerNoteEditor.vue')['default']
+    SummonerRankEditor: typeof import('./../src/components/features/game-helper/SummonerRankEditor.vue')['default']
     SummonerSearchBox: typeof import('./../src/components/common/SummonerSearchBox.vue')['default']
     SummonerTraits: typeof import('./../src/components/features/dashboard/SummonerTraits.vue')['default']
     Switch: typeof import('./../src/components/ui/switch/Switch.vue')['default']

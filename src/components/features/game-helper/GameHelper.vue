@@ -14,7 +14,11 @@
         </TabsTrigger>
       </TabsList>
       <TabsContent value="profile-background">
-        <ProfileBackgroundManager />
+        <div class="space-y-6">
+          <SummonerNoteEditor />
+          <SummonerRankEditor />
+          <ProfileBackgroundManager />
+        </div>
       </TabsContent>
       <TabsContent value="champion-builds">
         <!-- <ChampionBuildManager /> -->
@@ -38,15 +42,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Image, Settings, Sparkles } from 'lucide-vue-next'
+import { Settings, Sparkles, Users } from 'lucide-vue-next'
 import ProfileBackgroundManager from './ProfileBackgroundManager.vue'
 // import ChampionBuildManager from './ChampionBuildManager.vue'
 
 const tabs = [
   {
     id: 'profile-background',
-    label: '生涯背景',
-    icon: Image
+    label: '生涯名片',
+    icon: Users
   },
   {
     id: 'champion-builds',

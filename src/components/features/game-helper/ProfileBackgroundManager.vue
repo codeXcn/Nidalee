@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-6">
+    <!-- 生涯背景设置区域 -->
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
@@ -213,14 +214,11 @@
 
 <script setup lang="ts">
 import { useGameHelper } from '@/composables/game-helper'
-import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import { getChampionIconUrlByAlias } from '@/lib'
 import { fetchChampionDetails, fetchChampionSummary } from '@/lib/dataApi'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { ArrowLeft, Search, Users, X } from 'lucide-vue-next'
 import { debounce } from 'radash'
-import { computed, onMounted, ref, watch } from 'vue'
-import { toast } from 'vue-sonner'
 
 const { setSummonerBackgroundSkin } = useGameHelper()
 const searchText = ref('')
@@ -234,7 +232,6 @@ const loadingSkins = ref(false)
 const skinsError = ref<string | null>(null)
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
-const activityLogger = useActivityLogger()
 
 // 使用 Radash 的防抖函数，更简洁可靠
 const debouncedUpdateSearch = debounce({ delay: 300 }, (value: string) => {
@@ -276,7 +273,6 @@ const loadChampions = async () => {
       const championList: ChampionInfo[] = response.data.filter((champion) => champion.id > 0)
       championList.sort((a, b) => a.name.localeCompare(b.name))
       champions.value = championList
-      // 直接移除 imageLoadingStates 相关逻辑
     } else {
       throw new Error(response.error || '获取英雄数据失败')
     }
@@ -316,21 +312,7 @@ const applySkinBackground = async (skin: any) => {
   try {
     applyingSkinId.value = skin.id
     shakeSkinId.value = skin.id // 触发抖动
-    // 调用后端API设置生涯背景皮肤
-    await setSummonerBackgroundSkin(skin.id)
-    activityLogger.logSettings.setCareerBackground(skin.name)
-    // 使用 Sonner 显示成功提示
-    toast.success(`皮肤"${skin.name}"已设置为生涯背景`, {
-      description: '生涯背景设置成功完成',
-      duration: 3000
-    })
-  } catch (error) {
-    // 使用 Sonner 显示错误提示
-    console.error('设置生涯背景失败:', error)
-    toast.error('设置生涯背景失败', {
-      description: String(error),
-      duration: 5000
-    })
+    await setSummonerBackgroundSkin(skin.id, skin.name)
   } finally {
     setTimeout(() => {
       shakeSkinId.value = null // 抖动动画结束后移除

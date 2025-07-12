@@ -5,25 +5,28 @@ use tauri::{App, Manager};
 use tokio::sync::RwLock;
 /// 应用启动时的设置函数
 pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
-    // 初始化日志
-      app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-          // 清除默认的日志目标
-              .clear_targets()
-              .level(log::LevelFilter::Info)
-              .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
-              .target(tauri_plugin_log::Target::new(
-                tauri_plugin_log::TargetKind::LogDir {
-                  file_name: Some("logs".to_string()),
-                },
-              ))
-              .target(tauri_plugin_log::Target::new(
-                tauri_plugin_log::TargetKind::Webview,
-              ))
-              .max_file_size(1_048_576 /* 1MB */)
-              .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
-              .build(),
-      )?;
+    // 开发模式下启用日志
+    #[cfg(debug_assertions)]
+    {
+        app.handle().plugin(
+            tauri_plugin_log::Builder::default()
+                // 清除默认的日志目标
+                .clear_targets()
+                .level(log::LevelFilter::Info)
+                .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir {
+                        file_name: Some("logs".to_string()),
+                    },
+                ))
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Webview,
+                ))
+                .max_file_size(1_048_576 /* 1MB */)
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .build(),
+        )?;
+    }
     // 设置系统托盘
     tray::setup_system_tray(app).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
 
