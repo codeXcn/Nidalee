@@ -28,6 +28,7 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": ["msi"],
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
@@ -47,6 +48,17 @@
       "tsp": false,
       "wix": {
         "language": "zh-CN"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "enabled": true,
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5Uy9wQXl6Uk1UVFBlMkhuaDJkc0ZjV3hJUVBhKzV0QUxkSHZjRUZUc2x0a0FBQkFBQUFBQUFBQUFBQUlBQUFBQUwrT041UFZZdjhNVE1HakhHKzVKbm9oY1Z5eUlNR0pJUFVSQ254VGJaQThxdFQ5N0Y5L2JSNG1uODBrUy9iL2c1a3pHZEZCWXZ3MkZhTWdHclA4U0JPenlQZktkQUtOMEhnVW5IRldVWkx1RWlQci81eGJnbEQrek1meTZxSGw3dGlvKzVIQzlBeW89Cg==",
+      "endpoints": ["https://api.github.com/repos/codexlin/Nidalee/releases/latest"],
+      "headers": {
+        "Authorization": "token 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"
       }
     }
   }

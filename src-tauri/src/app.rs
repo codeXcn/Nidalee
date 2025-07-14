@@ -11,19 +11,9 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         app.handle().plugin(
             tauri_plugin_log::Builder::default()
                 // 清除默认的日志目标
-                .clear_targets()
+                // .clear_targets()
                 .level(log::LevelFilter::Info)
                 .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
-                .target(tauri_plugin_log::Target::new(
-                    tauri_plugin_log::TargetKind::LogDir {
-                        file_name: Some("logs".to_string()),
-                    },
-                ))
-                .target(tauri_plugin_log::Target::new(
-                    tauri_plugin_log::TargetKind::Webview,
-                ))
-                .max_file_size(1_048_576 /* 1MB */)
-                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
                 .build(),
         )?;
     }

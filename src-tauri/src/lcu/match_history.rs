@@ -18,7 +18,10 @@ pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, Strin
 
     // 第2步：使用PUUID获取对局列表
     println!("\n📍 第2步：使用PUUID获取对局列表");
-    let match_list_url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex=20", puuid);
+    let match_list_url = format!(
+        "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex=20",
+        puuid
+    );
     let match_list_data: Value = lcu_get(client, &match_list_url).await?;
 
     // 第3步：直接分析对局列表数据
@@ -214,7 +217,7 @@ pub async fn get_recent_matches_by_summoner_id(
         puuid, count
     );
     let match_list_data: Value = lcu_get(client, &url).await?;
-    log::info!("match_list_data (查询到的战绩): {:#}", match_list_data);    // 第3步：直接分析对局列表数据
+    log::info!("match_list_data (查询到的战绩): {:#}", match_list_data); // 第3步：直接分析对局列表数据
     let statistics = analyze_match_list_data(match_list_data, puuid)?;
     Ok(statistics)
 }

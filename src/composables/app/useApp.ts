@@ -1,8 +1,9 @@
 import { useConnection } from '@/composables/connection/useConnection'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { computed, onMounted, onUnmounted } from 'vue'
-import { useAppEvents } from './useAppEvents'
-import { useAppInitialization } from './useAppInitialization'
+import { useAppUpdater } from '@/composables/app/useAppUpdater'
+import { useAppEvents } from '@/composables'
+import { useAppInitialization } from '@/composables'
 import { info, attachConsole, error } from '@tauri-apps/plugin-log'
 
 /**
@@ -10,6 +11,8 @@ import { info, attachConsole, error } from '@tauri-apps/plugin-log'
  * 职责：整合各个模块，提供应用级别的状态和方法
  */
 export function useApp() {
+  // 新增：自动更新检测
+  const { fetchVersion } = useAppUpdater()
   function forwardConsole(
     fnName: 'log' | 'debug' | 'info' | 'warn' | 'error',
     logger: (message: string) => Promise<void>
@@ -38,7 +41,8 @@ export function useApp() {
     forwardConsole('error', error)
     await attachConsole()
   }
-  setupConsoleForwarding()
+  // setupConsoleForwarding()
+  fetchVersion()
 
   const settingsStore = useSettingsStore()
   const appInit = useAppInitialization()
@@ -56,6 +60,7 @@ export function useApp() {
       // 初始化应用
       await appInit.initializeApp()
       console.log('[App] 应用初始化和事件监听完成')
+      // 检查新版本（可根据实际需求调整触发时机）
     } catch (error) {
       console.error('[App] 应用初始化失败:', error)
     }
@@ -82,5 +87,7 @@ export function useApp() {
     // 应用方法
     fetchMatchHistory: appEvents.updateMatchHistory,
     reinitialize: appInit.reinitialize
+    // 可按需暴露 fetchVersion
+    // fetchVersion
   }
 }

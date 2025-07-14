@@ -20,6 +20,7 @@
         ? ['hover:shadow-blue-500/20', isLocal ? '' : 'hover:border-blue-300/60 dark:hover:border-blue-600/60']
         : ['hover:shadow-red-500/20', isLocal ? '' : 'hover:border-red-300/60 dark:hover:border-red-600/60']
     ]"
+    style="will-change: transform, box-shadow"
     @click="emit('select', player)"
   >
     <!-- 头像 -->

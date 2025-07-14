@@ -215,7 +215,7 @@
 <script setup lang="ts">
 import { useGameHelper } from '@/composables/game-helper'
 import { getChampionIconUrlByAlias } from '@/lib'
-import { fetchChampionDetails, fetchChampionSummary } from '@/lib/dataApi'
+import { useChampionSummaryQuery, useChampionDetailsQuery } from '@/composables/useLolApiQuery'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { ArrowLeft, Search, Users, X } from 'lucide-vue-next'
 import { debounce } from 'radash'
@@ -223,13 +223,26 @@ import { debounce } from 'radash'
 const { setSummonerBackgroundSkin } = useGameHelper()
 const searchText = ref('')
 const debouncedSearchText = ref('')
-const champions = ref<ChampionInfo[]>([])
-const loadingChampions = ref(true)
-const championsError = ref<string | null>(null)
+const {
+  data: championsData,
+  isLoading: loadingChampions,
+  error: championsError,
+  refetch: reloadChampions
+} = useChampionSummaryQuery()
+const champions = computed<ChampionInfo[]>(() =>
+  championsData.value
+    ? championsData.value.filter((c: any) => c.id > 0).sort((a: any, b: any) => a.name.localeCompare(b.name))
+    : []
+)
 const selectedChampion = ref<ChampionInfo | null>(null)
-const championSkins = ref<any[]>([])
-const loadingSkins = ref(false)
-const skinsError = ref<string | null>(null)
+const selectedChampionId = computed(() => selectedChampion.value?.id ?? null)
+const {
+  data: championDetails,
+  isLoading: loadingSkins,
+  error: skinsError,
+  refetch: reloadSkins
+} = useChampionDetailsQuery(selectedChampionId)
+const championSkins = computed<any[]>(() => championDetails.value?.skins ?? [])
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
 
@@ -255,51 +268,15 @@ const filteredChampions = computed(() => {
 
 const handleChampionSelect = (champion: ChampionInfo) => {
   selectedChampion.value = champion
-  loadChampionSkins(champion)
+  // 选中后自动触发 useChampionDetailsQuery
+  reloadSkins()
 }
 
 const clearChampion = () => {
   selectedChampion.value = null
-  championSkins.value = []
-  skinsError.value = null
 }
 
-const loadChampions = async () => {
-  try {
-    loadingChampions.value = true
-    championsError.value = null
-    const response = await fetchChampionSummary()
-    if (response.success && response.data) {
-      const championList: ChampionInfo[] = response.data.filter((champion) => champion.id > 0)
-      championList.sort((a, b) => a.name.localeCompare(b.name))
-      champions.value = championList
-    } else {
-      throw new Error(response.error || '获取英雄数据失败')
-    }
-  } catch (err) {
-    championsError.value = err instanceof Error ? err.message : '未知错误'
-  } finally {
-    loadingChampions.value = false
-  }
-}
-
-const loadChampionSkins = async (champion: ChampionInfo) => {
-  loadingSkins.value = true
-  skinsError.value = null
-  try {
-    const championDetailsResult = await fetchChampionDetails(champion.id)
-    if (championDetailsResult.success && championDetailsResult.data?.skins) {
-      championSkins.value = championDetailsResult.data.skins
-    } else {
-      throw new Error('无法获取皮肤数据')
-    }
-  } catch (error) {
-    skinsError.value = error instanceof Error ? error.message : '加载皮肤失败'
-    championSkins.value = []
-  } finally {
-    loadingSkins.value = false
-  }
-}
+// champions 和 championSkins 由 useQuery 自动管理，无需手动加载函数
 
 const getSkinImageUrl = (skin: any): string => {
   // 皮肤ID一般为 英雄ID*1000+皮肤编号
@@ -346,7 +323,5 @@ const LoadingSpinner = defineComponent({
   }
 })
 
-onMounted(() => {
-  loadChampions()
-})
+// 无需 onMounted 加载，useQuery 自动请求
 </script>

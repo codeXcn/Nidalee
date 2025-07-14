@@ -1,11 +1,14 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
+import viteCompression from 'vite-plugin-compression'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import Components from 'unplugin-vue-components/vite'
 import ViteAutoImport from 'unplugin-auto-import/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
+import removeConsole from 'vite-plugin-remove-console'
 const host = process.env.TAURI_DEV_HOST
 export default defineConfig({
   plugins: [
@@ -27,7 +30,16 @@ export default defineConfig({
       include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/],
       // 生成 `components.d.ts` 全局声明文件，
       dts: 'types/components.d.ts'
-    })
+    }),
+    viteCompression({
+      verbose: false,
+      disable: false,
+      threshold: 10240,
+      algorithm: 'gzip',
+      ext: '.gz'
+    }),
+    visualizer(),
+    removeConsole()
   ],
   resolve: {
     alias: {

@@ -22,6 +22,17 @@
       </TabsContent>
       <TabsContent value="champion-builds">
         <!-- <ChampionBuildManager /> -->
+        <Card class="p-8 text-center">
+          <div class="space-y-4">
+            <div class="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+              <Sparkles class="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-lg font-semibold">更多功能开发中</h3>
+              <p class="text-muted-foreground">我们正在开发更多实用的游戏助手功能，敬请期待！</p>
+            </div>
+          </div>
+        </Card>
       </TabsContent>
       <TabsContent value="more">
         <Card class="p-8 text-center">

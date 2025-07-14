@@ -3,10 +3,8 @@
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->
-      <div
-        class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 animate-in fade-in-0 duration-700 slide-in-from-bottom-4"
-      >
-        <!-- 统一队伍卡片 -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+        <!-- 分层递进动画：动画只加在子卡片上 -->
         <TeamCard
           :team="session.myTeam"
           team-type="ally"
@@ -14,51 +12,6 @@
           @select="openSummonerDetails"
         />
         <TeamCard :team="session.theirTeam" team-type="enemy" @select="openSummonerDetails" />
-      </div>
-
-      <!-- 对局建议 -->
-      <Card class="p-4 lg:p-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-3" style="animation-delay: 800ms">
-        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
-          <Lightbulb class="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
-          对局建议
-        </h3>
-        <MatchSuggestions :session="session" />
-      </Card>
-
-      <!-- 补充功能区域 -->
-      <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-4"
-        style="animation-delay: 1000ms"
-      >
-        <!-- 阵容分析 -->
-        <Card class="p-4 lg:p-6">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
-            <Users class="h-5 w-5 text-blue-500 dark:text-blue-400" />
-            阵容分析
-          </h3>
-          <TeamComposition :session="session" />
-        </Card>
-
-        <!-- 胜率预测 -->
-        <Card class="p-4 lg:p-6">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
-            <BarChart3 class="h-5 w-5 text-green-500 dark:text-green-400" />
-            胜率预测
-          </h3>
-          <WinRatePrediction :session="session" />
-        </Card>
-      </div>
-
-      <!-- 静态数据增强功能区域 -->
-      <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in-0 duration-500 slide-in-from-bottom-5"
-        style="animation-delay: 1200ms"
-      >
-        <!-- 符文分析 -->
-        <RuneAnalysis :session="session" />
-
-        <!-- 装备推荐 -->
-        <ItemRecommendation :session="session" />
       </div>
     </div>
 
@@ -157,7 +110,6 @@
 </template>
 
 <script setup lang="ts">
-import TeamCard from '@/components/features/match/TeamCard.vue'
 import { useChampSelectSession } from '@/composables'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import { useGameStore } from '@/stores/features/gameStore'
