@@ -100,6 +100,7 @@ declare global {
   const useMatchDataManager: typeof import('../src/composables/utils/useMatchDataManager')['useMatchDataManager']
   const useMatchmaking: typeof import('../src/composables/game/index')['useMatchmaking']
   const useModel: typeof import('vue')['useModel']
+  const usePlayerListQuery: typeof import('../src/composables/useLolApiQuery')['usePlayerListQuery']
   const useQueuesQuery: typeof import('../src/composables/useLolApiQuery')['useQueuesQuery']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
@@ -119,4 +120,7 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { LiveClientPlayer } from '../src/composables/useLolApiQuery'
+  import('../src/composables/useLolApiQuery')
 }

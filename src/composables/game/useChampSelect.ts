@@ -64,87 +64,84 @@ export function useChampSelect() {
    * @param executedActions 已执行的操作记录
    * @returns 返回是否安排了操作执行
    */
-  async function checkAndExecuteAutoActions(session: any, autoFunctions: any, executedActions: any) {
+  // 添加原子锁字段
+  type ExecutedActions = {
+    banChampion: boolean
+    selectChampion: boolean
+    lockInProgress: boolean
+  }
+
+  async function checkAndExecuteAutoActions(
+    session: any,
+    autoFunctions: any,
+    executedActions: ExecutedActions
+  ): Promise<boolean> {
     console.log('[🤖 AutoChampSelect] ===== 检查自动选人操作 =====')
     console.log('[🤖 AutoChampSelect] 会话阶段:', session?.timer?.phase)
     console.log('[🤖 AutoChampSelect] 已执行操作:', executedActions)
-    // session?.timer?.phase FINALIZATION
+
     if (session?.timer?.phase === 'FINALIZATION') {
-      // 重置已执行的操作记录，为下一局游戏做准备
-      console.log('[🤖 AutoChampSelect] 🔄 选人阶段结束，重置已执行操作记录')
       executedActions.banChampion = false
       executedActions.selectChampion = false
+      executedActions.lockInProgress = false
       return false
     }
+
     if (!session?.actions || session.localPlayerCellId === undefined) {
       console.log('[🤖 AutoChampSelect] ⚠️ 缺少必要的会话数据')
       return false
     }
 
+    const pickedChampionIds = new Set<number>()
+    const bannedChampionIds = new Set<number>()
+    const preselectedChampionIds = new Set<number>()
+
+    for (const group of session.actions) {
+      for (const action of group) {
+        if (action.completed && action.championId > 0) {
+          if (action.type === 'pick') pickedChampionIds.add(action.championId)
+          if (action.type === 'ban') bannedChampionIds.add(action.championId)
+        }
+        if (action.type === 'pick' && action.isInProgress && action.championId > 0) {
+          preselectedChampionIds.add(action.championId)
+        }
+      }
+    }
+
     const localPlayerCellId = session.localPlayerCellId
     let hasScheduledAction = false
-    // 检查当前阶段是否是 BAN_PICK
-    if (session?.timer?.phase === 'BAN_PICK') {
-      // 遍历所有 actions 查找当前玩家的操作
-      for (const actionGroup of session.actions) {
-        for (const action of actionGroup) {
-          // 检查是否是当前玩家的操作
-          if (action.actorCellId === localPlayerCellId) {
-            console.log('[🤖 AutoChampSelect] 🎯 找到当前玩家的操作:', {
-              id: action.id,
-              type: action.type,
-              championId: action.championId,
-              completed: action.completed,
-              isInProgress: action.isInProgress
-            })
 
-            // 根据 action 类型执行自动操作
-            if (action.type === 'ban' && !executedActions.banChampion && !action.completed) {
-              // 自动禁用英雄
-              if (autoFunctions.banChampion.enabled && autoFunctions.banChampion.championId) {
-                console.log('[🤖 AutoChampSelect] 🚫 安排自动禁用英雄')
+    if (session.timer.phase === 'BAN_PICK') {
+      for (const group of session.actions) {
+        for (const action of group) {
+          if (action.actorCellId !== localPlayerCellId || !action.isInProgress) continue
 
-                setTimeout(async () => {
-                  try {
-                    await banChampion(action.id, autoFunctions.banChampion.championId)
-                    executedActions.banChampion = true
-                    console.log('[🤖 AutoChampSelect] ✅ 自动禁用英雄成功')
-                  } catch (error) {
-                    console.error('[🤖 AutoChampSelect] ❌ 自动禁用英雄失败:', error)
-                  }
-                }, autoFunctions.banChampion.delay || 500)
+          console.log('[🤖 AutoChampSelect] 🎯 当前玩家操作:', action)
 
-                hasScheduledAction = true
-              }
-            } else if (action.type === 'pick' && !executedActions.selectChampion && !action.completed) {
-              // 自动选择英雄
-              if (autoFunctions.selectChampion.enabled && autoFunctions.selectChampion.championId) {
-                console.log('[🤖 AutoChampSelect] ⭐ 安排自动选择英雄')
+          if (
+            await tryAutoBan(
+              action,
+              autoFunctions,
+              pickedChampionIds,
+              bannedChampionIds,
+              preselectedChampionIds,
+              executedActions
+            )
+          ) {
+            hasScheduledAction = true
+          }
 
-                setTimeout(async () => {
-                  try {
-                    // 先 hover
-                    await pickChampion(action.id, autoFunctions.selectChampion.championId, false)
-                    console.log('[🤖 AutoChampSelect] 👁️ 自动Hover成功')
-
-                    // 延迟后锁定
-                    setTimeout(async () => {
-                      try {
-                        await pickChampion(action.id, autoFunctions.selectChampion.championId, true)
-                        executedActions.selectChampion = true
-                        console.log('[🤖 AutoChampSelect] ✅ 自动锁定英雄成功')
-                      } catch (error) {
-                        console.error('[🤖 AutoChampSelect] ❌ 自动锁定英雄失败:', error)
-                      }
-                    }, 1000) // 锁定延迟1秒
-                  } catch (error) {
-                    console.error('[🤖 AutoChampSelect] ❌ 自动Hover英雄失败:', error)
-                  }
-                }, autoFunctions.selectChampion.delay || 500)
-
-                hasScheduledAction = true
-              }
-            }
+          if (
+            await tryAutoPick(
+              action,
+              autoFunctions,
+              pickedChampionIds,
+              bannedChampionIds,
+              preselectedChampionIds,
+              executedActions
+            )
+          ) {
+            hasScheduledAction = true
           }
         }
       }
@@ -152,6 +149,90 @@ export function useChampSelect() {
 
     console.log('[🤖 AutoChampSelect] ===== 自动选人操作检查完成 =====\n')
     return hasScheduledAction
+  }
+  async function tryAutoBan(
+    action: any,
+    autoFunctions: any,
+    picked: Set<number>,
+    banned: Set<number>,
+    preselected: Set<number>,
+    executedActions: ExecutedActions
+  ) {
+    if (action.type !== 'ban' || executedActions.banChampion || action.completed) return false
+    if (!autoFunctions.banChampion?.enabled || !Array.isArray(autoFunctions.banChampion.championList)) return false
+
+    const banList = autoFunctions.banChampion.championList
+    const nextBan = banList.find((c) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id))
+
+    if (!nextBan) {
+      console.log('[🤖 AutoChampSelect] 🚫 没有可禁用英雄')
+      return false
+    }
+
+    const delay = autoFunctions.banChampion.delay || 500
+    console.log('[🤖 AutoChampSelect] 🚫 安排自动禁用英雄:', nextBan)
+
+    setTimeout(async () => {
+      try {
+        await banChampion(action.id, nextBan.id)
+        executedActions.banChampion = true
+        console.log('[🤖 AutoChampSelect] ✅ 自动禁用成功')
+      } catch (err) {
+        console.error('[🤖 AutoChampSelect] ❌ 自动禁用失败:', err)
+      }
+    }, delay)
+
+    return true
+  }
+  async function tryAutoPick(
+    action: any,
+    autoFunctions: any,
+    picked: Set<number>,
+    banned: Set<number>,
+    preselected: Set<number>,
+    executedActions: ExecutedActions
+  ) {
+    if (action.type !== 'pick' || executedActions.selectChampion || executedActions.lockInProgress || action.completed)
+      return false
+    if (!autoFunctions.selectChampion?.enabled || !Array.isArray(autoFunctions.selectChampion.championList))
+      return false
+
+    const pickList = autoFunctions.selectChampion.championList
+    const nextPick = pickList.find((c) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id))
+
+    if (!nextPick) {
+      console.log('[🤖 AutoChampSelect] ⭐ 没有可选英雄')
+      return false
+    }
+
+    const delay = autoFunctions.selectChampion.delay || 500
+    executedActions.lockInProgress = true
+
+    console.log('[🤖 AutoChampSelect] ⭐ 安排自动选择英雄:', nextPick)
+
+    setTimeout(async () => {
+      try {
+        await pickChampion(action.id, nextPick.id, false)
+        console.log('[🤖 AutoChampSelect] 👁️ 自动Hover成功')
+
+        setTimeout(async () => {
+          try {
+            await pickChampion(action.id, nextPick.id, true)
+            executedActions.selectChampion = true
+            console.log('[🤖 AutoChampSelect] ✅ 自动锁定成功')
+          } catch (err) {
+            console.error('[🤖 AutoChampSelect] ❌ 自动锁定失败:', err)
+          } finally {
+            executedActions.lockInProgress = false
+          }
+        }, 1000)
+      } catch (err) {
+        console.error('[🤖 AutoChampSelect] ❌ 自动Hover失败:', err)
+        executedActions.lockInProgress = false
+      }
+    }, delay)
+
+    return true
   }
 
   return {

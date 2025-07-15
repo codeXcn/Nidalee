@@ -16,10 +16,11 @@
           <div class="relative">
             <div class="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden">
               <img
+                loading="lazy"
                 v-if="summonerInfo.profileIconId && !imageLoadError"
                 :src="getProfileIconUrl(summonerInfo.profileIconId)"
                 :alt="`${summonerInfo.displayName} 的头像`"
-                class="w-full h-full object-cover transition-opacity duration-300"
+                class="w-full h-full object-cover"
                 :class="{ 'opacity-0': imageLoading }"
                 @error="handleImageError"
                 @load="handleImageLoad"

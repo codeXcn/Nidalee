@@ -52,7 +52,7 @@
         <button
           @click="handleSave"
           :disabled="updatingRank"
-          class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 text-base font-medium shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+          class="px-6 py-2 bg-primary/80 text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 text-base font-medium shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {{ updatingRank ? '保存中...' : '保存段位' }}
         </button>

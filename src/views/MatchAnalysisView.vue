@@ -112,36 +112,124 @@
 <script setup lang="ts">
 import { useChampSelectSession } from '@/composables'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
+import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 import { useGameStore } from '@/stores/features/gameStore'
 import { appContextKey, type AppContext } from '@/types'
 import { invoke } from '@tauri-apps/api/core'
 import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
-
+const init = ref(false)
 const { isConnected } = inject(appContextKey) as AppContext
-const { session: rawSession, enrichedSession, loading } = useChampSelectSession()
-const session = computed(() => enrichedSession.value)
+const { enrichedSession } = useChampSelectSession()
+const session = computed(() => {
+  if (players.value) {
+    const theirTeam = players.value
+    const data = { ...enrichedSession.value, theirTeam }
+    console.log(data)
+    return data
+  }
+})
 const shouldShowMatchAnalysis = ref(false)
 // 使用搜索召唤师战绩的钩子
 const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
 
 // 使用游戏状态 store 来监听状态变化
 const gameStore = useGameStore()
-const { currentPhase, isInChampSelect } = storeToRefs(gameStore)
+const { currentPhase } = storeToRefs(gameStore)
+const enabled = computed(() => currentPhase.value === 'InProgress')
+const { refetch } = usePlayerListQuery(enabled as any)
+const playerList = ref([])
+const players = computed(() => {
+  if (!playerList.value) return []
+  // 先将字符串数组解析为对象数组
+  let arr: any[] = []
+  try {
+    if (typeof playerList.value[0] === 'string') {
+      arr = playerList.value.map((s: string) => JSON.parse(s))
+    } else {
+      arr = playerList.value
+    }
+  } catch (e) {
+    console.error('playerList parse error:', e)
+    return []
+  }
+  // 只取敌方队伍
+  return arr
+    .filter((p: any) => p.team === 'CHAOS')
+    .map((p: any, idx: number) => {
+      const spell1Id = p.summonerSpells?.summonerSpellOne?.id || 0
+      const spell2Id = p.summonerSpells?.summonerSpellTwo?.id || 0
+      const profileIconId = p.profileIconId || 0
+      const tier = p.tier || ''
+      const rankIcon = tier
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/${tier.toLowerCase()}.png`
+        : ''
+      const spell1Icon = spell1Id
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${spell1Id}.jpg`
+        : ''
+      const spell2Icon = spell2Id
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${spell2Id}.jpg`
+        : ''
+      const championIcon = p.championId
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${p.championId}.png`
+        : ''
+      const avatar = profileIconId
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${profileIconId}.jpg`
+        : ''
+      return {
+        cellId: p.cellId ?? idx,
+        puuid: p.puuid,
+        summonerId: p.summonerId || '',
+        championId: p.championId || 0,
+        championName: p.championName || '',
+        championPickIntent: p.championPickIntent ?? null,
+        selectedSkinId: p.selectedSkinId || p.skinID || 0,
+        spell1Id,
+        spell2Id,
+        assignedPosition: p.assignedPosition || p.position || '',
+        displayName: p.riotId || p.displayName || p.summonerName || '',
+        tagLine: p.tagLine || '',
+        profileIconId,
+        tier,
+        recentMatches: p.recentMatches ?? null,
+        avatar,
+        isLocal: p.isLocal ?? false,
+        isBot: p.isBot ?? false,
+        spell1Icon,
+        spell2Icon,
+        championIcon,
+        rankIcon,
+        winRate: p.winRate ?? undefined
+      }
+    })
+})
 // 召唤师详情相关 - 必须在 watchEffect 之前声明
 const isDetailsOpen = ref(false)
 const selectedPlayer = ref<any>(null)
 // 添加调试信息和会话监听
-watchEffect(() => {
-  console.log('Session data:', session.value)
+watchEffect(async () => {
   const phase = currentPhase.value
   console.log('Current game phase:', phase)
   shouldShowMatchAnalysis.value =
-    (!!session.value && phase === 'ChampSelect') ||
+    (!!enrichedSession.value && phase === 'ChampSelect') ||
     phase === 'GameStart' ||
     phase === 'InProgress' ||
     phase === 'WaitingForStats' ||
     phase === 'PreEndOfGame' ||
     phase === 'EndOfGame'
+  if (phase === 'InProgress' && !init.value) {
+    try {
+      const res = await refetch()
+      if (res.status === 'success') {
+        playerList.value = JSON.parse(res.data) || []
+        init.value = !init.value
+        console.log('Refetched player list:', res, players.value)
+      }
+    } catch (error) {
+      init.value = false
+    }
+  } else {
+    init.value = false
+  }
 })
 
 const openSummonerDetails = async (player: any) => {

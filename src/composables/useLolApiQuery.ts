@@ -1,3 +1,36 @@
+// Live Client Data API - 玩家基础信息类型
+export interface LiveClientPlayer {
+  summonerName: string
+  championName: string
+  team: string
+  level: number
+  isBot: boolean
+  rawChampionName: string
+  skinID: number
+  summonerSpells: {
+    summonerSpellOne: string
+    summonerSpellTwo: string
+  }
+  runes: {
+    keystone: string
+    primaryRuneTree: string
+    secondaryRuneTree: string
+  }
+  items: Array<{
+    itemID: number
+    count: number
+  }>
+  scores: Record<string, number>
+  position: string
+  currentGold: number
+  totalGold: number
+  respawnTimer: number
+  isDead: boolean
+  rawSkinName: string
+}
+
+// 获取所有玩家基础信息（队友和对手）
+
 import { useQuery } from '@tanstack/vue-query'
 import { toValue, type MaybeRefOrGetter } from 'vue'
 import * as dataApi from '@/lib/dataApi'
@@ -14,7 +47,16 @@ import type {
   RiotGameType,
   ApiResponse
 } from '@/lib/dataApi'
-
+import { invoke } from '@tauri-apps/api/core'
+export function usePlayerListQuery(enabled: MaybeRefOrGetter<boolean>) {
+  return useQuery<LiveClientPlayer[], unknown, LiveClientPlayer[]>({
+    queryKey: ['liveclient-playerlist'],
+    queryFn: async () => {
+      return await invoke('get_live_player_list')
+    },
+    enabled: () => toValue(enabled)
+  })
+}
 // 具体API的类型安全封装
 export function useChampionsQuery(version?: string) {
   return useQuery<ApiResponse<DDragonChampionsResponse>, unknown, DDragonChampionsResponse>({

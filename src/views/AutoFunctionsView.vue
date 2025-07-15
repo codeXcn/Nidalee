@@ -28,7 +28,7 @@
       <!-- 功能卡片网格 -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <!-- 自动接受对局 -->
-        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
+        <div class="card-hover-effect rounded-xl bg-card">
           <FunctionCard
             title="自动接受对局"
             description="自动接受匹配到的对局，避免错过游戏机会"
@@ -38,22 +38,24 @@
         </div>
 
         <!-- 自动选择英雄 -->
-        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
+        <div class="card-hover-effect rounded-xl bg-card">
           <ChampionFunctionCard
             title="自动选择英雄"
             description="在选择阶段自动选择指定英雄，快速完成英雄选择"
             v-model:enabled="autoFunctions.selectChampion.enabled"
             v-model:delay="autoFunctions.selectChampion.delay"
-            :champion-info="autoFunctions.selectChampion.championInfo"
+            :champion-list="autoFunctions.selectChampion.championList"
             :show-risk-warning="true"
-            risk-warning-text="⚠️ 自动选择英雄可能被游戏检测识别，存在封号风险，请谨慎使用并合理设置延迟"
-            @champion-select="handleChampionSelect"
-            @champion-clear="handleClearSelect"
+            risk-warning-text="⚠️ 请设置适当的延迟"
+            @champion-add="autoFunctionStore.addChampionSelect"
+            @champion-remove="autoFunctionStore.removeChampionSelect"
+            @champion-reorder="autoFunctionStore.reorderChampionSelect"
+            @champion-clear="autoFunctionStore.clearChampionSelect"
           />
         </div>
 
         <!-- 自动符文配置 -->
-        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
+        <div class="card-hover-effect rounded-xl bg-card">
           <FunctionCard
             title="自动符文配置"
             description="根据选择的英雄自动配置最优符文页面"
@@ -63,17 +65,19 @@
         </div>
 
         <!-- 自动禁用英雄 -->
-        <div class="rounded-xl bg-card transition-transform duration-150 will-change-transform hover:translate-y-1">
+        <div class="card-hover-effect rounded-xl bg-card">
           <ChampionFunctionCard
             title="自动禁用英雄"
             description="在禁用阶段自动禁用指定英雄，防止对手选择"
             v-model:enabled="autoFunctions.banChampion.enabled"
             v-model:delay="autoFunctions.banChampion.delay"
-            :champion-info="autoFunctions.banChampion.championInfo"
+            :champion-list="autoFunctions.banChampion.championList"
             :show-risk-warning="true"
-            risk-warning-text="⚠️ 自动禁用英雄可能被游戏检测识别，存在封号风险，请谨慎使用并合理设置延迟"
-            @champion-select="handleChampionBan"
-            @champion-clear="handleClearBan"
+            risk-warning-text="⚠️ 请设置适当的延迟"
+            @champion-add="autoFunctionStore.addChampionBan"
+            @champion-remove="autoFunctionStore.removeChampionBan"
+            @champion-reorder="autoFunctionStore.reorderChampionBan"
+            @champion-clear="autoFunctionStore.clearChampionBan"
           />
         </div>
       </div>
@@ -99,16 +103,13 @@
 
 <script setup lang="ts">
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
-import { useConnectionStore } from '@/stores/core/connectionStore'
 import { appContextKey, type AppContext } from '@/types'
 import { X } from 'lucide-vue-next'
 
 const { isConnected } = inject(appContextKey) as AppContext
 const autoFunctionStore = useAutoFunctionStore()
 const activityLogger = useActivityLogger()
-const connectionStore = useConnectionStore()
 
 // 计算属性 - 使用 toRef 确保响应式
 const autoFunctions = computed(() => {
@@ -117,44 +118,44 @@ const autoFunctions = computed(() => {
   return functions
 })
 
-watch(
-  [
-    () => autoFunctionStore.autoFunctions.acceptMatch.enabled,
-    () => autoFunctionStore.autoFunctions.selectChampion.enabled,
-    () => autoFunctionStore.autoFunctions.runeConfig.enabled,
-    () => autoFunctionStore.autoFunctions.banChampion.enabled
-  ],
-  ([acceptMatch, selectChampion, runeConfig, banChampion], [oldAccept, oldSelect, oldRune, oldBan]) => {
-    if (acceptMatch !== oldAccept) {
-      if (acceptMatch) {
-        activityLogger.logSettings.autoFunctionEnabled('自动接受对局')
-      } else {
-        activityLogger.logSettings.autoFunctionDisabled('自动接受对局')
-      }
-    }
-    if (selectChampion !== oldSelect) {
-      if (selectChampion) {
-        activityLogger.logSettings.autoFunctionEnabled('自动选择英雄')
-      } else {
-        activityLogger.logSettings.autoFunctionDisabled('自动选择英雄')
-      }
-    }
-    if (runeConfig !== oldRune) {
-      if (runeConfig) {
-        activityLogger.logSettings.autoFunctionEnabled('自动符文配置')
-      } else {
-        activityLogger.logSettings.autoFunctionDisabled('自动符文配置')
-      }
-    }
-    if (banChampion !== oldBan) {
-      if (banChampion) {
-        activityLogger.logSettings.autoFunctionEnabled('自动禁用英雄')
-      } else {
-        activityLogger.logSettings.autoFunctionDisabled('自动禁用英雄')
-      }
-    }
-  }
-)
+// watch(
+//   [
+//     () => autoFunctionStore.autoFunctions.acceptMatch.enabled,
+//     () => autoFunctionStore.autoFunctions.selectChampion.enabled,
+//     () => autoFunctionStore.autoFunctions.runeConfig.enabled,
+//     () => autoFunctionStore.autoFunctions.banChampion.enabled
+//   ],
+//   ([acceptMatch, selectChampion, runeConfig, banChampion], [oldAccept, oldSelect, oldRune, oldBan]) => {
+//     if (acceptMatch !== oldAccept) {
+//       if (acceptMatch) {
+//         activityLogger.logSettings.autoFunctionEnabled('自动接受对局')
+//       } else {
+//         activityLogger.logSettings.autoFunctionDisabled('自动接受对局')
+//       }
+//     }
+//     if (selectChampion !== oldSelect) {
+//       if (selectChampion) {
+//         activityLogger.logSettings.autoFunctionEnabled('自动选择英雄')
+//       } else {
+//         activityLogger.logSettings.autoFunctionDisabled('自动选择英雄')
+//       }
+//     }
+//     if (runeConfig !== oldRune) {
+//       if (runeConfig) {
+//         activityLogger.logSettings.autoFunctionEnabled('自动符文配置')
+//       } else {
+//         activityLogger.logSettings.autoFunctionDisabled('自动符文配置')
+//       }
+//     }
+//     if (banChampion !== oldBan) {
+//       if (banChampion) {
+//         activityLogger.logSettings.autoFunctionEnabled('自动禁用英雄')
+//       } else {
+//         activityLogger.logSettings.autoFunctionDisabled('自动禁用英雄')
+//       }
+//     }
+//   }
+// )
 
 const enabledFunctionsCount = computed(() => autoFunctionStore.enabledFunctionsCount)
 const isAnyFunctionEnabled = computed(() => autoFunctionStore.isAnyFunctionEnabled)
@@ -165,31 +166,5 @@ const handleDisableAll = async () => {
   console.log('Disabling all functions')
   autoFunctionStore.disableAllFunctions()
   activityLogger.log.info('已禁用所有自动功能', 'settings')
-}
-
-// 英雄选择处理
-const handleChampionSelect = async (championInfo: ChampionInfo) => {
-  console.log('Selecting champion:', championInfo)
-  autoFunctionStore.setChampionSelect(championInfo)
-  activityLogger.logSettings.championSet(championInfo.name)
-}
-
-const handleClearSelect = async () => {
-  console.log('Clearing champion select')
-  autoFunctionStore.clearChampionSelect()
-  activityLogger.log.info('已清除自动选择英雄设置', 'settings')
-}
-
-// 英雄禁用处理
-const handleChampionBan = async (championInfo: ChampionInfo) => {
-  console.log('Banning champion:', championInfo)
-  autoFunctionStore.setChampionBan(championInfo)
-  activityLogger.log.success(`设置自动禁用英雄：${championInfo.name}`, 'settings')
-}
-
-const handleClearBan = async () => {
-  console.log('Clearing champion ban')
-  autoFunctionStore.clearChampionBan()
-  activityLogger.log.info('已清除自动禁用英雄设置', 'settings')
 }
 </script>

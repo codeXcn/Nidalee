@@ -79,7 +79,13 @@
           <span
             class="truncate text-xs text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80"
           >
-            {{ player.championId ? getChampionName(player.championId) : '未选英雄' }}
+            {{
+              player.championName
+                ? player.championName
+                : player.championId
+                  ? getChampionName(player.championId)
+                  : '未选英雄'
+            }}
           </span>
           <Badge
             v-if="player.assignedPosition"

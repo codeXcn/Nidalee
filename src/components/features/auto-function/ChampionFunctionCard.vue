@@ -25,36 +25,43 @@
     <CardContent v-if="enabled" class="space-y-6 pt-0">
       <Separator />
 
-      <!-- 英雄选择区域 -->
+      <!-- 英雄多选与排序区域 -->
       <div class="space-y-4">
-        <Label class="text-sm font-medium text-foreground">选择英雄</Label>
-
-        <div
-          v-if="championInfo"
-          class="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
-        >
-          <div class="flex items-center gap-3">
-            <Avatar class="h-12 w-12 border-2 border-primary ring-1 ring-primary/20">
-              <AvatarImage
-                :src="getChampionIconUrlByAlias(championInfo.alias)"
-                :alt="championInfo.name"
-                class="object-cover"
-              />
-              <AvatarFallback class="text-xs font-medium bg-primary/10 text-primary">
-                {{ championInfo.name.slice(0, 2) }}
-              </AvatarFallback>
-            </Avatar>
-            <div class="space-y-1">
-              <p class="font-medium text-foreground">{{ championInfo.name }}</p>
-              <p class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">ID: {{ championInfo.id }}</p>
+        <Label class="text-sm font-medium text-foreground">选择英雄（可按顺序配置多个）</Label>
+        <div v-if="championList && championList.length > 0" class="space-y-2">
+          <div class="flex flex-wrap gap-3">
+            <div
+              v-for="(champion, idx) in championList"
+              :key="champion.id"
+              class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors group"
+            >
+              <Avatar class="h-10 w-10 border-2 border-primary ring-1 ring-primary/20">
+                <AvatarImage
+                  :src="getChampionIconUrlByAlias(champion.alias)"
+                  :alt="champion.name"
+                  class="object-cover"
+                />
+                <AvatarFallback class="text-xs font-medium bg-primary/10 text-primary">
+                  {{ champion.name.slice(0, 2) }}
+                </AvatarFallback>
+              </Avatar>
+              <span class="font-medium text-foreground">{{ champion.name }}</span>
+              <Button variant="ghost" size="icon" @click="handleRemoveChampion(champion.id)" class="ml-1">
+                <X class="h-4 w-4 text-destructive" />
+              </Button>
             </div>
           </div>
-          <Button variant="destructive" size="sm" @click="handleClearChampion" class="gap-2 hover:bg-destructive/90">
-            <X class="h-4 w-4" />
-            清除
-          </Button>
+          <div class="flex gap-2 mt-2">
+            <Button variant="outline" size="sm" @click="showChampionSelector = true" class="gap-2">
+              <Plus class="h-4 w-4" />
+              添加英雄
+            </Button>
+            <Button variant="destructive" size="sm" @click="handleClearChampion" class="gap-2">
+              <X class="h-4 w-4" />
+              清空
+            </Button>
+          </div>
         </div>
-
         <div
           v-else
           class="flex items-center justify-center p-8 rounded-lg border-2 border-dashed border-border bg-muted/20 hover:bg-muted/30 hover:border-muted-foreground/50 transition-all duration-200 group"
@@ -101,7 +108,7 @@
               :min="0"
               :max="10000"
               :step="100"
-              class="w-28 text-center text-sm "
+              class="w-28 text-center text-sm"
             />
             <span class="text-xs text-muted-foreground font-medium">毫秒</span>
           </div>
@@ -128,80 +135,73 @@
 import { getChampionIconUrlByAlias } from '@/lib'
 import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
-
 import { useDebouncedNumberModel } from '@/composables/utils/useDebouncedModel'
 
-interface Props {
-  title: string
-  description: string
-  championInfo: ChampionInfo | null
-  showRiskWarning?: boolean
-  riskWarningText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showRiskWarning: false,
-  riskWarningText: '此功能可能存在封号风险，请谨慎使用'
-})
-
-// 使用 defineModel 定义双向绑定
-const enabled = defineModel<boolean>('enabled', { default: false })
 const delay = defineModel<number>('delay', { default: 1000 })
-
-// 使用防抖处理延迟设置
 const {
   value: debouncedDelay,
   isPending: isDelayPending,
   flush: flushDelay
 } = useDebouncedNumberModel(delay, {
-  delay: 500, // 500ms 防抖
+  delay: 500,
   min: 0,
   max: 10000,
   step: 100
 })
 
-// 定义其他事件
-const emit = defineEmits<{
-  'champion-select': [champion: ChampionInfo]
-  'champion-clear': []
-}>()
-
-// 内部状态
-const showChampionSelector = ref(false)
-
-// Slider 需要数组格式，创建计算属性处理转换
 const delayModel = computed({
-  get: () => {
-    return [debouncedDelay.value]
-  },
-  set: (value: number[] | undefined) => {
-    const newDelay = value?.[0] || 0
-    debouncedDelay.value = newDelay
+  get: () => [debouncedDelay.value],
+  set: (val: number[] | undefined) => {
+    debouncedDelay.value = val?.[0] || 0
   }
 })
 
-// 事件处理
-const handleChampionSelect = (champion: ChampionInfo) => {
-  console.log(`[ChampionFunctionCard] ${props.title} - champion select:`, champion)
-  emit('champion-select', champion)
-  showChampionSelector.value = false
+function formatDelayDisplay(val: number) {
+  if (val >= 1000) return (val / 1000).toFixed(1) + ' 秒'
+  return val + ' 毫秒'
 }
 
-const handleClearChampion = () => {
-  console.log(`[ChampionFunctionCard] ${props.title} - champion clear`)
-  emit('champion-clear')
-}
-
-// 格式化延迟显示
-const formatDelayDisplay = (value: number) => {
-  if (value < 1000) {
-    return `${value}ms`
-  }
-  return `${(value / 1000).toFixed(1)}s`
-}
-
-// 组件卸载时确保保存最后的更改
 onBeforeUnmount(() => {
   flushDelay()
 })
+const props = withDefaults(
+  defineProps<{
+    title: string
+    description: string
+    championList: ChampionInfo[]
+    showRiskWarning?: boolean
+    riskWarningText?: string
+  }>(),
+  {
+    showRiskWarning: false,
+    riskWarningText: '此功能可能存在封号风险，请谨慎使用',
+    championList: () => []
+  }
+)
+
+// 双向绑定
+const enabled = defineModel<boolean>('enabled', { default: false })
+const showChampionSelector = ref(false)
+const dragFromIdx = ref<number | null>(null)
+
+const emit = defineEmits<{
+  'champion-add': [champion: ChampionInfo]
+  'champion-remove': [championId: number]
+  'champion-reorder': [from: number, to: number]
+  'champion-clear': []
+}>()
+
+// 事件处理
+const handleChampionSelect = (champion: ChampionInfo) => {
+  emit('champion-add', champion)
+  showChampionSelector.value = false
+}
+
+const handleRemoveChampion = (championId: number) => {
+  emit('champion-remove', championId)
+}
+
+const handleClearChampion = () => {
+  emit('champion-clear')
+}
 </script>

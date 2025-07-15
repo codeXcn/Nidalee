@@ -50,7 +50,7 @@
                 <p class="text-destructive font-semibold text-lg mb-2">加载失败</p>
                 <p class="text-sm text-muted-foreground mb-6 max-w-md">{{ championsError }}</p>
                 <button
-                  @click="loadChampions"
+                  @click="() => reloadChampions()"
                   class="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                 >
                   重新加载
@@ -58,43 +58,37 @@
               </div>
               <div v-else>
                 <div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2">
+                  <!-- <div
+                    v-for="champion in filteredChampions"
+                    :key="champion.id"
+                    class="card-hover flex flex-col items-center p-2 rounded-lg cursor-pointer bg-muted hover:bg-muted/70 transition-colors"
+                    @click="handleChampionSelect(champion)"
+                  >
+                    <img
+                      :src="getChampionIconUrlByAlias(champion.alias)"
+                      :alt="champion.name"
+                      class="w-12 h-12 rounded-full object-cover border border-primary/30"
+                      loading="lazy"
+                    />
+                    <span class="text-xs font-medium text-center mt-1 truncate w-full">{{ champion.name }}</span>
+                  </div> -->
                   <div
                     v-for="champion in filteredChampions"
                     :key="champion.id"
-                    class="hover:shadow-[0_0_16px_4px_theme('colors.primary.DEFAULT')] flex flex-col items-center p-1 rounded-lg cursor-pointer transition-all duration-200 bg-gradient-to-br from-background/80 shadow-xs to-background/40 hover:from-primary/10 hover:to-primary/20 hover:scale-105 group"
+                    class="card-hover flex flex-col items-center p-2 rounded-lg cursor-pointer bg-muted"
                     @click="handleChampionSelect(champion)"
-                    style="will-change: transform, opacity; transform: translateZ(0); backface-visibility: hidden"
                   >
-                    <div class="relative">
-                      <Avatar
-                        class="h-12 w-12 border-2 border-transparent group-hover:border-primary/60 transition-all duration-200 shadow group-hover:shadow-md bg-gradient-to-br from-primary/10 to-primary/30"
-                      >
-                        <AvatarImage
-                          :src="getChampionIconUrlByAlias(champion.alias)"
-                          :alt="champion.name"
-                          class="object-cover"
-                        />
-                        <AvatarFallback
-                          class="text-xs font-semibold bg-gradient-to-br from-primary/10 to-primary/20 text-primary border border-primary/30"
-                        >
-                          {{ champion.name.slice(0, 2).toUpperCase() }}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <!-- 悬停发光环 -->
-                      <div
-                        class="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10 blur-sm pointer-events-none"
-                        style="will-change: opacity"
-                      ></div>
+                    <div class="relative overflow-hidden rounded-full">
+                      <img
+                        :src="getChampionIconUrlByAlias(champion.alias)"
+                        :alt="champion.name"
+                        class="w-12 h-12 rounded-full object-cover transition-transform duration-300 ease-in-out"
+                        loading="lazy"
+                      />
                     </div>
-                    <div class="w-full text-center mt-1">
-                      <span
-                        class="text-sm text-foreground/90 font-bold leading-tight inline-block w-full overflow-hidden text-ellipsis whitespace-nowrap group-hover:text-primary transition-colors duration-200"
-                        :title="champion.name"
-                      >
-                        {{ champion.name }}
-                      </span>
-                    </div>
+                    <span class="text-xs font-normal text-foreground tracking-tight mt-1 duration-200">
+                      {{ champion.name }}
+                    </span>
                   </div>
                 </div>
                 <div
@@ -241,7 +235,7 @@ const {
   isLoading: loadingSkins,
   error: skinsError,
   refetch: reloadSkins
-} = useChampionDetailsQuery(selectedChampionId)
+} = useChampionDetailsQuery(selectedChampionId as any)
 const championSkins = computed<any[]>(() => championDetails.value?.skins ?? [])
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)

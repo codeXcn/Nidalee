@@ -149,18 +149,6 @@ const filteredChampions = computed(() => {
 
 // 方法
 const selectChampion = (champion: ChampionInfo, event?: Event) => {
-  console.log('🎯 选择英雄:', champion.name)
-
-  // 添加视觉反馈
-  if (event && event.currentTarget) {
-    const button = event.currentTarget as HTMLElement
-    button.classList.add('animate-pulse')
-
-    setTimeout(() => {
-      button.classList.remove('animate-pulse')
-    }, 300)
-  }
-
   emit('select', champion)
 }
 

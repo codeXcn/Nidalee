@@ -11,7 +11,7 @@
         <Badge
           :variant="trait.variant"
           class="flex items-center gap-1 px-3 py-1 cursor-pointer transition-colors duration-200 border border-transparent group-hover:bg-primary/10 group-hover:text-primary"
-          :class="{ 'ring-2 ring-primary ring-offset-2 border-primary/40': selectedTrait?.name === trait.name }"
+          :class="{ 'ring-2 ring-primary ring-offset-2 border-primary/30': selectedTrait?.name === trait.name }"
           @click="selectTrait(trait)"
         >
           <component :is="trait.icon" class="h-3 w-3" />
@@ -34,7 +34,7 @@
             </h5>
             <Badge
               :variant="selectedTrait.name === primaryTrait?.name ? 'default' : 'outline'"
-              class="text-xs px-2 py-0.5 font-bold border-2"
+              class="text-xs px-2 py-0.5 font-bold border-2 bg-primary/60"
               :class="selectedTrait.name === primaryTrait?.name ? 'border-primary/400' : 'border-gray-300'"
             >
               {{ selectedTrait.name === primaryTrait?.name ? '主要特征' : '特征详情' }}

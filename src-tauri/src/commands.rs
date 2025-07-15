@@ -1,7 +1,22 @@
 // Tauri 命令模块 - 集中管理所有的 Tauri 命令
 use crate::{http_client, lcu};
 use std::collections::HashMap;
+#[tauri::command]
+pub async fn get_live_player_list() -> Result<String, String> {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true) // 👈 忽略证书错误
+        .build()
+        .map_err(|e| e.to_string())?;
 
+    let resp = client
+        .get("https://127.0.0.1:2999/liveclientdata/playerlist")
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let text = resp.text().await.map_err(|e| e.to_string())?;
+    Ok(text)
+}
 #[tauri::command]
 pub async fn get_game_version() -> Result<String, String> {
     // 尝试从公开的Riot API获取最新版本

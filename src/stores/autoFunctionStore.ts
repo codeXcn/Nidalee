@@ -18,16 +18,14 @@ interface AutoFunctionConfig {
   delay: number // 延迟时间(毫秒)
 }
 
-// 自动选择英雄配置
+// 自动选择英雄配置（支持多选和排序）
 interface AutoSelectConfig extends AutoFunctionConfig {
-  championId: number | null
-  championInfo: ChampionInfo | null
+  championList: ChampionInfo[]
 }
 
-// 自动禁用英雄配置
+// 自动禁用英雄配置（支持多选和排序）
 interface AutoBanConfig extends AutoFunctionConfig {
-  championId: number | null
-  championInfo: ChampionInfo | null
+  championList: ChampionInfo[]
 }
 
 // 自动功能状态
@@ -50,8 +48,7 @@ export const useAutoFunctionStore = defineStore(
       selectChampion: {
         enabled: false,
         delay: 2000, // 默认2秒延迟
-        championId: null,
-        championInfo: null
+        championList: []
       },
       runeConfig: {
         enabled: false,
@@ -60,8 +57,7 @@ export const useAutoFunctionStore = defineStore(
       banChampion: {
         enabled: false,
         delay: 2000, // 默认2秒延迟
-        championId: null,
-        championInfo: null
+        championList: []
       }
     })
 
@@ -125,28 +121,70 @@ export const useAutoFunctionStore = defineStore(
       console.log(`[autoFunctionStore] Delay set for ${key}. Current state:`, autoFunctions.value[key])
     }
 
-    // 设置英雄选择
-    const setChampionSelect = (championInfo: ChampionInfo) => {
-      autoFunctions.value.selectChampion.championId = championInfo.id
-      autoFunctions.value.selectChampion.championInfo = championInfo
+    // 设置选择英雄列表（覆盖）
+    const setChampionSelectList = (list: ChampionInfo[]) => {
+      autoFunctions.value.selectChampion.championList = [...list]
     }
 
-    // 设置禁用英雄
-    const setChampionBan = (championInfo: ChampionInfo) => {
-      autoFunctions.value.banChampion.championId = championInfo.id
-      autoFunctions.value.banChampion.championInfo = championInfo
+    // 添加选择英雄
+    const addChampionSelect = (championInfo: ChampionInfo) => {
+      const list = autoFunctions.value.selectChampion.championList
+      if (!list.find((c) => c.id === championInfo.id)) {
+        list.push(championInfo)
+      }
     }
 
-    // 清除英雄选择
+    // 移除选择英雄
+    const removeChampionSelect = (championId: number) => {
+      autoFunctions.value.selectChampion.championList = autoFunctions.value.selectChampion.championList.filter(
+        (c) => c.id !== championId
+      )
+    }
+
+    // 重新排序选择英雄
+    const reorderChampionSelect = (from: number, to: number) => {
+      const list = autoFunctions.value.selectChampion.championList
+      if (from < 0 || to < 0 || from >= list.length || to >= list.length) return
+      const [item] = list.splice(from, 1)
+      list.splice(to, 0, item)
+    }
+
+    // 清空选择英雄
     const clearChampionSelect = () => {
-      autoFunctions.value.selectChampion.championId = null
-      autoFunctions.value.selectChampion.championInfo = null
+      autoFunctions.value.selectChampion.championList = []
     }
 
-    // 清除禁用英雄
+    // 设置禁用英雄列表（覆盖）
+    const setChampionBanList = (list: ChampionInfo[]) => {
+      autoFunctions.value.banChampion.championList = [...list]
+    }
+
+    // 添加禁用英雄
+    const addChampionBan = (championInfo: ChampionInfo) => {
+      const list = autoFunctions.value.banChampion.championList
+      if (!list.find((c) => c.id === championInfo.id)) {
+        list.push(championInfo)
+      }
+    }
+
+    // 移除禁用英雄
+    const removeChampionBan = (championId: number) => {
+      autoFunctions.value.banChampion.championList = autoFunctions.value.banChampion.championList.filter(
+        (c) => c.id !== championId
+      )
+    }
+
+    // 重新排序禁用英雄
+    const reorderChampionBan = (from: number, to: number) => {
+      const list = autoFunctions.value.banChampion.championList
+      if (from < 0 || to < 0 || from >= list.length || to >= list.length) return
+      const [item] = list.splice(from, 1)
+      list.splice(to, 0, item)
+    }
+
+    // 清空禁用英雄
     const clearChampionBan = () => {
-      autoFunctions.value.banChampion.championId = null
-      autoFunctions.value.banChampion.championInfo = null
+      autoFunctions.value.banChampion.championList = []
     }
 
     // 获取功能名称
@@ -190,9 +228,15 @@ export const useAutoFunctionStore = defineStore(
       disableFunction,
       disableAllFunctions,
       setFunctionDelay,
-      setChampionSelect,
-      setChampionBan,
+      setChampionSelectList,
+      addChampionSelect,
+      removeChampionSelect,
+      reorderChampionSelect,
       clearChampionSelect,
+      setChampionBanList,
+      addChampionBan,
+      removeChampionBan,
+      reorderChampionBan,
       clearChampionBan,
       getFunctionName,
       getFunctionConfig

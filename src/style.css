@@ -223,3 +223,14 @@ body {
   transform: translateY(-20px);
   opacity: 0;
 }
+.card-hover-effect {
+  will-change: transform;
+  backface-visibility: hidden;
+  @apply transition-transform  duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-1 ;
+}
+.card-hover {
+  will-change: transform;
+  backface-visibility: hidden;
+  @apply transition-transform  duration-300 ease-in-out  hover:-translate-y-1 ;
+
+}

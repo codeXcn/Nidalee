@@ -24,7 +24,8 @@ export const useGameStore = defineStore(
     // 自动操作执行记录
     const executedActions = ref({
       banChampion: false,
-      selectChampion: false
+      selectChampion: false,
+      lockInProgress: false
     })
 
     // 计算属性
@@ -60,7 +61,8 @@ export const useGameStore = defineStore(
         // 清除选人会话时，重置已执行的操作记录
         executedActions.value = {
           banChampion: false,
-          selectChampion: false
+          selectChampion: false,
+          lockInProgress: false
         }
       }
     }
@@ -120,7 +122,8 @@ export const useGameStore = defineStore(
       // 重置已执行的操作记录
       executedActions.value = {
         banChampion: false,
-        selectChampion: false
+        selectChampion: false,
+        lockInProgress: false
       }
     }
 
@@ -132,7 +135,8 @@ export const useGameStore = defineStore(
       // 重置已执行的操作记录
       executedActions.value = {
         banChampion: false,
-        selectChampion: false
+        selectChampion: false,
+        lockInProgress: false
       }
     }
 
