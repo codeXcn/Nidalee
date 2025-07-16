@@ -11,7 +11,12 @@
           :local-player-cell-id="session.localPlayerCellId"
           @select="openSummonerDetails"
         />
-        <TeamCard :team="session.theirTeam" team-type="enemy" @select="openSummonerDetails" />
+        <template v-if="session.theirTeam && session.theirTeam.length">
+          <TeamCard :team="session.theirTeam" team-type="enemy" @select="openSummonerDetails" />
+        </template>
+        <template v-else>
+          <div class="text-center text-muted-foreground mt-2">敌方队伍将在进入游戏后显示</div>
+        </template>
       </div>
     </div>
 
@@ -116,8 +121,7 @@ import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 import { useGameStore } from '@/stores/features/gameStore'
 import { appContextKey, type AppContext } from '@/types'
 import { invoke } from '@tauri-apps/api/core'
-import { BarChart3, Info, Lightbulb, Users, X } from 'lucide-vue-next'
-const init = ref(false)
+import { Info, X } from 'lucide-vue-next'
 const { isConnected } = inject(appContextKey) as AppContext
 const { enrichedSession } = useChampSelectSession()
 const session = computed(() => {
@@ -126,6 +130,8 @@ const session = computed(() => {
     const data = { ...enrichedSession.value, theirTeam }
     console.log(data)
     return data
+  } else {
+    return enrichedSession.value
   }
 })
 const shouldShowMatchAnalysis = ref(false)
@@ -216,19 +222,12 @@ watchEffect(async () => {
     phase === 'WaitingForStats' ||
     phase === 'PreEndOfGame' ||
     phase === 'EndOfGame'
-  if (phase === 'InProgress' && !init.value) {
-    try {
-      const res = await refetch()
-      if (res.status === 'success') {
-        playerList.value = JSON.parse(res.data) || []
-        init.value = !init.value
-        console.log('Refetched player list:', res, players.value)
-      }
-    } catch (error) {
-      init.value = false
+  if (phase === 'InProgress' && !(Array.isArray(playerList.value) && playerList.value.length > 0)) {
+    const res = await refetch()
+    if (res.status === 'success') {
+      playerList.value = JSON.parse(res.data) || []
+      console.log('Refetched player list:', res, players.value)
     }
-  } else {
-    init.value = false
   }
 })
 

@@ -172,13 +172,17 @@ export function useChampSelect() {
     const delay = autoFunctions.banChampion.delay || 500
     console.log('[🤖 AutoChampSelect] 🚫 安排自动禁用英雄:', nextBan)
 
+    // 立即标记，防止重复安排
+    executedActions.banChampion = true
+
     setTimeout(async () => {
       try {
         await banChampion(action.id, nextBan.id)
-        executedActions.banChampion = true
         console.log('[🤖 AutoChampSelect] ✅ 自动禁用成功')
       } catch (err) {
         console.error('[🤖 AutoChampSelect] ❌ 自动禁用失败:', err)
+        // 如果失败可以考虑恢复标记
+        executedActions.banChampion = false
       }
     }, delay)
 

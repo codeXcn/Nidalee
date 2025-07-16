@@ -18,9 +18,9 @@
         class="cursor-pointer"
       />
     </div>
-    <div class="mt-4 lg:mt-6 pt-4 border-t border-border">
+    <!-- <div class="mt-4 lg:mt-6 pt-4 border-t border-border">
       <TeamStats :team="team" :team-type="teamType" />
-    </div>
+    </div> -->
   </Card>
 </template>
 

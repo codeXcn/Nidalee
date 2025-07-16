@@ -90,9 +90,9 @@
           <Badge
             v-if="player.assignedPosition"
             class="ml-2 text-xs transition-all duration-300 group-hover:shadow-sm"
-            :class="positionColorMap[player.assignedPosition] || 'bg-secondary text-secondary-foreground'"
+            :class="positionColorMap[player.assignedPosition.toUpperCase()] || 'bg-secondary text-secondary-foreground'"
           >
-            {{ player.assignedPosition }}
+            {{ player.assignedPosition.toUpperCase() }}
           </Badge>
           <Badge v-else class="ml-2 text-xs bg-secondary text-secondary-foreground" variant="secondary">未知位置</Badge>
         </div>

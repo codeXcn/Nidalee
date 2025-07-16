@@ -1,49 +1,14 @@
 import { useConnection } from '@/composables/connection/useConnection'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { computed, onMounted, onUnmounted } from 'vue'
-import { useAppUpdater } from '@/composables/app/useAppUpdater'
 import { useAppEvents } from '@/composables'
 import { useAppInitialization } from '@/composables'
-import { info, attachConsole, error } from '@tauri-apps/plugin-log'
 
 /**
  * 主应用组合式函数
  * 职责：整合各个模块，提供应用级别的状态和方法
  */
 export function useApp() {
-  // 新增：自动更新检测
-  const { fetchVersion } = useAppUpdater()
-  function forwardConsole(
-    fnName: 'log' | 'debug' | 'info' | 'warn' | 'error',
-    logger: (message: string) => Promise<void>
-  ) {
-    console[fnName] = (...args: any[]) => {
-      logger(
-        args
-          .map((arg) => {
-            // 对象转字符串，避免 [object Object]
-            if (typeof arg === 'object') {
-              try {
-                return JSON.stringify(arg)
-              } catch {
-                return String(arg)
-              }
-            }
-            return String(arg)
-          })
-          .join(' ')
-      )
-    }
-  }
-  //将浏览器控制台日志同步到 tauri 后端日志
-  const setupConsoleForwarding = async () => {
-    forwardConsole('log', info)
-    forwardConsole('error', error)
-    await attachConsole()
-  }
-  // setupConsoleForwarding()
-  fetchVersion()
-
   const settingsStore = useSettingsStore()
   const appInit = useAppInitialization()
   const appEvents = useAppEvents()

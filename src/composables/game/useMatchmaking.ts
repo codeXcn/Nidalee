@@ -5,7 +5,7 @@ import { listen } from '@tauri-apps/api/event'
 export function useMatchmaking() {
   const gameStore = useGameStore()
 
-  const matchmakingState = ref<MatchmakingState | null>(null)
+  const matchmakingState = ref<any>(null)
   const matchInfo = ref<MatchInfo | null>(null)
 
   const handleMatchmaking = async () => {
@@ -36,13 +36,11 @@ export function useMatchmaking() {
     }
   }
 
-  let unlistenMatchmakingState: any
-  let unlistenMatchInfo: any
-
+  // 只监听，不解绑
   onMounted(async () => {
-    unlistenMatchmakingState = await listen('matchmaking-state-changed', (event) => {
+    await listen('matchmaking-state-changed', (event) => {
       console.log('[Event] matchmaking-state-changed:', event.payload)
-      const payload = event.payload as MatchmakingState
+      const payload = event.payload as any
       matchmakingState.value = payload
 
       // 当匹配状态为 Invalid 且有选人阶段信息时，清除选人阶段信息
@@ -52,15 +50,10 @@ export function useMatchmaking() {
       }
     })
 
-    unlistenMatchInfo = await listen('match-info-change', (event) => {
+    await listen('match-info-change', (event) => {
       console.log('match-info-change', event.payload)
       matchInfo.value = event.payload as MatchInfo
     })
-  })
-
-  onUnmounted(() => {
-    unlistenMatchmakingState && unlistenMatchmakingState()
-    unlistenMatchInfo && unlistenMatchInfo()
   })
 
   return {
