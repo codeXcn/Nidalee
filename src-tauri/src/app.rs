@@ -35,8 +35,9 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 /// 启动各种后台服务
 fn start_services(_app: &mut App, connection_manager: Arc<RwLock<lcu::ConnectionManager>>) {
     // 启动优化后的连接管理器（包含统一轮询）
+    let connection_manager_clone = connection_manager.clone();
     tokio::spawn(async move {
-        let manager = connection_manager.read().await;
+        let manager = connection_manager_clone.read().await;
         manager.start_monitoring().await;
     });
 

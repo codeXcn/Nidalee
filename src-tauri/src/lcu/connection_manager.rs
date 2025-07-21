@@ -1,30 +1,19 @@
 use crate::lcu::auth::{ensure_valid_auth_info, validate_auth_connection};
-use crate::lcu::types::LcuAuthInfo;
+use crate::lcu::types::{ConnectionState, LcuAuthInfo};
 use crate::lcu::unified_polling::UnifiedPollingManager;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum ConnectionState {
-    /// 未检测到客户端
-    Disconnected,
-    /// 检测到客户端进程但无法连接
-    ProcessFound,
-    /// 客户端连接正常
-    Connected,
-    /// 连接不稳定（网络问题等）
-    Unstable,
-    /// 认证过期需要重新获取
-    AuthExpired,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/generated/ConnectionInfo.ts")]
 pub struct ConnectionInfo {
     pub state: ConnectionState,
     pub auth_info: Option<LcuAuthInfo>,
+    #[ts(skip)]
     #[serde(skip)]
     pub last_successful_connection: Option<Instant>,
     pub consecutive_failures: u32,

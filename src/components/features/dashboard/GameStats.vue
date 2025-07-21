@@ -53,27 +53,27 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="text-center p-4 rounded-lg bg-muted/30">
             <Trophy class="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p class="text-2xl font-bold text-foreground">{{ matchStatistics.total_games }}</p>
+            <p class="text-2xl font-bold text-foreground">{{ matchStatistics.totalGames || 0 }}</p>
             <p class="text-sm text-muted-foreground">总对局</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-green-500/10">
             <Award class="h-8 w-8 text-green-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-              {{ matchStatistics.wins }}
+              {{ matchStatistics.wins || 0 }}
             </p>
             <p class="text-sm text-muted-foreground">胜场</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-red-500/10">
             <Target class="h-8 w-8 text-red-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-              {{ matchStatistics.losses }}
+              {{ matchStatistics.losses || 0 }}
             </p>
             <p class="text-sm text-muted-foreground">负场</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-blue-500/10">
             <TrendingUp class="h-8 w-8 text-blue-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {{ matchStatistics.win_rate.toFixed(1) }}%
+              {{ (matchStatistics.winRate || 0).toFixed(1) }}%
             </p>
             <p class="text-sm text-muted-foreground">胜率</p>
           </div>
@@ -89,26 +89,26 @@
             <div class="grid grid-cols-3 gap-4">
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ matchStatistics.avg_kills.toFixed(1) }}
+                  {{ (matchStatistics.avgKills || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均击杀</p>
               </div>
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ matchStatistics.avg_deaths.toFixed(1) }}
+                  {{ (matchStatistics.avgDeaths || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均死亡</p>
               </div>
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ matchStatistics.avg_assists.toFixed(1) }}
+                  {{ (matchStatistics.avgAssists || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均助攻</p>
               </div>
             </div>
             <div class="text-center p-3 rounded-lg bg-purple-500/10">
               <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
-                {{ matchStatistics.avg_kda.toFixed(2) }}
+                {{ (matchStatistics.avgKda || 0).toFixed(2) }}
               </p>
               <p class="text-sm text-muted-foreground">平均KDA</p>
             </div>
@@ -124,31 +124,31 @@
             </h4>
             <div class="space-y-2">
               <div
-                v-for="champion in matchStatistics.favorite_champions.slice(0, 5)"
-                :key="champion.champion_name"
+                v-for="champion in matchStatistics.favoriteChampions.slice(0, 5)"
+                :key="champion.championId"
                 class="flex items-center justify-between p-2 rounded-lg border"
               >
                 <div class="flex items-center space-x-2">
                   <div class="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <span class="text-xs font-bold">{{ getChampionName(champion.champion_id).charAt(0) }}</span>
+                    <span class="text-xs font-bold">{{ getChampionName(champion.championId).charAt(0) }}</span>
                   </div>
                   <div>
-                    <p class="font-medium text-sm">{{ getChampionName(champion.champion_id) }}</p>
-                    <p class="text-xs text-muted-foreground">{{ champion.games_played }}场</p>
+                    <p class="font-medium text-sm">{{ getChampionName(champion.championId) }}</p>
+                    <p class="text-xs text-muted-foreground">{{ champion.gamesPlayed }}场</p>
                   </div>
                 </div>
                 <div class="text-right">
                   <p
                     class="text-sm font-bold"
                     :class="[
-                      champion.win_rate >= 60
+                      champion.winRate >= 60
                         ? 'text-green-600 dark:text-green-400'
-                        : champion.win_rate >= 50
+                        : champion.winRate >= 50
                           ? 'text-yellow-600 dark:text-yellow-400'
                           : 'text-red-600 dark:text-red-400'
                     ]"
                   >
-                    {{ champion.win_rate.toFixed(0) }}%
+                    {{ champion.winRate.toFixed(0) }}%
                   </p>
                   <p class="text-xs text-muted-foreground">{{ champion.wins }}胜</p>
                 </div>
@@ -158,15 +158,15 @@
         </div>
 
         <!-- 最近对局 -->
-        <div class="space-y-4" v-if="matchStatistics.recent_performance.length > 0">
+        <div class="space-y-4" v-if="matchStatistics.recentPerformance.length > 0">
           <h4 class="font-semibold flex items-center">
             <Calendar class="h-4 w-4 mr-2 text-blue-500" />
             最近对局
           </h4>
           <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))">
             <div
-              v-for="game in matchStatistics.recent_performance.slice(0, showCount)"
-              :key="game.game_creation"
+              v-for="game in matchStatistics.recentPerformance.slice(0, showCount)"
+              :key="game.gameCreation"
               class="group relative flex bg-gradient-to-br from-card/80 to-muted/60 rounded-xl shadow-sm cursor-pointer transition-transform duration-150 will-change-transform hover:-translate-y-1 hover:shadow-lg backdrop-blur-sm"
               @click="openGameDetail(game)"
             >
@@ -175,7 +175,7 @@
               <div class="flex-1 p-4 flex flex-col">
                 <!-- 标题区 -->
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-base font-semibold text-foreground">{{ getChampionName(game.champion_id) }}</span>
+                  <span class="text-base font-semibold text-foreground">{{ getChampionName(game.championId) }}</span>
                   <Badge :variant="game.win ? 'default' : 'destructive'" class="text-xs px-2 py-0.5">
                     {{ game.win ? '胜利' : '失败' }}
                   </Badge>
@@ -189,7 +189,7 @@
                     <span class="text-gray-400">/</span>
                     <span class="text-blue-500">{{ game.assists }}</span>
                   </span>
-                  <span class="text-muted-foreground">{{ formatGameTime(game.game_duration) }}</span>
+                  <span class="text-muted-foreground">{{ formatGameTime(game.gameDuration) }}</span>
                 </div>
                 <!-- 只保留一条淡色分割线 -->
                 <div class="border-t border-white/10 my-2"></div>
@@ -198,40 +198,43 @@
                   <div class="flex flex-col text-xs text-muted-foreground">
                     <div class="flex items-center">
                       <Clock class="w-3 h-3 mr-1" />
-                      <span>{{ formatRelativeTime(game.game_creation) }}</span>
+                      <span>{{ formatRelativeTime(game.gameCreation) }}</span>
                     </div>
-                    <span>{{ getQueueName(game.queue_id) }}</span>
+                    <span>{{ getQueueName(game.queueId) }}</span>
                   </div>
                   <div
                     class="ml-2 px-2 py-0.5 rounded-full shadow text-xs font-bold select-none flex items-center gap-1 transition-transform duration-150 group-hover:scale-105 group-hover:shadow-lg"
                     :class="[
                       'bg-gradient-to-r',
-                      game.performance_rating.includes('超神') || game.performance_rating.includes('亮眼')
+                      (game.performanceRating || '').includes('超神') || (game.performanceRating || '').includes('亮眼')
                         ? 'from-green-400 to-green-600 text-white'
                         : '',
-                      game.performance_rating.includes('不错') ? 'from-yellow-400 to-yellow-500 text-white' : '',
-                      game.performance_rating.includes('需要加油') ? 'from-red-500 to-red-700 text-white' : '',
-                      game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')
+                      (game.performanceRating || '').includes('不错') ? 'from-yellow-400 to-yellow-500 text-white' : '',
+                      (game.performanceRating || '').includes('需要加油') ? 'from-red-500 to-red-700 text-white' : '',
+                      (game.performanceRating || '').includes('五杀') || (game.performanceRating || '').includes('四杀')
                         ? 'from-purple-500 to-purple-700 text-white'
                         : ''
                     ]"
                   >
-                    <Award v-if="game.performance_rating.includes('超神')" class="w-3 h-3" />
-                    <Star v-else-if="game.performance_rating.includes('亮眼')" class="w-3 h-3" />
+                    <Award v-if="(game.performanceRating || '').includes('超神')" class="w-3 h-3" />
+                    <Star v-else-if="(game.performanceRating || '').includes('亮眼')" class="w-3 h-3" />
                     <Flame
-                      v-else-if="game.performance_rating.includes('五杀') || game.performance_rating.includes('四杀')"
+                      v-else-if="
+                        (game.performanceRating || '').includes('五杀') ||
+                        (game.performanceRating || '').includes('四杀')
+                      "
                       class="w-3 h-3"
                     />
-                    <Smile v-else-if="game.performance_rating.includes('不错')" class="w-3 h-3" />
-                    <Meh v-else-if="game.performance_rating.includes('一般')" class="w-3 h-3" />
-                    <AlertCircle v-else-if="game.performance_rating.includes('需要加油')" class="w-3 h-3" />
-                    <span>{{ game.performance_rating }}</span>
+                    <Smile v-else-if="(game.performanceRating || '').includes('不错')" class="w-3 h-3" />
+                    <Meh v-else-if="(game.performanceRating || '').includes('一般')" class="w-3 h-3" />
+                    <AlertCircle v-else-if="(game.performanceRating || '').includes('需要加油')" class="w-3 h-3" />
+                    <span>{{ game.performanceRating }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div v-if="matchStatistics.recent_performance.length > showCount" class="flex justify-center mt-4">
+          <div v-if="matchStatistics.recentPerformance.length > showCount" class="flex justify-center mt-4">
             <Button @click="loadMore" variant="outline" size="sm"> 加载更多 </Button>
           </div>
         </div>
@@ -273,17 +276,17 @@ const openGameDetail = (game: any) => {
   console.log(game)
   dialogOpen.value = true
 }
-const props = defineProps<{
+defineProps<{
   isConnected: boolean
   matchHistoryLoading: boolean
   matchStatistics: any
 }>()
-const emit = defineEmits<{
+defineEmits<{
   (e: 'fetch-match-history'): void
   (e: 'open-game-detail', game: any): void
 }>()
 
-const { formatGameMode, formatGameTime, formatRelativeTime } = useFormatters()
+const { formatGameTime, formatRelativeTime } = useFormatters()
 
 const queueMap: Record<number, string> = {
   420: '单双排', // 峡谷之巅/召唤师峡谷Ranked Solo/Duo

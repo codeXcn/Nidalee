@@ -31,7 +31,7 @@
         <div v-if="championList && championList.length > 0" class="space-y-2">
           <div class="flex flex-wrap gap-3">
             <div
-              v-for="(champion, idx) in championList"
+              v-for="champion in championList"
               :key="champion.id"
               class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors group"
             >
@@ -93,7 +93,7 @@
             :model-value="delayModel"
             @update:model-value="(val: number[] | undefined) => (delayModel = val || [0])"
             :max="10000"
-            :min="0"
+            :min="1000"
             :step="100"
             class="w-full"
           />
@@ -133,10 +133,23 @@
 
 <script setup lang="ts">
 import { getChampionIconUrlByAlias } from '@/lib'
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 import { useDebouncedNumberModel } from '@/composables/utils/useDebouncedModel'
 
+defineProps<{
+  title: string
+  description: string
+  championList: ChampionInfo[]
+  showRiskWarning?: boolean
+  riskWarningText?: string
+}>()
+
+const emit = defineEmits<{
+  'champion-add': [champion: ChampionInfo]
+  'champion-remove': [championId: number]
+  'champion-reorder': [from: number, to: number]
+  'champion-clear': []
+}>()
 const delay = defineModel<number>('delay', { default: 1000 })
 const {
   value: debouncedDelay,
@@ -148,6 +161,9 @@ const {
   max: 10000,
   step: 100
 })
+
+// const delay = useDebouncedNumberModel(defineModel<number>('delay', { default: 1000 }))
+// const { value: debouncedDelay, isPending: isDelayPending, flush: flushDelay } = delay
 
 const delayModel = computed({
   get: () => [debouncedDelay.value],
@@ -164,34 +180,11 @@ function formatDelayDisplay(val: number) {
 onBeforeUnmount(() => {
   flushDelay()
 })
-const props = withDefaults(
-  defineProps<{
-    title: string
-    description: string
-    championList: ChampionInfo[]
-    showRiskWarning?: boolean
-    riskWarningText?: string
-  }>(),
-  {
-    showRiskWarning: false,
-    riskWarningText: '此功能可能存在封号风险，请谨慎使用',
-    championList: () => []
-  }
-)
 
 // 双向绑定
 const enabled = defineModel<boolean>('enabled', { default: false })
 const showChampionSelector = ref(false)
-const dragFromIdx = ref<number | null>(null)
 
-const emit = defineEmits<{
-  'champion-add': [champion: ChampionInfo]
-  'champion-remove': [championId: number]
-  'champion-reorder': [from: number, to: number]
-  'champion-clear': []
-}>()
-
-// 事件处理
 const handleChampionSelect = (champion: ChampionInfo) => {
   emit('champion-add', champion)
   showChampionSelector.value = false

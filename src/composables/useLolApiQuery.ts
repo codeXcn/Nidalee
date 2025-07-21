@@ -1,35 +1,4 @@
 // Live Client Data API - 玩家基础信息类型
-export interface LiveClientPlayer {
-  summonerName: string
-  championName: string
-  team: string
-  level: number
-  isBot: boolean
-  rawChampionName: string
-  skinID: number
-  summonerSpells: {
-    summonerSpellOne: string
-    summonerSpellTwo: string
-  }
-  runes: {
-    keystone: string
-    primaryRuneTree: string
-    secondaryRuneTree: string
-  }
-  items: Array<{
-    itemID: number
-    count: number
-  }>
-  scores: Record<string, number>
-  position: string
-  currentGold: number
-  totalGold: number
-  respawnTimer: number
-  isDead: boolean
-  rawSkinName: string
-}
-
-// 获取所有玩家基础信息（队友和对手）
 
 import { useQuery } from '@tanstack/vue-query'
 import { toValue, type MaybeRefOrGetter } from 'vue'
@@ -48,11 +17,39 @@ import type {
   ApiResponse
 } from '@/lib/dataApi'
 import { invoke } from '@tauri-apps/api/core'
+
+// 获取所有符文
+export function useAllRunesQuery() {
+  return useQuery({
+    queryKey: ['all-runes'],
+    queryFn: () => invoke<DataDragonRune[]>('get_all_runes')
+  })
+}
+
+// 获取推荐出装和符文
+export function useBuildsByAliasQuery(source: string, champion: string) {
+  return useQuery({
+    queryKey: ['builds-by-alias', source, champion],
+    queryFn: () => invoke<BuildSection>('get_builds_by_alias', { source, champion }),
+    enabled: false
+  })
+}
+
 export function usePlayerListQuery(enabled: MaybeRefOrGetter<boolean>) {
-  return useQuery<LiveClientPlayer[], unknown, LiveClientPlayer[]>({
+  return useQuery({
     queryKey: ['liveclient-playerlist'],
     queryFn: async () => {
-      return await invoke('get_live_player_list')
+      const result = await invoke<string>('get_live_player_list')
+      if (typeof result === 'string') {
+        try {
+          return JSON.parse(result) as LiveClientPlayer[]
+        } catch (error) {
+          console.error('Failed to parse player list JSON:', error)
+          return []
+        }
+      }
+      // 如果后端直接返回了数组，也做兼容
+      return Array.isArray(result) ? result : []
     },
     enabled: () => toValue(enabled)
   })

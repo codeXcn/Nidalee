@@ -5,9 +5,13 @@ export * from './dataApi'
 export * from './theme'
 
 // 其他辅助函数
-export const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetailData): number => {
-  const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)
-  return identity?.player?.profileIcon || 0
+export const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetail): number => {
+  const identity = gameDetail.participants?.find((id) => id.participantId === participantId)
+  // 兼容 profileIconId 可能为 bigint 的情况，强制转换为 number
+  if (identity && identity.profileIconId !== undefined && identity.profileIconId !== null) {
+    return Number(identity.profileIconId)
+  }
+  return 0
 }
 
 // 游戏相关的工具函数
@@ -80,7 +84,7 @@ export const getChampionIconUrlByAlias = (alias: string): string => {
 // 处理 Community Dragon 路径
 export const getCommunityDragonUrl = (path: string): string => {
   if (!path) return ''
-  // 移除开头的斜杠并构建完整URL
+  // 移除开头的斜杠并详细完整URL
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
   return `https://raw.communitydragon.org/latest/plugins/${cleanPath}`
 }

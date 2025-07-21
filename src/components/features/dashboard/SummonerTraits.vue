@@ -71,7 +71,6 @@ import {
   Meh,
   Star,
   Swords,
-  Target,
   TrendingUp,
   Trophy,
   UserCheck,
@@ -88,29 +87,9 @@ interface Trait {
   icon: any
 }
 
-interface Props {
-  matchStatistics: {
-    total_games: number
-    wins: number
-    losses: number
-    win_rate: number
-    avg_kills: number
-    avg_deaths: number
-    avg_assists: number
-    avg_kda: number
-    recent_performance: Array<{
-      game_mode: string
-      queue_id: number
-      win: boolean
-      kills: number
-      deaths: number
-      assists: number
-      game_duration: number
-    }>
-  }
-}
-
-const props = defineProps<Props>()
+const props = defineProps<{
+  matchStatistics: MatchStatistics | null
+}>()
 
 // 选中的特征
 const selectedTrait = ref<Trait | null>(null)
@@ -125,110 +104,115 @@ const analyzeTraits = (): Trait[] => {
   const traits: Trait[] = []
   const stats = props.matchStatistics
 
+  // 防御性检查：如果统计数据或最近表现不存在，则不进行分析
+  if (!stats || !stats.recentPerformance) {
+    return []
+  }
+
   // 1. 胜率特征
-  if (stats.win_rate >= 65) {
+  if (stats.winRate >= 65) {
     traits.push({
       name: '大神',
       description: '胜率超高的实力玩家',
-      detail: `胜率${stats.win_rate.toFixed(1)}%，展现了出色的游戏水平`,
-      score: Math.round(stats.win_rate),
+      detail: `胜率${stats.winRate.toFixed(1)}%，展现了出色的游戏水平`,
+      score: Math.round(stats.winRate),
       variant: 'default',
       icon: Crown
     })
-  } else if (stats.win_rate >= 55) {
+  } else if (stats.winRate >= 55) {
     traits.push({
       name: '稳定',
       description: '胜率稳定的可靠队友',
-      detail: `胜率${stats.win_rate.toFixed(1)}%，表现稳定可靠`,
-      score: Math.round(stats.win_rate),
+      detail: `胜率${stats.winRate.toFixed(1)}%，表现稳定可靠`,
+      score: Math.round(stats.winRate),
       variant: 'secondary',
       icon: Award // 更换为奖章，突出稳定荣誉
     })
-  } else if (stats.win_rate <= 40) {
+  } else if (stats.winRate <= 40) {
     traits.push({
       name: '坑货',
       description: '胜率偏低的玩家',
-      detail: `胜率${stats.win_rate.toFixed(1)}%，需要提升游戏水平`,
-      score: Math.round(stats.win_rate),
+      detail: `胜率${stats.winRate.toFixed(1)}%，需要提升游戏水平`,
+      score: Math.round(stats.winRate),
       variant: 'destructive',
       icon: Meh // 保持无语表情
     })
   }
 
   // 2. KDA特征
-  if (stats.avg_kda >= 4.0) {
+  if (stats.avgKda >= 4.0) {
     traits.push({
       name: '大爹',
       description: 'KDA超高的carry玩家',
-      detail: `平均KDA ${stats.avg_kda.toFixed(2)}，经常carry全场`,
-      score: Math.round(stats.avg_kda * 10),
+      detail: `平均KDA ${stats.avgKda.toFixed(2)}，经常carry全场`,
+      score: Math.round(stats.avgKda * 10),
       variant: 'default',
       icon: Flame // 用火焰突出carry
     })
-  } else if (stats.avg_kda >= 2.5) {
+  } else if (stats.avgKda >= 2.5) {
     traits.push({
       name: '输出',
       description: '输出能力强的玩家',
-      detail: `平均KDA ${stats.avg_kda.toFixed(2)}，输出表现不错`,
-      score: Math.round(stats.avg_kda * 10),
+      detail: `平均KDA ${stats.avgKda.toFixed(2)}，输出表现不错`,
+      score: Math.round(stats.avgKda * 10),
       variant: 'secondary',
       icon: Zap // 用闪电突出输出
     })
-  } else if (stats.avg_deaths > stats.avg_kills * 2) {
+  } else if (stats.avgDeaths > stats.avgKills * 2) {
     traits.push({
       name: '送分',
       description: '死亡次数过多的玩家',
-      detail: `平均死亡${stats.avg_deaths.toFixed(1)}次，需要减少失误`,
-      score: Math.round(stats.avg_deaths),
+      detail: `平均死亡${stats.avgDeaths.toFixed(1)}次，需要减少失误`,
+      score: Math.round(stats.avgDeaths),
       variant: 'destructive',
       icon: AlertTriangle
     })
   }
 
   // 3. 击杀特征
-  if (stats.avg_kills >= 8) {
+  if (stats.avgKills >= 8) {
     traits.push({
       name: '人头狗',
       description: '击杀能力超强的玩家',
-      detail: `平均击杀${stats.avg_kills.toFixed(1)}个，收割能力极强`,
-      score: Math.round(stats.avg_kills),
+      detail: `平均击杀${stats.avgKills.toFixed(1)}个，收割能力极强`,
+      score: Math.round(stats.avgKills),
       variant: 'default',
       icon: Swords
     })
-  } else if (stats.avg_kills >= 5) {
+  } else if (stats.avgKills >= 5) {
     traits.push({
       name: '输出',
       description: '输出能力不错的玩家',
-      detail: `平均击杀${stats.avg_kills.toFixed(1)}个，输出表现良好`,
-      score: Math.round(stats.avg_kills),
+      detail: `平均击杀${stats.avgKills.toFixed(1)}个，输出表现良好`,
+      score: Math.round(stats.avgKills),
       variant: 'secondary',
       icon: Zap // 统一输出类用闪电
     })
   }
 
   // 4. 助攻特征
-  if (stats.avg_assists >= 10) {
+  if (stats.avgAssists >= 10) {
     traits.push({
       name: '辅助王',
       description: '助攻能力超强的团队玩家',
-      detail: `平均助攻${stats.avg_assists.toFixed(1)}次，团队贡献突出`,
-      score: Math.round(stats.avg_assists),
+      detail: `平均助攻${stats.avgAssists.toFixed(1)}次，团队贡献突出`,
+      score: Math.round(stats.avgAssists),
       variant: 'secondary',
       icon: Heart
     })
-  } else if (stats.avg_assists >= 7) {
+  } else if (stats.avgAssists >= 7) {
     traits.push({
       name: '团队',
       description: '团队协作能力强的玩家',
-      detail: `平均助攻${stats.avg_assists.toFixed(1)}次，团队意识不错`,
-      score: Math.round(stats.avg_assists),
+      detail: `平均助攻${stats.avgAssists.toFixed(1)}次，团队意识不错`,
+      score: Math.round(stats.avgAssists),
       variant: 'outline',
       icon: Users
     })
   }
 
   // 5. 游戏模式特征
-  const totalRecentGames = stats.recent_performance.length
+  const totalRecentGames = stats.recentPerformance.length
   if (totalRecentGames < 5) {
     traits.push({
       name: '数据不足',
@@ -239,15 +223,15 @@ const analyzeTraits = (): Trait[] => {
       icon: AlertTriangle
     })
   } else {
-    const soloGames = stats.recent_performance.filter((g) => g.queue_id === 420).length
-    const flexGames = stats.recent_performance.filter((g) => g.queue_id === 440).length
-    const aramGames = stats.recent_performance.filter((g) => g.queue_id === 450).length
-    const cherryGames = stats.recent_performance.filter((g) => g.queue_id === 1700).length
-    const urfGames = stats.recent_performance.filter((g) => g.queue_id === 900).length
-    const tftGames = stats.recent_performance.filter((g) =>
-      [1090, 1100, 1130, 1150, 1160, 1170, 1180, 1190].includes(g.queue_id)
+    const soloGames = stats.recentPerformance.filter((g) => g.queueId === 420).length
+    const flexGames = stats.recentPerformance.filter((g) => g.queueId === 440).length
+    const aramGames = stats.recentPerformance.filter((g) => g.queueId === 450).length
+    const cherryGames = stats.recentPerformance.filter((g) => g.queueId === 1700).length
+    const urfGames = stats.recentPerformance.filter((g) => g.queueId === 900).length
+    const tftGames = stats.recentPerformance.filter((g) =>
+      [1090, 1100, 1130, 1150, 1160, 1170, 1180, 1190].includes(g.queueId)
     ).length
-    const cloneGames = stats.recent_performance.filter((g) => g.queue_id === 700).length
+    const cloneGames = stats.recentPerformance.filter((g) => g.queueId === 700).length
 
     const modeArr = [
       {
@@ -322,7 +306,7 @@ const analyzeTraits = (): Trait[] => {
 
   // 6. 游戏时长特征
   const avgGameDuration =
-    stats.recent_performance.reduce((sum, game) => sum + game.game_duration, 0) / stats.recent_performance.length
+    stats.recentPerformance.reduce((sum, game) => sum + game.gameDuration, 0) / stats.recentPerformance.length
   if (avgGameDuration >= 1800) {
     traits.push({
       name: '持久战',
@@ -344,7 +328,7 @@ const analyzeTraits = (): Trait[] => {
   }
 
   // 7. 稳定性特征
-  const winStreak = calculateWinStreak(stats.recent_performance)
+  const winStreak = calculateWinStreak(stats.recentPerformance)
   if (winStreak >= 5) {
     traits.push({
       name: '连胜王',
@@ -366,12 +350,12 @@ const analyzeTraits = (): Trait[] => {
   }
 
   // 9. 视野控制特征
-  if (stats.avg_assists >= 8 && stats.avg_kills <= 3) {
+  if (stats.avgAssists >= 8 && stats.avgKills <= 3) {
     traits.push({
       name: '视野王',
       description: '视野控制能力强的玩家',
       detail: `助攻多击杀少，专注于视野控制和团队支援`,
-      score: Math.round(stats.avg_assists),
+      score: Math.round(stats.avgAssists),
       variant: 'secondary',
       icon: Eye
     })
@@ -410,9 +394,9 @@ const calculateWinStreak = (recentGames: Array<{ win: boolean }>): number => {
 
 // 计算综合评分
 const calculateOverallScore = (stats: any): number => {
-  const winRateScore = Math.min(stats.win_rate * 0.6, 60) // 胜率权重60%
-  const kdaScore = Math.min(stats.avg_kda * 5, 20) // KDA权重20%
-  const gamesScore = Math.min(stats.total_games * 0.2, 20) // 游戏场次权重20%
+  const winRateScore = Math.min(stats.winRate * 0.6, 60) // 胜率权重60%
+  const kdaScore = Math.min(stats.avgKda * 5, 20) // KDA权重20%
+  const gamesScore = Math.min(stats.totalGames * 0.2, 20) // 游戏场次权重20%
 
   return Math.round(winRateScore + kdaScore + gamesScore)
 }

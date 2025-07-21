@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "types": "cd src-tauri && cargo test -- --nocapture && cd .. && node scripts/sync-types.mjs",
     "lint:oxlint": "oxlint src/ --fix --ignore-path .gitignore",
     "lint:eslint": "eslint src/ --fix",
     "lint": "run-s lint:*",

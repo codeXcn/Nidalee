@@ -137,8 +137,8 @@
 <script setup lang="ts">
 import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
 
-const props = defineProps<{
-  player: ChampSelectPlayer
+defineProps<{
+  player: PlayerDisplayInfo
   isLocal?: boolean
   isAlly?: boolean
   selected?: boolean

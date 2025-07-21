@@ -1,5 +1,4 @@
-import { useActivityStore } from '@/stores/core/activityStore'
-import { useDataStore } from '@/stores/core/dataStore'
+import { useActivityStore, useDataStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -13,7 +12,7 @@ export function useSummonerAndMatchUpdater() {
   const updateSummonerInfo = async () => {
     try {
       dataStore.startLoadingSummoner()
-      const summonerInfo = await invoke('get_current_summoner')
+      const summonerInfo = await invoke<SummonerInfo>('get_current_summoner')
       if (summonerInfo) {
         dataStore.setSummonerInfo(summonerInfo)
         activityStore.addActivity('info', '召唤师信息已更新', 'data')
@@ -28,7 +27,7 @@ export function useSummonerAndMatchUpdater() {
   const updateMatchHistory = async () => {
     try {
       dataStore.startLoadingMatchHistory()
-      const matchHistory = await invoke('get_match_history')
+      const matchHistory = await invoke<MatchStatistics>('get_match_history')
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
         activityStore.addActivity('success', '对局历史记录已更新', 'data')

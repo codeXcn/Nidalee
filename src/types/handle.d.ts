@@ -1,0 +1,53 @@
+// --- 手动添加的前端专用类型 ---
+
+/**
+ * 英雄信息接口，用于自动选/禁等功能
+ * 这是一个纯前端的类型，不与后端直接对应
+ */
+interface ChampionInfo {
+  id: number
+  name: string
+  alias: string
+  squarePortraitPath: string
+  roles: string[]
+  [key: string]: any // 允许其他可能的属性
+}
+// 为游戏中的玩家定义一个新的、独立的“增强”类型
+interface EnrichedLivePlayer {
+  displayName: string
+  championName: string
+  team: string
+  isBot: boolean
+  isLocal: boolean // 通常对于敌方队伍总是 false
+  championIcon?: string
+  // 根据 TeamCard 的需要添加其他字段
+  [key: string]: any
+}
+// 和 TeamCard.vue 中使用相同的通用接口
+interface PlayerDisplayInfo {
+  championId?: number | null // championId 现在是可选的
+  displayName: string
+  championName?: string
+  tier?: string | null
+  assignedPosition?: string
+  spell1Id?: number | null
+  spell2Id?: number | null
+  [key: string]: any // 保持灵活性
+}
+// 定义一个“富集”后的玩家类型，继承自原始类型并添加前端需要的字段
+interface EnrichedChampSelectPlayer extends ChampSelectPlayer {
+  displayName: string // 覆盖可选类型，确保始终有值
+  avatar: string
+  isBot: boolean
+  isLocal: boolean
+  spell1Icon?: string
+  spell2Icon?: string
+  championIcon?: string
+  rankIcon?: string
+}
+interface ConnectedState {
+  state: ConnectionState
+  auth_info: LcuAuthInfo | null
+  consecutive_failures: number
+  error_message: string | null
+}

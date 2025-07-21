@@ -62,7 +62,7 @@
               v-for="champion in filteredChampions"
               :key="champion.id"
               class="flex flex-col items-center p-2 rounded-xl cursor-pointer transition-all duration-300 hover:bg-accent/50 active:scale-95 group border border-transparent hover:border-primary/30"
-              @click="selectChampion(champion, $event)"
+              @click="selectChampion(champion)"
             >
               <div class="relative transform-gpu transition-transform duration-300 hover:scale-110">
                 <Avatar
@@ -117,7 +117,6 @@
 <script setup lang="ts">
 import { getChampionIconUrlByAlias } from '@/lib'
 import { fetchChampionSummary } from '@/lib/dataApi'
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { Search, X } from 'lucide-vue-next'
 
 interface Emits {
@@ -148,7 +147,7 @@ const filteredChampions = computed(() => {
 })
 
 // 方法
-const selectChampion = (champion: ChampionInfo, event?: Event) => {
+const selectChampion = (champion: ChampionInfo) => {
   emit('select', champion)
 }
 

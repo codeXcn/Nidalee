@@ -13,8 +13,13 @@ export function useGamePhaseManager() {
   const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
 
   // 游戏阶段变更处理
-  const handleGamePhaseChange = (phase: string | null) => {
+  const handleGamePhaseChange = (phaseObj: GameflowPhase | null) => {
+    const phase = phaseObj?.phase
     const previousPhase = gameStore.currentPhase
+    // 过滤掉重复的阶段变更事件
+    if (previousPhase === phase) {
+      return
+    }
     console.log('[🎮 GamePhaseManager] ===== 游戏阶段变更 =====')
     console.log('[🎮 GamePhaseManager] 上一个阶段:', previousPhase)
     console.log('[🎮 GamePhaseManager] 当前阶段:', phase)
@@ -50,7 +55,6 @@ export function useGamePhaseManager() {
       if (phase === 'ReadyCheck') {
         handleAutoAcceptMatch()
       }
-
       // 检查是否从游戏中退出
       if (previousPhase === 'InProgress' && phase !== 'InProgress') {
         console.log('[🎮 GamePhaseManager] 🏁 检测到游戏退出，清理选人和房间状态')

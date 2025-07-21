@@ -67,11 +67,13 @@ declare global {
   const triggerRef: typeof import('vue')['triggerRef']
   const unref: typeof import('vue')['unref']
   const useActivityLogger: typeof import('../src/composables/utils/useActivityLogger')['useActivityLogger']
+  const useAllRunesQuery: typeof import('../src/composables/useLolApiQuery')['useAllRunesQuery']
   const useApp: typeof import('../src/composables/app/useApp')['useApp']
   const useAppEvents: typeof import('../src/composables/app/useAppEvents')['useAppEvents']
   const useAppInitialization: typeof import('../src/composables/app/useAppInitialization')['useAppInitialization']
   const useAttrs: typeof import('vue')['useAttrs']
   const useAutoFunctionManager: typeof import('../src/composables/game/index')['useAutoFunctionManager']
+  const useBuildsByAliasQuery: typeof import('../src/composables/useLolApiQuery')['useBuildsByAliasQuery']
   const useChampSelectManager: typeof import('../src/composables/game/index')['useChampSelectManager']
   const useChampSelectSession: typeof import('../src/composables/game/index')['useChampSelectSession']
   const useChampionDetailsQuery: typeof import('../src/composables/useLolApiQuery')['useChampionDetailsQuery']
@@ -100,6 +102,8 @@ declare global {
   const useMatchDataManager: typeof import('../src/composables/utils/useMatchDataManager')['useMatchDataManager']
   const useMatchmaking: typeof import('../src/composables/game/index')['useMatchmaking']
   const useModel: typeof import('vue')['useModel']
+  const useOpggData: typeof import('../src/composables/opgg/index')['useOpggData']
+  const useOpggRunes: typeof import('../src/composables/opgg/index')['useOpggRunes']
   const usePlayerListQuery: typeof import('../src/composables/useLolApiQuery')['usePlayerListQuery']
   const useQueuesQuery: typeof import('../src/composables/useLolApiQuery')['useQueuesQuery']
   const useRoute: typeof import('vue-router')['useRoute']
@@ -120,7 +124,4 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
-  // @ts-ignore
-  export type { LiveClientPlayer } from '../src/composables/useLolApiQuery'
-  import('../src/composables/useLolApiQuery')
 }

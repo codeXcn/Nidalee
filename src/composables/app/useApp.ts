@@ -13,15 +13,14 @@ export function useApp() {
   const appInit = useAppInitialization()
   const appEvents = useAppEvents()
   const { isConnected, connectionMessage, checkConnection } = useConnection()
-  // 初始化时主动检测连接
-  checkConnection()
   // 主题状态
   const isDark = computed(() => settingsStore.isDark)
-  // 启动事件监听
-  appEvents.startListening()
+
   // 应用生命周期管理
   onMounted(async () => {
     try {
+      // 启动事件监听
+      appEvents.startListening()
       // 初始化应用
       await appInit.initializeApp()
       console.log('[App] 应用初始化和事件监听完成')
@@ -52,7 +51,5 @@ export function useApp() {
     // 应用方法
     fetchMatchHistory: appEvents.updateMatchHistory,
     reinitialize: appInit.reinitialize
-    // 可按需暴露 fetchVersion
-    // fetchVersion
   }
 }

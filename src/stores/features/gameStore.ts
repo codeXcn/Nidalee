@@ -1,28 +1,30 @@
 import { useChampSelect } from '@/composables/game/useChampSelect'
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
+import { isEqual } from 'radash'
 import { computed, ref } from 'vue'
 
 export const useGameStore = defineStore(
   'game',
   () => {
+    const router = useRouter()
     // 游戏状态
-    const currentPhase = ref<string>('None')
-    const isInGame = ref(false)
-    const isInChampSelect = ref(false)
-    const isInQueue = ref(false)
-    const isReadyCheck = ref(false)
+    const currentPhase = shallowRef<string>('None')
+    const isInGame = shallowRef(false)
+    const isInChampSelect = shallowRef(false)
+    const isInQueue = shallowRef(false)
+    const isReadyCheck = shallowRef(false)
 
     // 英雄选择状态
     const champSelectSession = ref<any>(null)
     const lobbyInfo = ref<any>(null)
 
     // 游戏数据
-    const currentGameId = ref<string | null>(null)
-    const lastGameResult = ref<'win' | 'lose' | null>(null)
+    const currentGameId = shallowRef<string | null>(null)
+    const lastGameResult = shallowRef<'win' | 'lose' | null>(null)
 
     // 自动操作执行记录
-    const executedActions = ref({
+    const executedActions = shallowRef({
       banChampion: false,
       selectChampion: false,
       lockInProgress: false
@@ -36,7 +38,13 @@ export const useGameStore = defineStore(
     const canUseAutoFunctions = computed(() => {
       return isInChampSelect.value || isReadyCheck.value
     })
-
+    const clearExecutedActions = () => {
+      executedActions.value = {
+        banChampion: false,
+        selectChampion: false,
+        lockInProgress: false
+      }
+    }
     // 更新游戏阶段
     const updateGamePhase = (phase: string) => {
       console.log('[GameStore] 更新游戏阶段:', phase)
@@ -47,10 +55,17 @@ export const useGameStore = defineStore(
       isInChampSelect.value = phase === 'ChampSelect'
       isInQueue.value = phase === 'Lobby'
       isReadyCheck.value = phase === 'ReadyCheck'
+      if (phase === 'None') {
+        resetGameState()
+      }
     }
 
     // 更新英雄选择会话
     const updateChampSelectSession = async (session: any) => {
+      // 通过深度比较过滤掉无意义的重复更新
+      if (isEqual(champSelectSession.value, session)) {
+        return
+      }
       console.log('[GameStore] 更新英雄选择会话:', session)
       champSelectSession.value = session
 
@@ -59,11 +74,7 @@ export const useGameStore = defineStore(
         await checkAndExecuteAutoActions(session)
       } else {
         // 清除选人会话时，重置已执行的操作记录
-        executedActions.value = {
-          banChampion: false,
-          selectChampion: false,
-          lockInProgress: false
-        }
+        clearExecutedActions()
       }
     }
 
@@ -71,9 +82,13 @@ export const useGameStore = defineStore(
     const checkAndExecuteAutoActions = async (session: any) => {
       try {
         const autoFunctionStore = useAutoFunctionStore()
-        const { checkAndExecuteAutoActions: checkAutoActions } = useChampSelect()
+        const { checkAndExecuteAutoActions: checkAutoActions, getAutoOpggChampionId } = useChampSelect()
         const activityLogger = useActivityLogger()
-
+        const championId = getAutoOpggChampionId(session, autoFunctionStore.autoFunctions)
+        if (championId) {
+          console.log('[GameStore] 选完英雄 自动跳转 OPGG 并应用符文:', championId)
+          router.push({ name: 'opgg', query: { championId } })
+        }
         console.log('[GameStore] 检查自动操作...')
 
         const hasScheduledAction = await checkAutoActions(
@@ -120,11 +135,7 @@ export const useGameStore = defineStore(
       lastGameResult.value = null
 
       // 重置已执行的操作记录
-      executedActions.value = {
-        banChampion: false,
-        selectChampion: false,
-        lockInProgress: false
-      }
+      clearExecutedActions()
     }
 
     // 清理英雄选择状态

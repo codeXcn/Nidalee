@@ -120,20 +120,13 @@ import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 import { useGameStore } from '@/stores/features/gameStore'
 import { appContextKey, type AppContext } from '@/types'
-import { invoke } from '@tauri-apps/api/core'
 import { Info, X } from 'lucide-vue-next'
+import { useGameAssets } from '@/composables/game/useGameAssets'
+import { useDataStore } from '@/stores/core/dataStore'
+
 const { isConnected } = inject(appContextKey) as AppContext
 const { enrichedSession } = useChampSelectSession()
-const session = computed(() => {
-  if (players.value) {
-    const theirTeam = players.value
-    const data = { ...enrichedSession.value, theirTeam }
-    console.log(data)
-    return data
-  } else {
-    return enrichedSession.value
-  }
-})
+
 const shouldShowMatchAnalysis = ref(false)
 // 使用搜索召唤师战绩的钩子
 const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
@@ -142,131 +135,84 @@ const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchM
 const gameStore = useGameStore()
 const { currentPhase } = storeToRefs(gameStore)
 const enabled = computed(() => currentPhase.value === 'InProgress')
-const { refetch } = usePlayerListQuery(enabled as any)
-const playerList = ref([])
+const { data: playerList, refetch } = usePlayerListQuery(enabled)
+
+const { getChampionIconUrl } = useGameAssets()
+const dataStore = useDataStore()
+
+const session = computed(() => {
+  if (players.value) {
+    const theirTeam = players.value
+    const data = { ...enrichedSession.value, theirTeam }
+    return data
+  } else {
+    return enrichedSession.value
+  }
+})
 const players = computed(() => {
-  if (!playerList.value) return []
-  // 先将字符串数组解析为对象数组
-  let arr: any[] = []
-  try {
-    if (typeof playerList.value[0] === 'string') {
-      arr = playerList.value.map((s: string) => JSON.parse(s))
-    } else {
-      arr = playerList.value
-    }
-  } catch (e) {
-    console.error('playerList parse error:', e)
+  if (!Array.isArray(playerList.value)) {
     return []
   }
+  console.log('players', playerList.value)
   // 只取敌方队伍
-  return arr
-    .filter((p: any) => p.team === 'CHAOS')
-    .map((p: any, idx: number) => {
-      const spell1Id = p.summonerSpells?.summonerSpellOne?.id || 0
-      const spell2Id = p.summonerSpells?.summonerSpellTwo?.id || 0
-      const profileIconId = p.profileIconId || 0
-      const tier = p.tier || ''
-      const rankIcon = tier
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/${tier.toLowerCase()}.png`
-        : ''
-      const spell1Icon = spell1Id
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${spell1Id}.jpg`
-        : ''
-      const spell2Icon = spell2Id
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${spell2Id}.jpg`
-        : ''
-      const championIcon = p.championId
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${p.championId}.png`
-        : ''
-      const avatar = profileIconId
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${profileIconId}.jpg`
-        : ''
+  return playerList.value
+    .filter((p: LiveClientPlayer) => p.team === 'CHAOS')
+    .map((p: LiveClientPlayer): EnrichedLivePlayer => {
+      // 从 championName 映射到 championId
+      const champion = Object.values(dataStore.champions).find((c) => c.name === p.championName)
+      const championId = champion ? parseInt(champion.key, 10) : 0
+
+      // 在这里进行字段的适配和转换
       return {
-        cellId: p.cellId ?? idx,
-        puuid: p.puuid,
-        summonerId: p.summonerId || '',
-        championId: p.championId || 0,
-        championName: p.championName || '',
-        championPickIntent: p.championPickIntent ?? null,
-        selectedSkinId: p.selectedSkinId || p.skinID || 0,
-        spell1Id,
-        spell2Id,
-        assignedPosition: p.assignedPosition || p.position || '',
-        displayName: p.riotId || p.displayName || p.summonerName || '',
-        tagLine: p.tagLine || '',
-        profileIconId,
-        tier,
-        recentMatches: p.recentMatches ?? null,
-        avatar,
-        isLocal: p.isLocal ?? false,
-        isBot: p.isBot ?? false,
-        spell1Icon,
-        spell2Icon,
-        championIcon,
-        rankIcon,
-        winRate: p.winRate ?? undefined
+        displayName: p.summonerName,
+        championName: p.championName,
+        team: p.team,
+        isBot: p.isBot,
+        isLocal: false, // 敌方队伍
+        championIcon: getChampionIconUrl(championId)
       }
     })
 })
 // 召唤师详情相关 - 必须在 watchEffect 之前声明
 const isDetailsOpen = ref(false)
-const selectedPlayer = ref<any>(null)
-// 添加调试信息和会话监听
+// 注意：selectedPlayer 的类型现在可能需要更通用，因为它可能来自选人阶段或游戏中
+const selectedPlayer = ref<EnrichedChampSelectPlayer | EnrichedLivePlayer | null>(null)
+
+const openSummonerDetails = async (player: EnrichedChampSelectPlayer | EnrichedLivePlayer) => {
+  selectedPlayer.value = player
+  isDetailsOpen.value = true
+  if (player.displayName && player.displayName !== '未知玩家' && player.displayName !== '未知召唤师') {
+    await fetchSummonerInfo([player.displayName])
+  }
+}
+
+// const { data: builds, refetch: refetchBuilds } = useBuildsByAliasQuery(source.value, champion.value)
+// const { data: builds } = useQuery({
+//   queryKey: ['builds-by-alias', source, champion],
+//   queryFn: () => invoke<BuildSection>('get_builds_by_alias', { source, champion }),
+//   enabled: computed(() => !!source && !!champion) // 有参数才请求
+// })
+// watch(
+//   () => builds.value,
+//   (val) => {
+//     console.log('builds', val, allRunes.value)
+//   },
+//   { deep: true }
+// )
+
 watchEffect(async () => {
   const phase = currentPhase.value
   console.log('Current game phase:', phase)
   shouldShowMatchAnalysis.value =
-    (!!enrichedSession.value && phase === 'ChampSelect') ||
-    phase === 'GameStart' ||
-    phase === 'InProgress' ||
-    phase === 'WaitingForStats' ||
-    phase === 'PreEndOfGame' ||
-    phase === 'EndOfGame'
-  if (phase === 'InProgress' && !(Array.isArray(playerList.value) && playerList.value.length > 0)) {
-    const res = await refetch()
-    if (res.status === 'success') {
-      playerList.value = JSON.parse(res.data) || []
-      console.log('Refetched player list:', res, players.value)
-    }
+    (!!enrichedSession.value && phase === 'ChampSelect') || phase === 'GameStart' || phase === 'InProgress'
+
+  if (phase === 'InProgress' && isConnected.value) {
+    console.log('in progress, refetching player list')
+    await refetch()
   }
 })
 
-const openSummonerDetails = async (player: any) => {
-  selectedPlayer.value = player
-  isDetailsOpen.value = true
-  // 首先尝试使用 displayName 搜索
-  if (player.displayName && player.displayName !== '未知玩家' && player.displayName !== '未知召唤师') {
-    console.log('Searching match history by displayName:', player.displayName)
-    try {
-      await fetchSummonerInfo([player.displayName])
-      console.log('Search by displayName completed, result:', currentRestult.value)
-    } catch (error) {
-      console.error('Failed to fetch summoner data by displayName:', error)
-    }
-  }
-  // 如果 displayName 不可用或搜索失败，尝试通过 summonerId 获取召唤师信息
-  else if (player.summonerId && player.summonerId !== '0') {
-    console.log('Trying to get summoner info by summonerId:', player.summonerId)
-    try {
-      // 使用 summonerId 获取召唤师基本信息
-      const summonerInfo = (await invoke('get_summoner_by_id', { id: parseInt(player.summonerId) })) as any
-      console.log('Summoner info by ID:', summonerInfo)
-
-      if (summonerInfo && summonerInfo.displayName) {
-        console.log('Got summoner displayName:', summonerInfo.displayName)
-        // 使用获取到的 displayName 搜索战绩
-        await fetchSummonerInfo([summonerInfo.displayName])
-        console.log('Search by fetched displayName completed, result:', currentRestult.value)
-      }
-    } catch (error) {
-      console.error('Failed to fetch summoner info by ID:', error)
-    }
-  } else {
-    console.log('No valid identifier found for summoner search')
-  }
-}
-
-// 获取状态标题
+// 根据游戏阶段获取状态标题
 const getStatusTitle = () => {
   switch (currentPhase.value) {
     case 'None':

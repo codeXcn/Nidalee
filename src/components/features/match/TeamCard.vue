@@ -25,27 +25,28 @@
 </template>
 
 <script setup lang="ts">
-declare interface ChampSelectPlayer {
-  cellId: number
-  summonerId?: string
-  championId: number
-  championPickIntent?: number
-  selectedSkinId?: number
-  spell1Id?: number
-  spell2Id?: number
-  assignedPosition?: string
-  displayName?: string
-  tier?: string
-  winRate?: number
+// 定义一个通用的接口，用于描述任何可以在卡片中显示的玩家信息
+// 这使得 TeamCard 可以接收来自不同阶段（选人、游戏中）的玩家数据
+interface PlayerDisplayInfo {
+  summonerId: string | number // 在游戏中可能是 summonerName(string)，选人时是 summonerId(number)
+  cellId?: number // 游戏内可能没有
+  displayName: string
+  championIcon?: string
+  [key: string]: any // 允许其他属性，以兼容原始的 ChampSelectPlayer 等类型
 }
 
-const props = defineProps<{
-  team: ChampSelectPlayer[]
-  teamType: 'ally' | 'enemy'
-  localPlayerCellId?: number | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    team: PlayerDisplayInfo[]
+    teamType: 'ally' | 'enemy'
+    localPlayerCellId?: number | null
+  }>(),
+  {
+    team: () => []
+  }
+)
 
-const emit = defineEmits(['select'])
+defineEmits(['select'])
 
 const isAlly = computed(() => props.teamType === 'ally')
 

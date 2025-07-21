@@ -4,8 +4,8 @@
       <DialogHeader>
         <DialogTitle>游戏详细信息</DialogTitle>
         <DialogDescription v-if="selectedGame">
-          {{ selectedGame.champion_name }} - {{ formatGameMode(selectedGame.game_mode as string) }} -
-          {{ formatRelativeTime(selectedGame.game_creation as number) }}
+          {{ getChampionName(selectedGame.championId) }} - {{ formatGameMode(selectedGame.gameMode) }} -
+          {{ formatRelativeTime(selectedGame.gameCreation) }}
         </DialogDescription>
       </DialogHeader>
 
@@ -61,9 +61,9 @@
                 <span class="mr-2">蓝队 ({{ getTeamResult('100') }})</span>
                 <span class="ml-auto text-xs font-normal flex items-center">
                   击杀: {{ gameDetailData?.blueTeamStats?.kills || 0 }} | 经济:
-                  {{ formatNumber(gameDetailData?.blueTeamStats?.gold_earned || 0) }} | 伤害:
-                  {{ formatNumber(gameDetailData?.blueTeamStats?.total_damage_dealt_to_champions || 0) }}
-                  | 视野: {{ gameDetailData?.blueTeamStats?.vision_score || 0 }} | BAN:
+                  {{ formatNumber(gameDetailData?.blueTeamStats?.goldEarned || 0) }} | 伤害:
+                  {{ formatNumber(gameDetailData?.blueTeamStats?.totalDamageDealtToChampions || 0) }}
+                  | 视野: {{ gameDetailData?.blueTeamStats?.visionScore || 0 }} | BAN:
                   <span
                     v-for="ban in getTeamBans('100', gameDetailData?.teams)"
                     :key="ban.championId"
@@ -77,7 +77,7 @@
                   </span>
                 </span>
               </div>
-              <Table>
+              <Table class="table-fixed w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead v-for="column in columns" :key="column.key" :class="column.class">{{
@@ -86,26 +86,17 @@
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow
-                    v-for="participant in getTeamParticipants('100', gameDetailData)"
-                    :key="participant.participantId"
-                  >
+                  <TableRow v-for="participant in getTeamParticipants('100')" :key="participant.participantId">
                     <TableCell class="flex items-center space-x-2">
-                      <img
-                        :src="getProfileIconUrl(getPlayerProfileIcon(participant.participantId, gameDetailData))"
-                        class="h-8 w-8 rounded-full"
-                      />
+                      <img :src="getProfileIconUrl(participant.profileIconId)" class="h-8 w-8 rounded-full" />
                       <div class="flex-1 flex items-center justify-between min-w-0">
-                        <span class="font-medium truncate">{{
-                          getPlayerDisplayName(participant.participantId, gameDetailData)
-                        }}</span>
+                        <span class="font-medium truncate">{{ participant.summonerName }}</span>
                         <div class="flex items-center gap-1">
                           <button
                             class="text-primary hover:text-primary/80 focus:outline-none"
-                            @click="copyName(getPlayerDisplayName(participant.participantId, gameDetailData))"
+                            @click="copyName(participant.summonerName)"
                             title="复制召唤师名"
                           >
-                            <!-- 更直观的复制icon（双重方框） -->
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               class="inline h-4 w-4"
@@ -149,7 +140,7 @@
                           <img
                             :src="getChampionIconUrl(participant.championId)"
                             class="h-8 w-8"
-                            :title="participant.championName"
+                            :title="getChampionName(participant.championId)"
                           />
                           <span
                             class="absolute -bottom-1 -right-1 bg-gray-900/75 text-white text-[10px] min-w-[16px] h-4 flex items-center justify-center rounded"
@@ -157,7 +148,7 @@
                             {{ participant.stats?.champLevel || '?' }}
                           </span>
                         </div>
-                        <span class="text-sm font-medium">{{ participant.championName }}</span>
+                        <span class="text-sm font-medium">{{ getChampionName(participant.championId) }}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -165,10 +156,14 @@
                         <img
                           v-for="i in itemSlots"
                           :key="i"
-                          :src="getItemIconUrl((participant.stats?.[`item${i}`] as number) || 0, gameVersion)"
+                          :src="getItemIconUrl((participant.stats as any)?.[`item${i}`] || 0, gameVersion)"
                           class="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800"
-                          :style="{ opacity: participant.stats?.[`item${i}`] ? 1 : 0.3 }"
-                          :alt="participant.stats?.[`item${i}`] ? `装备 ${participant.stats[`item${i}`]}` : '空装备槽'"
+                          :style="{ opacity: (participant.stats as any)?.[`item${i}`] ? 1 : 0.3 }"
+                          :alt="
+                            (participant.stats as any)?.[`item${i}`]
+                              ? `装备 ${(participant.stats as any)[`item${i}`]}`
+                              : '空装备槽'
+                          "
                         />
                       </div>
                     </TableCell>
@@ -194,12 +189,12 @@
               <div
                 class="p-2 flex items-center font-bold text-red-700 dark:text-red-200 border-b border-red-200 dark:border-red-800"
               >
-                <span class="mr-2">红队 (败方)</span>
+                <span class="mr-2">红队 ({{ getTeamResult('200') }})</span>
                 <span class="ml-auto text-xs font-normal flex items-center">
                   击杀: {{ gameDetailData?.redTeamStats?.kills || 0 }} | 经济:
-                  {{ formatNumber(gameDetailData?.redTeamStats?.gold_earned || 0) }} | 伤害:
-                  {{ formatNumber(gameDetailData?.redTeamStats?.total_damage_dealt_to_champions || 0) }}
-                  | 视野: {{ gameDetailData?.redTeamStats?.vision_score || 0 }} | BAN:
+                  {{ formatNumber(gameDetailData?.redTeamStats?.goldEarned || 0) }} | 伤害:
+                  {{ formatNumber(gameDetailData?.redTeamStats?.totalDamageDealtToChampions || 0) }}
+                  | 视野: {{ gameDetailData?.redTeamStats?.visionScore || 0 }} | BAN:
                   <span
                     v-for="ban in getTeamBans('200', gameDetailData?.teams)"
                     :key="ban.championId"
@@ -213,7 +208,7 @@
                   </span>
                 </span>
               </div>
-              <Table>
+              <Table class="table-fixed w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead v-for="column in columns" :key="column.key" :class="column.class">{{
@@ -222,26 +217,17 @@
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow
-                    v-for="participant in getTeamParticipants('200', gameDetailData)"
-                    :key="participant.participantId"
-                  >
+                  <TableRow v-for="participant in getTeamParticipants('200')" :key="participant.participantId">
                     <TableCell class="flex items-center space-x-2">
-                      <img
-                        :src="getProfileIconUrl(getPlayerProfileIcon(participant.participantId, gameDetailData))"
-                        class="h-8 w-8 rounded-full"
-                      />
+                      <img :src="getProfileIconUrl(participant.profileIconId)" class="h-8 w-8 rounded-full" />
                       <div class="flex-1 flex items-center justify-between min-w-0">
-                        <span class="font-medium truncate">{{
-                          getPlayerDisplayName(participant.participantId, gameDetailData)
-                        }}</span>
+                        <span class="font-medium truncate">{{ participant.summonerName }}</span>
                         <div class="flex items-center gap-1">
                           <button
                             class="text-primary hover:text-primary/80 focus:outline-none"
-                            @click="copyName(getPlayerDisplayName(participant.participantId, gameDetailData))"
+                            @click="copyName(participant.summonerName)"
                             title="复制召唤师名"
                           >
-                            <!-- 更直观的复制icon（双重方框） -->
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               class="inline h-4 w-4"
@@ -280,7 +266,7 @@
                           <img
                             :src="getChampionIconUrl(participant.championId)"
                             class="h-8 w-8"
-                            :title="participant.championName"
+                            :title="getChampionName(participant.championId)"
                           />
                           <span
                             class="absolute -bottom-1 -right-1 bg-gray-900/75 text-white text-[10px] min-w-[16px] h-4 flex items-center justify-center rounded"
@@ -289,7 +275,7 @@
                           </span>
                         </div>
                         <span class="text-sm font-medium">
-                          {{ participant.championName }}
+                          {{ getChampionName(participant.championId) }}
                         </span>
                       </div>
                     </TableCell>
@@ -298,12 +284,16 @@
                         <img
                           v-for="i in itemSlots"
                           :key="i"
-                          :src="getItemIconUrl((participant.stats?.[`item${i}`] as number) || 0, gameVersion)"
+                          :src="getItemIconUrl((participant.stats as any)?.[`item${i}`] || 0, gameVersion)"
                           class="h-6 w-6 rounded bg-gray-100 dark:bg-gray-800"
                           :style="{
-                            opacity: participant.stats?.[`item${i}`] ? 1 : 0.3
+                            opacity: (participant.stats as any)?.[`item${i}`] ? 1 : 0.3
                           }"
-                          :alt="participant.stats?.[`item${i}`] ? `装备 ${participant.stats[`item${i}`]}` : '空装备槽'"
+                          :alt="
+                            (participant.stats as any)?.[`item${i}`]
+                              ? `装备 ${(participant.stats as any)[`item${i}`]}`
+                              : '空装备槽'
+                          "
                         />
                       </div>
                     </TableCell>
@@ -351,6 +341,7 @@
 
 <script setup lang="ts">
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
+import { useFormatters } from '@/composables/utils/useFormatters'
 import {
   getChampionIconUrl,
   getChampionName,
@@ -360,26 +351,25 @@ import {
   getQueueName,
   getRankIconUrl
 } from '@/lib'
-import { useSettingsStore } from '@/stores/ui/settingsStore'
+import { useDataStore } from '@/stores'
 import { invoke } from '@tauri-apps/api/core'
 import { useClipboard } from '@vueuse/core'
+import { ref, watch, defineModel } from 'vue'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-  selectedGame: any | null
+  selectedGame: RecentGame | null
 }>()
 
 const visible = defineModel<boolean>('visible')
 
 const activityLogger = useActivityLogger()
-const settingsStore = useSettingsStore()
-const { formatGameMode, formatRelativeTime, formatDuration } = useFormatters()
+const { formatGameMode, formatRelativeTime } = useFormatters()
 
 const loading = ref(false)
-const gameDetailData = ref<GameDetailData | null>(null)
-
-// 获取游戏版本（使用默认值）
-const gameVersion = ref('15.12.1')
+const gameDetailData = ref<GameDetail | null>(null)
+const dataStore = useDataStore()
+const gameVersion = computed(() => dataStore.gameVersion)
 
 // 监听游戏数据变化
 watch(
@@ -388,10 +378,11 @@ watch(
     if (newGame) {
       loading.value = true
       try {
-        const result = await invoke<GameDetailData>('get_game_detail', {
-          gameId: newGame.game_id
+        const result = await invoke<GameDetail>('get_game_detail', {
+          gameId: newGame.gameId
         })
         gameDetailData.value = result
+        console.log('gameDetailData', gameDetailData.value)
       } catch (err) {
         console.error('获取游戏详细信息失败:', err)
         activityLogger.logError.apiError(`获取游戏详细信息失败: ${err}`)
@@ -403,71 +394,47 @@ watch(
 )
 
 // 表格列定义
-const columns = ref<any[]>([
-  { key: 'summoner', label: '召唤师', class: 'w-[260px]' },
-  { key: 'champion', label: '英雄/等级', class: 'w-[90px]' },
-  { key: 'items', label: '装备', class: 'w-[250px] text-center' },
-  { key: 'kda', label: 'KDA', class: 'w-[100px] text-center' },
-  { key: 'gold', label: '经济', class: 'w-[100px] text-center' },
-  { key: 'damage', label: '伤害', class: 'w-[100px] text-center' },
-  { key: 'score', label: '评分', class: 'w-[80px] text-center' }
-])
+const columns = [
+  { key: 'summoner', label: '召唤师', class: 'w-[22%]' },
+  { key: 'champion', label: '英雄', class: 'w-[15%] text-center' },
+  { key: 'items', label: '装备', class: 'w-[25%] text-center' },
+  { key: 'kda', label: 'KDA', class: 'w-[10%] text-center' },
+  { key: 'gold', label: '经济', class: 'w-[10%] text-center' },
+  { key: 'damage', label: '伤害', class: 'w-[10%] text-center' },
+  { key: 'score', label: '评分', class: 'w-[8%] text-center' }
+]
 
 // 装备槽位
 const itemSlots = [0, 1, 2, 3, 4, 5, 6]
 
-// 其他辅助函数
-const getTeamResult = (teamId: string): string => {
-  if (!gameDetailData.value?.teams) return ''
-  const team = gameDetailData.value.teams.find((t) => t.teamId.toString() === teamId)
-  if (!team) return ''
-  return team.win === 'Win' ? '胜方' : '败方'
+// 格式化函数
+const formatDuration = (seconds: number) => {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}分 ${s}秒`
 }
+const formatNumber = (num: number) => num.toLocaleString()
 
-const getTeamParticipants = (teamId: string, gameDetail: GameDetailData) => {
-  if (!gameDetail?.participants) return []
-  return gameDetail.participants.filter((p) => p.teamId.toString() === teamId)
+// 辅助函数 - 已简化和适配
+const getTeamResult = (teamId: string) => {
+  if (!gameDetailData.value) return '未知'
+  const team = gameDetailData.value.teams.find((t) => t.teamId && t.teamId.toString() === teamId)
+  if (!team || !team.win) {
+    return '未知'
+  }
+  return team.win === 'Win' ? '胜利' : '失败'
 }
 
 const getTeamBans = (teamId: string, teams: any[]) => {
   if (!teams) return []
-  const team = teams.find((t) => t.teamId.toString() === teamId)
+  const team = teams.find((t) => t.teamId && t.teamId.toString() === teamId)
   return team?.bans || []
 }
 
-const getPlayerProfileIcon = (participantId: number, gameDetail: GameDetailData): number => {
-  const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)
-  return identity?.player?.profileIcon || 0
+const getTeamParticipants = (teamId: string) => {
+  if (!gameDetailData.value?.participants) return []
+  return gameDetailData.value.participants.filter((p) => p.teamId.toString() === teamId)
 }
-
-const getPlayerDisplayName = (participantId: number, gameDetail: GameDetailData): string => {
-  const identity = gameDetail.participantIdentities?.find((id) => id.participantId === participantId)
-  if (!identity?.player) return '未知玩家'
-
-  const { gameName, tagLine, summonerName } = identity.player
-  if (gameName && tagLine) {
-    return `${gameName}#${tagLine}`
-  }
-  return summonerName || '未知玩家'
-}
-
-const formatNumber = (num: number): string => {
-  return num?.toLocaleString() || '0'
-}
-
-// const getRankIconUrl = (tier: string): string => {
-//   if (!tier) return ''
-//   const tierLower = tier.toLowerCase()
-//   return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-leagues/global/default/images/gold.png`
-// }
-
-// const getItemIconUrl = (itemId: unknown): string => {
-//   if (!itemId || typeof itemId !== 'number' || itemId === 0) {
-//     // 使用SVG问号占位
-//     return 'data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="%23e5e7eb"/><text x="16" y="22" text-anchor="middle" font-size="20" fill="%239ca3af" font-family="Arial, Helvetica, sans-serif">?</text></svg>'
-//   }
-//   return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/${itemId}.png`
-// }
 
 const clipboard = useClipboard()
 
@@ -476,3 +443,14 @@ function copyName(name: string) {
   toast.success('已复制召唤师名到剪贴板')
 }
 </script>
+<style scoped>
+/* 确保在内容不足时，ScrollArea 不会显示滚动条 */
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera*/
+}
+</style>

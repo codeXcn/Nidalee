@@ -66,7 +66,7 @@ interface Props {
   description: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 // 使用 defineModel 定义双向绑定
 const enabled = defineModel<boolean>('enabled', { default: false })

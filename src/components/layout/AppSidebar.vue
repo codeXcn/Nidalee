@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Gamepad2, Search, Settings, Shield, TrendingUp, Zap, TestTube } from 'lucide-vue-next'
+import { BarChart3, Gamepad2, Search, Settings, TrendingUp, Zap, TestTube, Trophy } from 'lucide-vue-next'
 const route = useRoute()
 
 // @ts-expect-error 跳过检查
@@ -108,6 +108,11 @@ const menuItems = [
     title: '自动功能',
     url: '/auto-functions',
     icon: Zap
+  },
+  {
+    title: 'OP.GG',
+    url: '/opgg',
+    icon: Trophy
   }
 ]
 
@@ -117,6 +122,7 @@ const devItems = [
     url: '/test-api',
     icon: TestTube
   },
+
   {
     title: '选人测试',
     url: '/champ-select-test',

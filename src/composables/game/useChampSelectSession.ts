@@ -1,5 +1,6 @@
 import { useDataStore } from '@/stores/core/dataStore'
 import { useGameStore } from '@/stores/features/gameStore'
+import { useGameAssets } from './useGameAssets'
 
 export function useChampSelectSession() {
   const gameStore = useGameStore()
@@ -16,7 +17,7 @@ export function useChampSelectSession() {
   }
 
   // 富集玩家数据
-  function enrichPlayer(player: ChampSelectPlayer, localPlayerCellId: number): any {
+  function enrichPlayer(player: ChampSelectPlayer, localPlayerCellId: number): EnrichedChampSelectPlayer {
     // 机器人
     if (player.summonerId === '0') {
       return {
@@ -25,7 +26,7 @@ export function useChampSelectSession() {
         avatar: getProfileIconUrl(0),
         isBot: true,
         isLocal: false,
-        tier: undefined
+        tier: null // 保持类型一致
       }
     }
     // 本地玩家
@@ -41,8 +42,8 @@ export function useChampSelectSession() {
       tier: summonerInfo?.soloRankTier || player.tier,
       isLocal,
       isBot: false,
-      spell1Icon: player.spell1Id ? getProfileIconUrl(player.spell1Id) : undefined,
-      spell2Icon: player.spell2Id ? getProfileIconUrl(player.spell2Id) : undefined,
+      spell1Icon: player.spell1Id ? getChampionIconUrl(player.spell1Id) : undefined,
+      spell2Icon: player.spell2Id ? getChampionIconUrl(player.spell2Id) : undefined,
       championIcon: player.championId ? getChampionIconUrl(player.championId) : undefined,
       rankIcon:
         summonerInfo?.soloRankTier || player.tier

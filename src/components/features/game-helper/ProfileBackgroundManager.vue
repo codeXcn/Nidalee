@@ -58,20 +58,6 @@
               </div>
               <div v-else>
                 <div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2">
-                  <!-- <div
-                    v-for="champion in filteredChampions"
-                    :key="champion.id"
-                    class="card-hover flex flex-col items-center p-2 rounded-lg cursor-pointer bg-muted hover:bg-muted/70 transition-colors"
-                    @click="handleChampionSelect(champion)"
-                  >
-                    <img
-                      :src="getChampionIconUrlByAlias(champion.alias)"
-                      :alt="champion.name"
-                      class="w-12 h-12 rounded-full object-cover border border-primary/30"
-                      loading="lazy"
-                    />
-                    <span class="text-xs font-medium text-center mt-1 truncate w-full">{{ champion.name }}</span>
-                  </div> -->
                   <div
                     v-for="champion in filteredChampions"
                     :key="champion.id"
@@ -134,7 +120,7 @@
               <p class="text-destructive font-semibold text-lg mb-2">加载失败</p>
               <p class="text-sm text-muted-foreground mb-6 max-w-md">{{ skinsError }}</p>
               <button
-                @click="loadChampionSkins(selectedChampion)"
+                @click="() => reloadSkins()"
                 class="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
               >
                 重新加载
@@ -210,7 +196,6 @@
 import { useGameHelper } from '@/composables/game-helper'
 import { getChampionIconUrlByAlias } from '@/lib'
 import { useChampionSummaryQuery, useChampionDetailsQuery } from '@/composables/useLolApiQuery'
-import type { ChampionInfo } from '@/stores/autoFunctionStore'
 import { ArrowLeft, Search, Users, X } from 'lucide-vue-next'
 import { debounce } from 'radash'
 
@@ -240,7 +225,6 @@ const championSkins = computed<any[]>(() => championDetails.value?.skins ?? [])
 const applyingSkinId = ref<number | null>(null) // 跟踪正在应用的皮肤ID
 const shakeSkinId = ref<number | null>(null)
 
-// 使用 Radash 的防抖函数，更简洁可靠
 const debouncedUpdateSearch = debounce({ delay: 300 }, (value: string) => {
   debouncedSearchText.value = value
 })
@@ -316,6 +300,4 @@ const LoadingSpinner = defineComponent({
       ])
   }
 })
-
-// 无需 onMounted 加载，useQuery 自动请求
 </script>

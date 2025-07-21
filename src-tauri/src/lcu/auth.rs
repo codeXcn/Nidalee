@@ -128,6 +128,9 @@ fn get_lcu_cmdline() -> Option<String> {
     system
         .refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
+    let mut ux_cmdline = None;
+    let mut client_cmdline = None;
+
     // 寻找所有可能的 LoL 客户端进程
     let possible_names = [
         "LeagueClientUx.exe",
@@ -136,11 +139,11 @@ fn get_lcu_cmdline() -> Option<String> {
     ];
 
     for (_pid, process) in system.processes() {
-        let process_name = process.name();
+        let process_name_lower = process.name().to_string_lossy().to_lowercase();
 
         if possible_names
             .iter()
-            .any(|name| process_name.eq_ignore_ascii_case(name))
+            .any(|name| process_name_lower == name.to_lowercase())
         {
             let cmdline = process
                 .cmd()
@@ -149,22 +152,37 @@ fn get_lcu_cmdline() -> Option<String> {
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            // 检查命令行是否包含 LCU 相关参数
-            if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
-                log::debug!(
-                    "[LCU] 找到有效的 {} 进程，PID: {}",
-                    process_name.to_string_lossy(),
-                    _pid
-                );
-                log::debug!("[LCU] 启动参数: {}", cmdline);
-                return Some(cmdline);
-            } else {
-                log::debug!(
-                    "[LCU] 找到 {} 进程但不包含 LCU 参数，跳过",
-                    process_name.to_string_lossy()
-                );
+            // 优先检查 LeagueClientUx.exe
+            if process_name_lower == "leagueclientux.exe" {
+                if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
+                    log::debug!(
+                        "[LCU] 找到包含 LCU 参数的 LeagueClientUx.exe 进程, PID: {}",
+                        _pid
+                    );
+                    return Some(cmdline); // 找到最理想的目标，直接返回
+                } else {
+                    ux_cmdline = Some(cmdline); // 暂存，可能没有参数
+                }
+            }
+            // 如果没找到 Ux，再检查 LeagueClient.exe
+            else if process_name_lower == "leagueclient.exe" {
+                client_cmdline = Some(cmdline);
             }
         }
+    }
+
+    // 如果 Ux 进程的命令行里没有参数，尝试使用 Client 进程的命令行
+    if let Some(cmd) = client_cmdline {
+        if cmd.contains("--remoting-auth-token") && cmd.contains("--app-port") {
+            log::warn!("[LCU] LeagueClientUx.exe 命令行中未找到认证参数，回退使用 LeagueClient.exe 的参数。");
+            return Some(cmd);
+        }
+    }
+
+    // 如果 Client 的参数也没有，但 Ux 进程确实存在，则返回它的（不带参数的）命令行
+    if let Some(cmd) = ux_cmdline {
+        log::warn!("[LCU] 无法在任何进程的命令行中找到认证参数，将使用无参数的 LeagueClientUx.exe 命令行进行后续尝试。");
+        return Some(cmd);
     }
 
     log::debug!("[LCU] 未找到包含有效 LCU 参数的客户端进程");

@@ -2,6 +2,7 @@ import { useConnection } from '@/composables/connection/useConnection'
 import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMatchUpdater'
 import { getLatestVersion } from '@/lib'
 import { useActivityStore } from '@/stores/core/activityStore'
+import { useConnectionStore } from '@/stores/core/connectionStore'
 import { useDataStore } from '@/stores/core/dataStore'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { ref } from 'vue'
@@ -16,6 +17,7 @@ export function useAppInitialization() {
   const activityStore = useActivityStore()
   const { isConnected } = useConnection()
   const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
+  const connectionStore = useConnectionStore()
 
   const isInitialized = ref(false)
   const initializationError = ref<string | null>(null)
@@ -40,6 +42,9 @@ export function useAppInitialization() {
   const initializeConnection = async () => {
     try {
       console.log('[AppInit] 初始化连接状态...')
+      // 启动时强制检查一次连接，以更新持久化的陈旧状态
+      await connectionStore.checkConnection()
+
       if (isConnected.value && dataStore.summonerInfo === null) {
         try {
           await updateSummonerAndMatches()

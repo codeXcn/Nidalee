@@ -1,17 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-// 英雄信息接口
-interface ChampionInfo {
-  id: number
-  name: string
-  description: string
-  alias: string
-  contentId: string
-  squarePortraitPath: string
-  roles: string[]
-}
-
 // 自动功能配置接口
 interface AutoFunctionConfig {
   enabled: boolean
@@ -248,4 +237,4 @@ export const useAutoFunctionStore = defineStore(
 )
 
 // 导出类型
-export type { AutoFunctions, AutoFunctionConfig, AutoSelectConfig, AutoBanConfig, ChampionInfo }
+export type { AutoFunctions, AutoFunctionConfig, AutoSelectConfig, AutoBanConfig }

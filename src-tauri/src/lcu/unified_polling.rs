@@ -324,7 +324,7 @@ impl UnifiedPollingManager {
                         ),
                     }
                 } else {
-                    log::debug!("[统一轮询] 选人阶段会话无变化，跳过事件发送");
+                    log::info!("[统一轮询] 选人阶段会话无变化，跳过事件发送");
                 }
             }
             Err(e) => {

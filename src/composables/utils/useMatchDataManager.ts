@@ -1,7 +1,6 @@
 import { useConnectionStore } from '@/stores/core/connectionStore'
 import { useDataStore } from '@/stores/core/dataStore'
 import { invoke } from '@tauri-apps/api/core'
-import { ref, watch } from 'vue'
 
 // 专门处理战绩数据获取的 composable
 export function useMatchDataManager() {
@@ -31,7 +30,7 @@ export function useMatchDataManager() {
 
       dataStore.startLoadingMatchHistory()
       // 调用Tauri API获取战绩数据
-      const matchHistory = await invoke('get_match_history')
+      const matchHistory = await invoke<MatchStatistics>('get_match_history')
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
         console.log('[MatchDataManager] 战绩数据获取成功')

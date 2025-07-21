@@ -315,7 +315,7 @@ import { useSessionStore } from '@/stores/features/sessionStore'
 const route = useRoute()
 const isDashboard = computed(() => route.name === 'dashboard')
 
-const props = defineProps<{
+defineProps<{
   summonerInfo: any
 }>()
 const { getProfileIconUrl } = useGameAssets()
@@ -497,15 +497,15 @@ const rankGlowColorMap: Record<string, string> = {
   CHALLENGER: '#ffe066'
 }
 // 获取rank徽章发光style
-const getRankGlowStyle = (tier: string) => {
-  const color = rankGlowColorMap[tier] || '#a3a3a3'
-  return {
-    boxShadow: `0 0 0 2px #fff, 0 0 16px 4px ${color}, 0 0 32px 8px ${color}80`,
-    borderColor: color,
-    background: '#fff',
-    transition: 'box-shadow 0.5s, border-color 0.5s'
-  }
-}
+// const getRankGlowStyle = (tier: string) => {
+//   const color = rankGlowColorMap[tier] || '#a3a3a3'
+//   return {
+//     boxShadow: `0 0 0 2px #fff, 0 0 16px 4px ${color}, 0 0 32px 8px ${color}80`,
+//     borderColor: color,
+//     background: '#fff',
+//     transition: 'box-shadow 0.5s, border-color 0.5s'
+//   }
+// }
 
 // 呼吸发光动画style（主色变量）
 const getRankGlowBreathStyle = (tier: string) => {

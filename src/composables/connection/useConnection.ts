@@ -8,43 +8,23 @@ import { computed } from 'vue'
 export function useConnection() {
   const connectionStore = useConnectionStore()
 
-  // 连接状态
+  // 直接从 store 中获取响应式状态
   const isConnected = computed(() => connectionStore.isConnected)
   const connectionState = computed(() => connectionStore.connectionState)
   const connectionError = computed(() => connectionStore.connectionError)
-  const consecutiveFailures = computed(() => connectionStore.consecutiveFailures)
 
-  // 连接状态消息
-  const connectionMessage = computed(() => {
-    if (isConnected.value) {
-      return '已连接到League客户端'
-    } else if (connectionError.value) {
-      return connectionError.value
-    } else {
-      switch (connectionState.value) {
-        case 'Disconnected':
-          return '等待连接到League客户端...'
-        case 'ProcessFound':
-          return '检测到客户端进程，正在建立连接...'
-        case 'Unstable':
-          return '连接不稳定，正在重试...'
-        case 'AuthExpired':
-          return '认证信息已过期，正在重新获取...'
-        default:
-          return '等待连接到League客户端...'
-      }
-    }
-  })
+  // 直接使用 store 中更完善的状态文本
+  const connectionMessage = computed(() => connectionStore.statusText)
 
-  // 手动检查连接
-  const checkConnection = async () => {
+  // 代理 store 中的方法
+  const checkConnection = () => {
     console.log('手动检查连接🙌')
-    await connectionStore.checkConnection()
+    return connectionStore.checkConnection()
   }
 
-  // 清除连接信息
+  // 更新为调用 reset 方法
   const clearConnection = () => {
-    connectionStore.clearAuthInfo()
+    connectionStore.reset()
   }
 
   return {
@@ -52,7 +32,6 @@ export function useConnection() {
     isConnected,
     connectionState,
     connectionError,
-    consecutiveFailures,
     connectionMessage,
 
     // 方法

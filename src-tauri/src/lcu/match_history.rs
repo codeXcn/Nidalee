@@ -1,7 +1,93 @@
-use crate::lcu::request::lcu_get;
-use crate::lcu::types::{ChampionStats, MatchStatistics, RecentGame, TeamStats};
-use reqwest::Client;
-use serde_json::{json, Value};
+use crate::lcu::request::{lcu_get, lcu_request_json};
+use crate::lcu::types::{
+    ChampionStats, GameDetail, MatchStatistics, ParticipantInfo, ParticipantStats, RecentGame,
+    TeamInfo, TeamStats,
+};
+use reqwest::{Client, Method};
+use serde::Deserialize;
+use serde_json::Value;
+use std::collections::HashMap;
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct ApiGameData {
+    game_id: u64,
+    game_duration: i32,
+    game_creation: i64,
+    game_mode: String,
+    game_type: String,
+    game_version: String,
+    map_id: i32,
+    queue_id: i32,
+    teams: Vec<TeamInfo>,
+    participants: Vec<ApiParticipant>,
+    participant_identities: Vec<ApiParticipantIdentity>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct ApiParticipant {
+    participant_id: i32,
+    #[serde(default)]
+    team_id: Option<i32>,
+    #[serde(default)]
+    champion_id: Option<i32>,
+    stats: ApiParticipantStats,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ApiParticipantStats {
+    #[serde(default)]
+    kills: Option<i32>,
+    #[serde(default)]
+    deaths: Option<i32>,
+    #[serde(default)]
+    assists: Option<i32>,
+    #[serde(default)]
+    champ_level: Option<i32>,
+    #[serde(default)]
+    gold_earned: Option<i32>,
+    #[serde(default)]
+    total_damage_dealt_to_champions: Option<i32>,
+    #[serde(default)]
+    total_damage_taken: Option<i32>,
+    #[serde(default)]
+    vision_score: Option<i32>,
+    #[serde(default)]
+    item0: Option<i32>,
+    #[serde(default)]
+    item1: Option<i32>,
+    #[serde(default)]
+    item2: Option<i32>,
+    #[serde(default)]
+    item3: Option<i32>,
+    #[serde(default)]
+    item4: Option<i32>,
+    #[serde(default)]
+    item5: Option<i32>,
+    #[serde(default)]
+    item6: Option<i32>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ApiParticipantIdentity {
+    participant_id: i32,
+    player: ApiPlayer,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ApiPlayer {
+    #[serde(default)]
+    summoner_name: Option<String>,
+    #[serde(default)]
+    game_name: Option<String>,
+    #[serde(default)]
+    tag_line: Option<String>,
+    profile_icon: i64,
+}
 
 /// 获取当前玩家历史战绩统计（自动认证、统一请求、日志耗时）
 pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, String> {
@@ -40,18 +126,18 @@ pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, Strin
     Ok(statistics)
 }
 
-/// 获取游戏详细信息
-pub async fn get_game_detail(client: &Client, game_id: u64) -> Result<Value, String> {
-    println!("\n🔍 ===== 获取游戏详细信息 =====");
-    println!("🎮 游戏ID: {}", game_id);
+pub async fn get_game_detail_logic(
+    client: &Client,
+    game_id: u64,
+) -> Result<GameDetail, String> {
+    let path = format!("/lol-match-history/v1/games/{}", game_id);
+    let api_game_data: ApiGameData =
+        lcu_request_json(client, Method::GET, &path, None)
+            .await
+            .map_err(|e| format!("获取游戏详细信息失败: {}", e))?;
 
-    let url = format!("/lol-match-history/v1/games/{}", game_id);
-    let game_data: Value = lcu_get(client, &url).await?;
-
-    // 处理游戏数据
     let mut blue_team_stats = TeamStats::default();
     let mut red_team_stats = TeamStats::default();
-
     let mut max_damage = 0;
     let mut best_player_champion_id = 0;
     let mut max_tank = 0;
@@ -59,152 +145,112 @@ pub async fn get_game_detail(client: &Client, game_id: u64) -> Result<Value, Str
     let mut max_streak = 0;
     let mut max_streak_champion_id = 0;
 
-    // 处理参与者数据
-    let participants = if let Some(participants_data) =
-        game_data.get("participants").and_then(|p| p.as_array())
-    {
-        participants_data
-            .iter()
-            .map(|p| {
-                let stats = &p["stats"];
-                let champion_id = p.get("championId").and_then(|id| id.as_i64()).unwrap_or(0) as i32;
-                let team_id = p.get("teamId").and_then(|id| id.as_i64()).unwrap_or(0) as i32;
-                let kills = stats.get("kills").and_then(|k| k.as_i64()).unwrap_or(0) as i32;
-                let deaths = stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                let assists = stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
-                let damage = stats.get("totalDamageDealtToChampions").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                let damage_taken = stats.get("totalDamageTaken").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                let gold = stats.get("goldEarned").and_then(|g| g.as_i64()).unwrap_or(0) as i32;
-                let vision = stats.get("visionScore").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                let level = stats.get("champLevel").and_then(|l| l.as_i64()).unwrap_or(0) as i32;
-                let streak = stats.get("largestKillingSpree").and_then(|s| s.as_i64()).unwrap_or(0) as i32;
+    let player_map: HashMap<i32, ApiPlayer> = api_game_data
+        .participant_identities
+        .into_iter()
+        .map(|p| (p.participant_id, p.player))
+        .collect();
 
-                // 更新队伍统计
-                if team_id == 100 {
-                    blue_team_stats.kills += kills;
-                    blue_team_stats.gold_earned += gold;
-                    blue_team_stats.total_damage_dealt_to_champions += damage;
-                    blue_team_stats.vision_score += vision;
-                } else {
-                    red_team_stats.kills += kills;
-                    red_team_stats.gold_earned += gold;
-                    red_team_stats.total_damage_dealt_to_champions += damage;
-                    red_team_stats.vision_score += vision;
+    let mut participants: Vec<ParticipantInfo> = Vec::with_capacity(api_game_data.participants.len());
+    for p in api_game_data.participants {
+        let stats = p.stats; // No need to clone anymore
+        let kills = stats.kills.unwrap_or(0);
+        let deaths = stats.deaths.unwrap_or(0);
+        let assists = stats.assists.unwrap_or(0);
+        let damage = stats.total_damage_dealt_to_champions.unwrap_or(0);
+        let damage_taken = stats.total_damage_taken.unwrap_or(0);
+        let gold = stats.gold_earned.unwrap_or(0);
+        let vision = stats.vision_score.unwrap_or(0);
+        let champ_level = stats.champ_level.unwrap_or(0);
+        let champion_id = p.champion_id.unwrap_or(0);
+        let team_id = p.team_id.unwrap_or(0);
+
+        if team_id == 100 {
+            blue_team_stats.kills += kills;
+            blue_team_stats.gold_earned += gold;
+            blue_team_stats.total_damage_dealt_to_champions += damage;
+            blue_team_stats.vision_score += vision;
+        } else {
+            red_team_stats.kills += kills;
+            red_team_stats.gold_earned += gold;
+            red_team_stats.total_damage_dealt_to_champions += damage;
+            red_team_stats.vision_score += vision;
+        }
+
+        if damage > max_damage {
+            max_damage = damage;
+            best_player_champion_id = champion_id;
+        }
+
+        if damage_taken > max_tank {
+            max_tank = damage_taken;
+            max_tank_champion_id = champion_id;
+        }
+
+        let player_identity = player_map.get(&p.participant_id);
+        let summoner_name = player_identity.map_or_else(String::new, |pi| {
+            if let (Some(name), Some(tag)) = (&pi.game_name, &pi.tag_line) {
+                if !name.is_empty() && !tag.is_empty() {
+                    return format!("{}#{}", name, tag);
                 }
+            }
+            if let Some(s_name) = &pi.summoner_name {
+                return s_name.clone();
+            }
+            String::from("未知玩家")
+        });
+        let profile_icon_id = player_identity.map_or(0, |pi| pi.profile_icon);
 
-                // 更新最高数据
-                if damage > max_damage {
-                    max_damage = damage;
-                    best_player_champion_id = champion_id;
-                }
-                if damage_taken > max_tank {
-                    max_tank = damage_taken;
-                    max_tank_champion_id = champion_id;
-                }
-                if streak > max_streak {
-                    max_streak = streak;
-                    max_streak_champion_id = champion_id;
-                }
+        participants.push(ParticipantInfo {
+            participant_id: p.participant_id,
+            champion_id,
+            summoner_name,
+            profile_icon_id,
+            team_id,
+            rank_tier: None,
+            score: None,
+            stats: ParticipantStats {
+                kills,
+                deaths,
+                assists,
+                champ_level,
+                gold_earned: gold,
+                total_damage_dealt_to_champions: damage,
+                total_damage_taken: damage_taken,
+                vision_score: vision,
+                item0: stats.item0,
+                item1: stats.item1,
+                item2: stats.item2,
+                item3: stats.item3,
+                item4: stats.item4,
+                item5: stats.item5,
+                item6: stats.item6,
+            },
+        });
+    }
 
-                json!({
-                    "participantId": p.get("participantId").and_then(|id| id.as_i64()).unwrap_or(0) as i32,
-                    "championId": champion_id,
-                    "teamId": team_id,
-                    "rankTier": None::<String>,
-                    "stats": {
-                        "kills": kills,
-                        "deaths": deaths,
-                        "assists": assists,
-                        "champLevel": level,
-                        "goldEarned": gold,
-                        "totalDamageDealtToChampions": damage,
-                        "totalDamageTaken": damage_taken,
-                        "visionScore": vision,
-                        "item0": stats.get("item0").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item1": stats.get("item1").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item2": stats.get("item2").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item3": stats.get("item3").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item4": stats.get("item4").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item5": stats.get("item5").and_then(|i| i.as_i64()).map(|i| i as i32),
-                        "item6": stats.get("item6").and_then(|i| i.as_i64()).map(|i| i as i32),
-                    },
-                    "score": None::<i32>,
-                })
-            })
-            .collect::<Vec<Value>>()
-    } else {
-        Vec::new()
-    };
-
-    let participant_identities = game_data
-        .get("participantIdentities")
-        .cloned()
-        .unwrap_or(Value::Null);
-
-    // 处理队伍数据
-    let teams = if let Some(teams_data) = game_data.get("teams").and_then(|t| t.as_array()) {
-        teams_data
-            .iter()
-            .map(|t| {
-                json!({
-                    "teamId": t.get("teamId").and_then(|id| id.as_i64()).unwrap_or(0) as i32,
-                    "win": t.get("win").and_then(|w| w.as_str()).unwrap_or("").to_string(),
-                    "bans": t.get("bans")
-                        .and_then(|b| b.as_array())
-                        .map(|bans| {
-                            bans.iter()
-                                .map(|ban| {
-                                    json!({
-                                        "championId": ban.get("championId").and_then(|id| id.as_i64()).unwrap_or(0) as i32,
-                                        "pickTurn": ban.get("pickTurn").and_then(|t| t.as_i64()).unwrap_or(0) as i32,
-                                    })
-                                })
-                                .collect::<Vec<Value>>()
-                        })
-                        .unwrap_or_default(),
-                    "baronKills": t.get("baronKills").and_then(|k| k.as_i64()).unwrap_or(0) as i32,
-                    "dragonKills": t.get("dragonKills").and_then(|k| k.as_i64()).unwrap_or(0) as i32,
-                    "towerKills": t.get("towerKills").and_then(|k| k.as_i64()).unwrap_or(0) as i32,
-                    "inhibitorKills": t.get("inhibitorKills").and_then(|k| k.as_i64()).unwrap_or(0) as i32,
-                })
-            })
-            .collect::<Vec<Value>>()
-    } else {
-        Vec::new()
-    };
-
-    Ok(json!({
-        "gameId": game_id,
-        "gameDuration": game_data.get("gameDuration").and_then(|d| d.as_i64()).unwrap_or(0) as i32,
-        "gameCreation": game_data.get("gameCreation").and_then(|c| c.as_i64()).unwrap_or(0),
-        "gameMode": game_data.get("gameMode").and_then(|m| m.as_str()).unwrap_or("").to_string(),
-        "gameType": game_data.get("gameType").and_then(|t| t.as_str()).unwrap_or("").to_string(),
-        "gameVersion": game_data.get("gameVersion").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        "mapId": game_data.get("mapId").and_then(|m| m.as_i64()).unwrap_or(0) as i32,
-        "queueId": game_data.get("queueId").and_then(|q| q.as_i64()).unwrap_or(0) as i32,
-        "teams": teams,
-        "participants": participants,
-        "blueTeamStats": {
-            "kills": blue_team_stats.kills,
-            "gold_earned": blue_team_stats.gold_earned,
-            "total_damage_dealt_to_champions": blue_team_stats.total_damage_dealt_to_champions,
-            "vision_score": blue_team_stats.vision_score,
-        },
-        "redTeamStats": {
-            "kills": red_team_stats.kills,
-            "gold_earned": red_team_stats.gold_earned,
-            "total_damage_dealt_to_champions": red_team_stats.total_damage_dealt_to_champions,
-            "vision_score": red_team_stats.vision_score,
-        },
-        "bestPlayerChampionId": best_player_champion_id,
-        "maxDamage": max_damage,
-        "maxTankChampionId": max_tank_champion_id,
-        "maxTank": max_tank,
-        "maxStreakChampionId": max_streak_champion_id,
-        "maxStreak": max_streak,
-        "participantIdentities": participant_identities,
-    }))
+    Ok(GameDetail {
+        game_id: api_game_data.game_id,
+        game_duration: api_game_data.game_duration,
+        game_creation: api_game_data.game_creation,
+        game_mode: api_game_data.game_mode,
+        game_type: api_game_data.game_type,
+        game_version: api_game_data.game_version,
+        map_id: api_game_data.map_id,
+        queue_id: api_game_data.queue_id,
+        teams: api_game_data.teams,
+        participants,
+        blue_team_stats,
+        red_team_stats,
+        best_player_champion_id,
+        max_damage,
+        max_tank_champion_id,
+        max_tank,
+        max_streak_champion_id,
+        max_streak,
+    })
 }
+
 
 /// 获取指定召唤师最近几场简单战绩
 pub async fn get_recent_matches_by_summoner_id(

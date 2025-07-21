@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '../views/DashboardView.vue'
 
 const router = createRouter({
   // @ts-expect-error 跳过检测
@@ -8,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: DashboardView
+      component: () => import('../views/DashboardView.vue')
     },
     {
       path: '/game-helper',
@@ -30,15 +29,21 @@ const router = createRouter({
       name: 'auto-functions',
       component: () => import('../views/AutoFunctionsView.vue')
     },
-    // {
-    //   path: '/security',
-    //   name: 'security',
-    //   component: () => import('../views/SecurityView.vue')
-    // },
+    {
+      path: '/test-api',
+      name: 'security',
+      component: () => import('../views/TestView.vue')
+    },
+
     {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue')
+    },
+    {
+      path: '/opgg',
+      name: 'opgg',
+      component: () => import('../views/OpggView.vue')
     }
   ]
 })

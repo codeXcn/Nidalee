@@ -55,7 +55,7 @@
 import { Clock } from 'lucide-vue-next'
 import type { Activity } from '@/types'
 
-const props = defineProps<{
+defineProps<{
   activities: Activity[]
 }>()
 

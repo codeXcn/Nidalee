@@ -1,24 +1,18 @@
 import { invoke } from '@tauri-apps/api/core'
 
-// 组件内部状态
-interface MatechsResult {
-  displayName: string
-  summonerInfo: SummonerInfo
-  matches: MatchStatistics
-}
-
+// 专门处理战绩数据获取的 composable
 export function useSearchMatches() {
   const loading = ref(true)
   const error = ref('')
-  const result = ref<MatechsResult[] | null>(null)
-  const currentRestult = ref<MatechsResult | null>(null)
+  const result = ref<SummonerWithMatches[] | null>(null)
+  const currentRestult = ref<SummonerWithMatches | null>(null)
 
   const searchText = ref('')
   const cunrrentIndex = ref(-1)
   const names = ref<string[]>([])
-  async function fetchSummonerInfo(names: string[]): Promise<MatechsResult[] | null> {
+  async function fetchSummonerInfo(names: string[]): Promise<SummonerWithMatches[] | null> {
     try {
-      const matches = await invoke<MatechsResult[]>('get_summoners_and_histories', { names })
+      const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', { names })
       if (Array.isArray(matches) && matches.length > 0) {
         result.value = matches
         // 每次查询成功后，重置索引为0（显示第一个结果）

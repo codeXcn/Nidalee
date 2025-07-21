@@ -241,7 +241,10 @@ export const useSettingsStore = defineStore(
       // 游戏设置方法
       setCareerBackground,
       setAutoRefreshData,
-      setRefreshInterval
+      setRefreshInterval,
+      resetAllSettings,
+      exportSettings,
+      importSettings
     }
   },
   {

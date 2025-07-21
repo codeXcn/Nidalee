@@ -32,7 +32,21 @@ pub fn run() {
             commands::get_champ_select_session,
             commands::pick_champion,
             commands::ban_champion,
-            commands::set_summoner_chat_profile
+            commands::set_summoner_chat_profile,
+            commands::get_champion_builds,
+            commands::get_champion_runes,
+            commands::get_all_runes,
+            commands::get_lcu_rune_styles,
+            commands::get_lcu_perks,
+            commands::get_lcu_perk_icon,
+            commands::apply_champion_build,
+            commands::get_champion_build_new,
+            commands::get_champions_list,
+            commands::get_opgg_champion_build,
+            commands::get_opgg_champion_build_raw,
+            commands::get_opgg_tier_list,
+            commands::get_opgg_champion_positions,
+            commands::apply_opgg_runes,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

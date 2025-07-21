@@ -96,7 +96,7 @@
 import { Clock, Play, Settings, TrendingUp, Wifi } from 'lucide-vue-next'
 import { useSessionStore } from '@/stores/features/sessionStore'
 
-const props = defineProps<{
+defineProps<{
   isConnected: boolean
   todayMatches: {
     total: number
@@ -107,7 +107,7 @@ const props = defineProps<{
   enabledFunctionsCount: number
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'attempt-connection'): void
 }>()
 

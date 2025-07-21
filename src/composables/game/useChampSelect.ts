@@ -1,14 +1,16 @@
 import { invoke } from '@tauri-apps/api/core'
+import { useRouter } from 'vue-router'
+import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
 
 export function useChampSelect() {
   /**
    * 获取当前选人会话信息
-   * @returns Promise<any> 选人会话数据
+   * @returns Promise<ChampSelectSession> 选人会话数据
    */
-  async function getChampSelectSession() {
+  async function getChampSelectSession(): Promise<ChampSelectSession> {
     try {
       console.log('[🔍 ChampSelect] 📡 开始获取选人会话信息...')
-      const session = await invoke('get_champ_select_session')
+      const session = await invoke<ChampSelectSession>('get_champ_select_session')
       console.log('[🔍 ChampSelect] ✅ 获取选人会话成功')
       return session
     } catch (error) {
@@ -70,9 +72,28 @@ export function useChampSelect() {
     selectChampion: boolean
     lockInProgress: boolean
   }
+  /**
+   * 判断是否需要自动跳转 OPGG 并应用符文
+   * @param session 当前选人会话
+   * @param autoFunctions 自动功能配置
+   * @returns {number | false} 选完英雄返回 championId，否则返回 false
+   */
+  function getAutoOpggChampionId(session: ChampSelectSession, autoFunctions: any): number | false {
+    if (!session?.actions || session.localPlayerCellId === undefined) return false
+    if (!autoFunctions?.runeConfig?.enabled) return false
 
+    const localPlayerCellId = session.localPlayerCellId
+    const myPickAction = session.actions
+      .flat()
+      .find((action) => action.actorCellId === localPlayerCellId && action.type === 'pick')
+
+    if (myPickAction?.completed && myPickAction.championId) {
+      return myPickAction.championId
+    }
+    return false
+  }
   async function checkAndExecuteAutoActions(
-    session: any,
+    session: ChampSelectSession,
     autoFunctions: any,
     executedActions: ExecutedActions
   ): Promise<boolean> {
@@ -98,11 +119,11 @@ export function useChampSelect() {
 
     for (const group of session.actions) {
       for (const action of group) {
-        if (action.completed && action.championId > 0) {
+        if (action.completed && action.championId && action.championId > 0) {
           if (action.type === 'pick') pickedChampionIds.add(action.championId)
           if (action.type === 'ban') bannedChampionIds.add(action.championId)
         }
-        if (action.type === 'pick' && action.isInProgress && action.championId > 0) {
+        if (action.type === 'pick' && action.isInProgress && action.championId && action.championId > 0) {
           preselectedChampionIds.add(action.championId)
         }
       }
@@ -114,7 +135,7 @@ export function useChampSelect() {
     if (session.timer.phase === 'BAN_PICK') {
       for (const group of session.actions) {
         for (const action of group) {
-          if (action.actorCellId !== localPlayerCellId || !action.isInProgress) continue
+          if (Number(action.actorCellId) !== localPlayerCellId || !action.isInProgress) continue
 
           console.log('[🤖 AutoChampSelect] 🎯 当前玩家操作:', action)
 
@@ -151,7 +172,7 @@ export function useChampSelect() {
     return hasScheduledAction
   }
   async function tryAutoBan(
-    action: any,
+    action: ChampSelectAction,
     autoFunctions: any,
     picked: Set<number>,
     banned: Set<number>,
@@ -162,7 +183,7 @@ export function useChampSelect() {
     if (!autoFunctions.banChampion?.enabled || !Array.isArray(autoFunctions.banChampion.championList)) return false
 
     const banList = autoFunctions.banChampion.championList
-    const nextBan = banList.find((c) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id))
+    const nextBan = banList.find((c: ChampionInfo) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id))
 
     if (!nextBan) {
       console.log('[🤖 AutoChampSelect] 🚫 没有可禁用英雄')
@@ -189,7 +210,7 @@ export function useChampSelect() {
     return true
   }
   async function tryAutoPick(
-    action: any,
+    action: ChampSelectAction,
     autoFunctions: any,
     picked: Set<number>,
     banned: Set<number>,
@@ -202,7 +223,9 @@ export function useChampSelect() {
       return false
 
     const pickList = autoFunctions.selectChampion.championList
-    const nextPick = pickList.find((c) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id))
+    const nextPick = pickList.find(
+      (c: ChampionInfo) => !picked.has(c.id) && !banned.has(c.id) && !preselected.has(c.id)
+    )
 
     if (!nextPick) {
       console.log('[🤖 AutoChampSelect] ⭐ 没有可选英雄')
@@ -243,6 +266,7 @@ export function useChampSelect() {
     getChampSelectSession,
     pickChampion,
     banChampion,
-    checkAndExecuteAutoActions
+    checkAndExecuteAutoActions,
+    getAutoOpggChampionId
   }
 }

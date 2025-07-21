@@ -2,3 +2,4 @@
 export * from './dashboard'
 export * from './game'
 export * from './match'
+export * from './opgg'
