@@ -3,7 +3,7 @@
     <div class="max-w-5xl mx-auto space-y-8">
       <!-- 页面标题 -->
       <div class="text-center space-y-2">
-        <h1 class="text-4xl font-extrabold text-primary drop-shadow-sm">🎯 OP.GG 英雄详细推荐</h1>
+        <h1 class="text-4xl font-extrabold text-primary drop-shadow-sm">🎯 OP.GG 英雄构建推荐</h1>
         <p class="text-lg text-muted-foreground">获取最新的英雄出装、符文和克制关系数据</p>
       </div>
 
@@ -83,7 +83,7 @@
         </CardContent>
       </Card>
 
-      <!-- 英雄详细数据显示 -->
+      <!-- 英雄构建数据显示 -->
       <div v-if="opggData.state.value.championBuild" class="space-y-8">
         <!-- 英雄基本信息 -->
         <div
@@ -151,10 +151,44 @@
 </template>
 
 <script setup lang="ts">
-import { AlertCircle, Info, CheckCircle } from 'lucide-vue-next'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import {
+  AlertCircle,
+  Info,
+  CheckCircle,
+  Shield,
+  Sword,
+  Package,
+  Target,
+  Footprints,
+  Users,
+  TrendingUp,
+  TrendingDown,
+  Zap
+} from 'lucide-vue-next'
+import { getChampionIconUrl, getChampionName, getItemIconUrl, getSpellMeta } from '@/lib'
+import { useDataStore } from '@/stores'
 import { useOpggData, useOpggRunes } from '@/composables'
+import OpggConfigPanel from './OpggConfigPanel.vue'
+import OpggActionButtons from './OpggActionButtons.vue'
+import { useRoute } from 'vue-router'
+import { onMounted, watch } from 'vue'
 import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
-import { toast } from 'vue-sonner'
+
+// 子组件
+import ChampionSummaryCard from './components/ChampionSummaryCard.vue'
+import RunesCard from './components/RunesCard.vue'
+import SummonerSpellsCard from './components/SummonerSpellsCard.vue'
+import ItemsCard from './components/ItemsCard.vue'
+import SkillsCard from './components/SkillsCard.vue'
+import CountersCard from './components/CountersCard.vue'
+
+// 获取数据存储
+const dataStore = useDataStore()
 
 // 使用 composables
 const opggData = useOpggData()
@@ -171,22 +205,12 @@ const handleApplyBestRunes = async () => {
   try {
     await opggRunes.applyBestRunes(opggData.config.value.championId, opggData.config.value)
     if (opggRunes.applySuccess.value) {
-      toast.success('符文配置#1 应用成功', {
-        description: '最佳推荐符文已应用到游戏',
-        duration: 3000
-      })
+      console.log('符文应用成功:', opggRunes.applySuccess.value)
     }
     if (opggRunes.applyError.value) {
-      toast.error('符文应用失败', {
-        description: String(opggRunes.applyError.value),
-        duration: 5000
-      })
+      console.log('符文应用失败:', opggRunes.applyError.value)
     }
   } catch (error) {
-    toast.error('应用符文时发生错误', {
-      description: String(error),
-      duration: 5000
-    })
     console.error('应用符文时发生错误:', error)
   }
 }
@@ -195,22 +219,12 @@ const handleApplySpecificRunes = async (runeIndex: number) => {
   try {
     await opggRunes.applySpecificRunes(runeIndex, opggData.config.value.championId, opggData.config.value)
     if (opggRunes.applySuccess.value) {
-      toast.success(`符文配置#${runeIndex + 1} 应用成功`, {
-        description: `已应用第${runeIndex + 1}套推荐符文`,
-        duration: 3000
-      })
+      console.log('符文应用成功:', opggRunes.applySuccess.value)
     }
     if (opggRunes.applyError.value) {
-      toast.error('符文应用失败', {
-        description: String(opggRunes.applyError.value),
-        duration: 5000
-      })
+      console.log('符文应用失败:', opggRunes.applyError.value)
     }
   } catch (error) {
-    toast.error('应用特定符文时发生错误', {
-      description: String(error),
-      duration: 5000
-    })
     console.error('应用特定符文时发生错误:', error)
   }
 }
@@ -246,4 +260,10 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  if (route.query.championId) {
+    autoSearchAndApply(route.query.championId)
+  }
+})
 </script>

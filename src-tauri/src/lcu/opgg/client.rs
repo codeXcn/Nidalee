@@ -1,7 +1,5 @@
-use crate::lcu::request::lcu_get;
 use reqwest::Client;
 use serde_json::Value;
-use std::collections::HashMap;
 
 /// OP.GG API 客户端
 pub struct OpggClient {
@@ -60,7 +58,12 @@ impl OpggClient {
     }
 
     /// 获取英雄层级列表
-    pub async fn get_tier_list(&self, region: &str, mode: &str, tier: &str) -> Result<Value, String> {
+    pub async fn get_tier_list(
+        &self,
+        region: &str,
+        mode: &str,
+        tier: &str,
+    ) -> Result<Value, String> {
         let url = format!(
             "https://lol-api-champion.op.gg/api/{}/champions/{}?tier={}",
             region, mode, tier

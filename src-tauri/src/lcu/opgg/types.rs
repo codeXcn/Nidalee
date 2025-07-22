@@ -3,7 +3,11 @@ use ts_rs::TS;
 
 /// OP.GG 英雄详细数据
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggChampionBuild.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggChampionBuild.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggChampionBuild {
     pub summary: OpggChampionSummary,
@@ -16,7 +20,11 @@ pub struct OpggChampionBuild {
 
 /// 英雄摘要信息
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggChampionSummary.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggChampionSummary.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggChampionSummary {
     pub name: String,
@@ -33,7 +41,11 @@ pub struct OpggChampionSummary {
 
 /// 召唤师技能
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggSummonerSpell.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggSummonerSpell.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggSummonerSpell {
     pub spell_id: i32,
@@ -45,7 +57,11 @@ pub struct OpggSummonerSpell {
 
 /// 英雄技能
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggSkills.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggSkills.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggSkills {
     pub masteries: Vec<String>,
@@ -57,7 +73,11 @@ pub struct OpggSkills {
 
 /// 装备数据
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggItems.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggItems.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggItems {
     pub start_items: Vec<OpggItem>,
@@ -68,7 +88,11 @@ pub struct OpggItems {
 
 /// 装备项目
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggItem.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggItem.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggItem {
     pub id: i32,
@@ -81,7 +105,11 @@ pub struct OpggItem {
 
 /// 克制关系
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggCounters.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggCounters.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggCounters {
     pub strong_against: Vec<OpggCounter>,
@@ -90,7 +118,11 @@ pub struct OpggCounters {
 
 /// 克制英雄
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggCounter.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggCounter.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggCounter {
     pub champion_id: i32,
@@ -99,7 +131,11 @@ pub struct OpggCounter {
 
 /// 符文配置
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggPerk.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggPerk.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggPerk {
     pub primary_id: i32,
@@ -112,7 +148,11 @@ pub struct OpggPerk {
 
 /// OP.GG API 响应
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggApiResponse.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggApiResponse.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggApiResponse<T> {
     pub success: bool,
@@ -122,7 +162,11 @@ pub struct OpggApiResponse<T> {
 
 /// 层级列表项
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggTierListItem.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggTierListItem.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggTierListItem {
     pub champion_id: i32,
@@ -136,7 +180,11 @@ pub struct OpggTierListItem {
 
 /// 层级列表
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggTierList.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggTierList.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggTierList {
     pub meta: OpggTierListMeta,
@@ -145,7 +193,11 @@ pub struct OpggTierList {
 
 /// 层级列表元数据
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/OpggTierListMeta.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/OpggTierListMeta.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct OpggTierListMeta {
     pub version: String,

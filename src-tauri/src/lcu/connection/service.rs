@@ -1,4 +1,7 @@
-use crate::lcu::auth::{ensure_valid_auth_info, validate_auth_connection};
+
+use crate::lcu::auth::service::{
+    ensure_valid_auth_info, invalidate_auth_info, validate_auth_connection,
+};
 use crate::lcu::types::{ConnectionState, LcuAuthInfo};
 use crate::lcu::unified_polling::UnifiedPollingManager;
 use serde::{Deserialize, Serialize};
@@ -85,7 +88,7 @@ impl ConnectionManager {
         }
     }
 
-    async fn check_connection_state(&self) -> ConnectionState {
+    pub async fn check_connection_state(&self) -> ConnectionState {
         // 1. 尝试获取认证信息
         let auth_info = ensure_valid_auth_info();
 
@@ -235,7 +238,7 @@ impl ConnectionManager {
             }
             ConnectionState::AuthExpired => {
                 // 认证过期时清除缓存
-                crate::lcu::auth::invalidate_auth_info();
+                invalidate_auth_info();
             }
             _ => {}
         }
@@ -276,7 +279,7 @@ impl ConnectionManager {
     pub async fn force_refresh(&self) {
         log::info!("[连接管理] 收到强制刷新请求");
         // 清除认证缓存
-        crate::lcu::auth::invalidate_auth_info();
+        invalidate_auth_info();
 
         // 重置连续失败计数
         self.update_info(|info| {
@@ -285,33 +288,4 @@ impl ConnectionManager {
         })
         .await;
     }
-}
-
-/// Tauri 命令：获取连接状态
-#[tauri::command]
-pub async fn get_connection_state(
-    manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>,
-) -> Result<ConnectionInfo, String> {
-    let manager = manager.read().await;
-    Ok(manager.get_connection_info().await)
-}
-
-/// Tauri 命令：强制刷新连接
-#[tauri::command]
-pub async fn force_refresh_connection(
-    manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>,
-) -> Result<(), String> {
-    let manager = manager.read().await;
-    manager.force_refresh().await;
-    Ok(())
-}
-
-/// Tauri 命令：手动检查连接状态
-#[tauri::command]
-pub async fn check_connection_state_command(
-    manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>,
-) -> Result<ConnectionState, String> {
-    let manager = manager.read().await;
-    let state = manager.check_connection_state().await;
-    Ok(state)
 }

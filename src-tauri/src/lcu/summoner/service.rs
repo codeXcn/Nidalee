@@ -4,6 +4,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{to_value, Value};
 
+// 以下内容为原 summoner.rs 全部内容，粘贴至此
+
 // 生涯背景设置请求体（正确的API格式）
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProfileUpdateRequest {

@@ -1,20 +1,16 @@
-use crate::lcu::types::LcuAuthInfo;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::sync::{Mutex, RwLock};
 use std::time::{Duration, Instant};
 use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
+use crate::lcu::types::LcuAuthInfo;
+
+pub static AUTH_INFO: Lazy<RwLock<Option<LcuAuthInfo>>> = Lazy::new(|| RwLock::new(None));
 static SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
-static AUTH_INFO: Lazy<RwLock<Option<LcuAuthInfo>>> = Lazy::new(|| RwLock::new(None));
 static AUTH_TIMESTAMP: Lazy<RwLock<Option<Instant>>> = Lazy::new(|| RwLock::new(None));
 // 配置：token 最多允许缓存多久，超时自动刷新
 const AUTH_REFRESH_INTERVAL: Duration = Duration::from_secs(60);
-#[tauri::command]
-pub fn get_auth_info() -> Option<LcuAuthInfo> {
-    let auth = AUTH_INFO.read().unwrap();
-    auth.as_ref().cloned()
-}
 
 /// 获取（并自动刷新）最新有效的 LCU AuthInfo
 pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {

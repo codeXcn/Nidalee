@@ -1,6 +1,5 @@
-use crate::lcu::request::{forin_request_json};
+use crate::lcu::request::forin_request_json;
 use reqwest::{Client, Method};
-use serde::de::DeserializeOwned;
 
 /// 获取所有符文信息
 pub async fn get_all_runes(client: &Client) -> Result<crate::lcu::types::AllRunesResponse, String> {

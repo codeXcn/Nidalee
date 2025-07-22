@@ -1,3 +1,4 @@
+
 use crate::lcu::request::lcu_get;
 use crate::lcu::types::RankedStats;
 use reqwest::Client;

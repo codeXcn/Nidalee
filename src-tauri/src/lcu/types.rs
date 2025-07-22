@@ -49,7 +49,11 @@ fn empty_rune_type() -> String {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/LiveClientPlayer.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LiveClientPlayer.ts",
+    rename_all = "camelCase"
+)]
 pub struct LiveClientPlayer {
     pub summoner_name: String,
     pub champion_name: String,
@@ -72,7 +76,11 @@ pub struct LiveClientPlayer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/LcuAuthInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LcuAuthInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct LcuAuthInfo {
     pub app_port: u16,
     pub remoting_auth_token: String,
@@ -81,7 +89,11 @@ pub struct LcuAuthInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/GameDetail.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/GameDetail.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct GameDetail {
     pub game_id: u64,
@@ -105,7 +117,11 @@ pub struct GameDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/TeamInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/TeamInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamInfo {
     #[serde(default)]
@@ -125,7 +141,11 @@ pub struct TeamInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/BanInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/BanInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct BanInfo {
     #[serde(default)]
@@ -134,7 +154,11 @@ pub struct BanInfo {
     pub pick_turn: Option<i32>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/ParticipantInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ParticipantInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipantInfo {
     pub participant_id: i32,
@@ -149,7 +173,11 @@ pub struct ParticipantInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/ParticipantStats.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ParticipantStats.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipantStats {
     pub kills: i32,
@@ -170,7 +198,11 @@ pub struct ParticipantStats {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/TeamStats.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/TeamStats.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamStats {
     pub kills: i32,
@@ -180,13 +212,21 @@ pub struct TeamStats {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/GameflowPhase.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/GameflowPhase.ts",
+    rename_all = "camelCase"
+)]
 pub struct GameflowPhase {
     pub phase: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/LobbyInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LobbyInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyInfo {
     pub id: String,
@@ -195,7 +235,11 @@ pub struct LobbyInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/LobbyMember.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LobbyMember.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyMember {
     #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
@@ -204,7 +248,11 @@ pub struct LobbyMember {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/SummonerInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/SummonerInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct SummonerInfo {
     // 基本信息
@@ -261,14 +309,22 @@ pub struct SummonerInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/RankedStats.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RankedStats.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RankedStats {
     pub queue_map: std::collections::HashMap<String, QueueStats>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/QueueStats.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/QueueStats.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct QueueStats {
     pub tier: String,
@@ -280,7 +336,11 @@ pub struct QueueStats {
 
 // 英雄选择阶段关键信息（用于推荐）
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectSession.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectSession.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectSession {
     pub local_player_cell_id: i32,
@@ -291,7 +351,11 @@ pub struct ChampSelectSession {
     pub actions: Vec<Vec<ChampSelectAction>>, // 使用 Option<serde_json::Value> 以兼容不同类型
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectAction.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectAction.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectAction {
     pub actor_cell_id: Option<i32>,
@@ -306,7 +370,11 @@ pub struct ChampSelectAction {
     pub is_current_user: Option<bool>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectPlayer.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectPlayer.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectPlayer {
     pub cell_id: i32,
@@ -377,7 +445,11 @@ impl ChampSelectPlayer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectBans.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectBans.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectBans {
     pub my_team_bans: Vec<Option<f64>>,
@@ -385,13 +457,21 @@ pub struct ChampSelectBans {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectTimer.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectTimer.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampSelectTimer {
     pub phase: String,
 }
 #[derive(Debug, Default, PartialEq, Eq, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/RankInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RankInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct RankInfo {
     pub solo_tier: Option<String>,
     pub solo_division: Option<String>,
@@ -406,7 +486,11 @@ pub struct RankInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/MatchmakingState.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/MatchmakingState.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct MatchmakingState {
     pub errors: Vec<MatchmakingError>,
@@ -415,7 +499,11 @@ pub struct MatchmakingState {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/MatchmakingError.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/MatchmakingError.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct MatchmakingError {
     pub error_type: String,
@@ -426,7 +514,11 @@ pub struct MatchmakingError {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/LowPriorityData.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LowPriorityData.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct LowPriorityData {
     pub busted_leaver_access_token: String,
@@ -437,14 +529,22 @@ pub struct LowPriorityData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/MatchInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/MatchInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct MatchInfo {
     pub match_id: String,
     pub players: Vec<PlayerInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/PlayerInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/PlayerInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct PlayerInfo {
     pub summoner_name: String,
     pub champion_id: i32,
@@ -453,7 +553,11 @@ pub struct PlayerInfo {
 
 /// 当前选择的英雄信息
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[ts(export, export_to = "../../src/types/generated/CurrentChampion.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/CurrentChampion.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct CurrentChampion {
     /// 英雄ID
@@ -466,7 +570,11 @@ pub struct CurrentChampion {
 
 /// 符文页面数据结构
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/RunePage.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RunePage.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RunePage {
     pub id: i64,
@@ -494,7 +602,11 @@ pub struct CreateRunePageRequest {
 
 /// 装备推荐套装数据结构
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/ItemSet.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ItemSet.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemSet {
     pub title: String,
@@ -506,7 +618,11 @@ pub struct ItemSet {
 
 /// 装备推荐块数据结构
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/ItemBlock.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ItemBlock.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBlock {
     #[serde(rename = "type")]
@@ -516,7 +632,11 @@ pub struct ItemBlock {
 
 /// 推荐装备项数据结构
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/RecommendedItem.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RecommendedItem.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RecommendedItem {
     pub id: String,
@@ -525,7 +645,11 @@ pub struct RecommendedItem {
 
 /// 简单对局信息
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd, TS)]
-#[ts(export, export_to = "../../src/types/generated/SimpleMatchInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/SimpleMatchInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleMatchInfo {
     pub game_id: u64,
@@ -539,7 +663,11 @@ pub struct SimpleMatchInfo {
 
 /// 对局统计信息
 #[derive(Debug, Serialize, Clone, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/MatchStatistics.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/MatchStatistics.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct MatchStatistics {
     pub total_games: i32,
@@ -556,7 +684,11 @@ pub struct MatchStatistics {
 
 /// 英雄统计信息
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampionStats.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampionStats.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionStats {
     pub champion_id: i32,
@@ -567,7 +699,11 @@ pub struct ChampionStats {
 
 /// 最近游戏信息
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(export, export_to = "../../src/types/generated/RecentGame.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RecentGame.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RecentGame {
     #[ts(type = "number")]
@@ -587,7 +723,11 @@ pub struct RecentGame {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectPlayerInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectPlayerInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct ChampSelectPlayerInfo {
     pub summoner_id: String,
     pub display_name: String,
@@ -598,13 +738,21 @@ pub struct ChampSelectPlayerInfo {
     pub recent_matches: Vec<SimpleMatchInfo>,
 }
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampSelectTeamInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampSelectTeamInfo.ts",
+    rename_all = "camelCase"
+)]
 pub struct ChampSelectTeamInfo {
     pub my_team: Vec<ChampSelectPlayerInfo>,
     pub their_team: Vec<ChampSelectPlayerInfo>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/SummonerWithMatches.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/SummonerWithMatches.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct SummonerWithMatches {
     pub display_name: String,
@@ -623,7 +771,11 @@ pub enum ConnectionState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampionDataResponse.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampionDataResponse.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionDataResponse {
     pub id: Option<i32>,
@@ -635,7 +787,11 @@ pub struct ChampionDataResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampionContent.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampionContent.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionContent {
     pub alias: String,
@@ -656,7 +812,11 @@ pub struct ChampionContent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ItemBuild.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ItemBuild.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemBuild {
     pub title: String,
@@ -673,7 +833,11 @@ pub struct ItemBuild {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ChampionItemBlock.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ChampionItemBlock.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionItemBlock {
     #[serde(rename = "type")]
@@ -682,7 +846,11 @@ pub struct ChampionItemBlock {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/ItemInfo.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/ItemInfo.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemInfo {
     pub id: String,
@@ -690,7 +858,11 @@ pub struct ItemInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/RuneSet.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RuneSet.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneSet {
     pub alias: String,
@@ -707,7 +879,11 @@ pub struct RuneSet {
 
 // 符文系统相关类型定义
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/RuneSystem.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RuneSystem.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneSystem {
     pub icon: String,
@@ -718,14 +894,22 @@ pub struct RuneSystem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/RuneSlot.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RuneSlot.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneSlot {
     pub runes: Vec<RuneOption>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/RuneOption.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RuneOption.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneOption {
     pub icon: String,
@@ -772,7 +956,11 @@ pub struct Builds {
 
 /// LCU WebSocket 事件
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/LcuWebSocketEvent.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/LcuWebSocketEvent.ts",
+    rename_all = "camelCase"
+)]
 pub struct LcuWebSocketEvent<T> {
     pub event_type: String,
     pub data: T,
@@ -780,7 +968,11 @@ pub struct LcuWebSocketEvent<T> {
 
 // LCU 符文样式相关类型定义
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/RuneStyle.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/RuneStyle.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RuneStyle {
     pub allowed_sub_styles: Vec<i64>,
@@ -798,7 +990,11 @@ pub struct RuneStyle {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/Slot.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/Slot.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct Slot {
     pub perks: Vec<i64>,
@@ -807,7 +1003,11 @@ pub struct Slot {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/SubStyleBonus.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/SubStyleBonus.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct SubStyleBonus {
     pub perk_id: i64,
@@ -815,7 +1015,11 @@ pub struct SubStyleBonus {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../src/types/generated/Perk.ts", rename_all = "camelCase")]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/Perk.ts",
+    rename_all = "camelCase"
+)]
 #[serde(rename_all = "camelCase")]
 pub struct Perk {
     pub icon_path: String,

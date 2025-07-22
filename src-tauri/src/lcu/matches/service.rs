@@ -8,6 +8,9 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
 
+// 以下内容为原 match_history.rs 全部内容，粘贴至此
+// 其余内容保持不变，全部迁移
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ApiGameData {
@@ -126,15 +129,11 @@ pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, Strin
     Ok(statistics)
 }
 
-pub async fn get_game_detail_logic(
-    client: &Client,
-    game_id: u64,
-) -> Result<GameDetail, String> {
+pub async fn get_game_detail_logic(client: &Client, game_id: u64) -> Result<GameDetail, String> {
     let path = format!("/lol-match-history/v1/games/{}", game_id);
-    let api_game_data: ApiGameData =
-        lcu_request_json(client, Method::GET, &path, None)
-            .await
-            .map_err(|e| format!("获取游戏详细信息失败: {}", e))?;
+    let api_game_data: ApiGameData = lcu_request_json(client, Method::GET, &path, None)
+        .await
+        .map_err(|e| format!("获取游戏详细信息失败: {}", e))?;
 
     let mut blue_team_stats = TeamStats::default();
     let mut red_team_stats = TeamStats::default();
@@ -151,7 +150,8 @@ pub async fn get_game_detail_logic(
         .map(|p| (p.participant_id, p.player))
         .collect();
 
-    let mut participants: Vec<ParticipantInfo> = Vec::with_capacity(api_game_data.participants.len());
+    let mut participants: Vec<ParticipantInfo> =
+        Vec::with_capacity(api_game_data.participants.len());
     for p in api_game_data.participants {
         let stats = p.stats; // No need to clone anymore
         let kills = stats.kills.unwrap_or(0);
@@ -250,7 +250,6 @@ pub async fn get_game_detail_logic(
         max_streak,
     })
 }
-
 
 /// 获取指定召唤师最近几场简单战绩
 pub async fn get_recent_matches_by_summoner_id(

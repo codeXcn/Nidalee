@@ -6,6 +6,3 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import OpggChampionBuilds from '@/components/features/opgg/OpggChampionBuilds.vue'
-</script>

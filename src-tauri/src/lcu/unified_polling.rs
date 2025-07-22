@@ -1,11 +1,11 @@
 // 统一轮询管理器 - 优化版本
 use crate::lcu::{
-    auth::ensure_valid_auth_info,
-    champ_select::get_champ_select_session,
-    gameflow::get_gameflow_phase,
-    lobby::get_lobby_info,
-    matchmaking::{get_match_info, get_matchmaking_state},
-    summoner::get_current_summoner,
+    auth::service::ensure_valid_auth_info,
+    champ_select::service::get_champ_select_session,
+    gameflow::service::get_gameflow_phase,
+    lobby::service::get_lobby_info,
+    matchmaking::service::{get_match_info, get_matchmaking_state},
+    summoner::service::get_current_summoner,
     types::{ChampSelectSession, LcuAuthInfo, MatchInfo, MatchmakingState, SummonerInfo},
 };
 use std::sync::Arc;

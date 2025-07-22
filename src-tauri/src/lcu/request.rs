@@ -1,5 +1,5 @@
 //! LCU HTTP 通用请求工具，支持全局认证、自动重试、统一错误处理、泛型反序列化
-use crate::lcu::auth::{ensure_valid_auth_info, refresh_auth_info};
+use crate::lcu::auth::service::{ensure_valid_auth_info, refresh_auth_info};
 use base64::{engine::general_purpose, Engine as _};
 use reqwest::{Client, Method, Response};
 use serde::de::DeserializeOwned;
@@ -158,9 +158,6 @@ pub async fn lcu_patch_no_content(client: &Client, path: &str, body: Value) -> R
         Err(format!("服务器返回错误: {}", response.status()))
     }
 }
-
-
-
 
 /// 通用 champ-r HTTP 请求，返回反序列化后的数据
 pub async fn forin_request_json<T: DeserializeOwned>(

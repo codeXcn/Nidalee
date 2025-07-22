@@ -1,8 +1,51 @@
-use crate::lcu::request::{lcu_get, lcu_post, lcu_delete, lcu_put};
-use crate::lcu::types::{RunePage, CreateRunePageRequest, ItemSet, ItemBlock, RecommendedItem};
+
+//! LCU 符文相关 API
+use crate::lcu::request::lcu_request_raw;
+use crate::lcu::request::{lcu_delete, lcu_get, lcu_post, lcu_put};
+use crate::lcu::types::{
+    CreateRunePageRequest, ItemBlock, ItemSet, Perk, RecommendedItem, RunePage, RuneStyle,
+};
 use reqwest::Client;
 use serde_json::json;
 
+/// 获取所有符文样式
+/// 对应 LCU API: /lol-perks/v1/styles
+pub async fn list_all_styles(client: &Client) -> Result<Vec<RuneStyle>, String> {
+    let path = "/lol-perks/v1/styles";
+    lcu_get(client, path).await
+}
+
+/// 获取所有符文详细信息
+/// 对应 LCU API: /lol-perks/v1/perks
+pub async fn list_all_perks(client: &Client) -> Result<Vec<Perk>, String> {
+    let path = "/lol-perks/v1/perks";
+    lcu_get(client, path).await
+}
+
+/// 获取符文图标资源
+/// 对应 LCU API: GET /lol-game-data/assets/v1/perk-images/...
+pub async fn get_perk_icon(client: &Client, icon_path: &str) -> Result<Vec<u8>, String> {
+    // 确保路径以 / 开头
+    let path = if icon_path.starts_with('/') {
+        icon_path.to_string()
+    } else {
+        format!("/{}", icon_path)
+    };
+
+    let response = lcu_request_raw(client, reqwest::Method::GET, &path, None).await?;
+
+    if !response.status().is_success() {
+        return Err(format!("获取图标失败，状态码: {}", response.status()));
+    }
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("读取图片数据失败: {}", e))?;
+    Ok(bytes.to_vec())
+}
+
+// 以下内容为原 build_application.rs 全部内容，粘贴至此
 /// 获取当前所有符文页面
 pub async fn get_rune_pages(client: &Client) -> Result<Vec<RunePage>, String> {
     log::info!("🔧 开始获取符文页面列表");
@@ -39,8 +82,8 @@ pub async fn create_rune_page(
         selected_perk_ids,
     };
 
-    let body = serde_json::to_value(request)
-        .map_err(|e| format!("序列化创建符文页面请求失败: {}", e))?;
+    let body =
+        serde_json::to_value(request).map_err(|e| format!("序列化创建符文页面请求失败: {}", e))?;
 
     log::info!("🔧 发送创建符文页面请求到: /lol-perks/v1/pages");
     let result: Result<RunePage, String> = lcu_post(client, "/lol-perks/v1/pages", body).await;
@@ -51,30 +94,11 @@ pub async fn create_rune_page(
     result
 }
 
-/// 更新现有符文页面
-pub async fn update_rune_page(
-    client: &Client,
-    page_id: i64,
-    name: &str,
-    primary_style_id: i32,
-    sub_style_id: i32,
-    selected_perk_ids: Vec<i32>,
-) -> Result<RunePage, String> {
-    let body = json!({
-        "name": name,
-        "primaryStyleId": primary_style_id,
-        "subStyleId": sub_style_id,
-        "selectedPerkIds": selected_perk_ids
-    });
-
-    let path = format!("/lol-perks/v1/pages/{}", page_id);
-    lcu_put(client, &path, body).await
-}
-
 /// 删除指定的符文页面
 pub async fn delete_rune_page(client: &Client, page_id: i64) -> Result<(), String> {
     log::info!("🔧 开始删除符文页面: {}", page_id);
-    let result: Result<(), String> = lcu_delete(client, &format!("/lol-perks/v1/pages/{}", page_id)).await;
+    let result: Result<(), String> =
+        lcu_delete(client, &format!("/lol-perks/v1/pages/{}", page_id)).await;
     match &result {
         Ok(_) => log::info!("🔧 成功删除符文页面: {}", page_id),
         Err(e) => log::error!("🔧 删除符文页面失败: {}", e),
@@ -131,66 +155,8 @@ pub async fn apply_rune_build(
         primary_style_id,
         sub_style_id,
         selected_perk_ids,
-    ).await?;
+    )
+    .await?;
 
     Ok(format!("成功创建符文页面: {}", new_page.name))
-}
-
-/// 获取当前英雄的装备推荐
-pub async fn get_item_sets(client: &Client) -> Result<Vec<ItemSet>, String> {
-    lcu_get(client, "/lol-item-sets/v1/item-sets").await
-}
-
-/// 创建装备推荐套装
-pub async fn create_item_set(client: &Client, item_set: ItemSet) -> Result<(), String> {
-    let body = serde_json::to_value(item_set)
-        .map_err(|e| format!("序列化装备推荐失败: {}", e))?;
-
-    lcu_post::<serde_json::Value>(client, "/lol-item-sets/v1/item-sets", body).await?;
-    Ok(())
-}
-
-/// 应用装备推荐配置
-pub async fn apply_item_build(
-    client: &Client,
-    champion_name: &str,
-    starter_items: Vec<String>,
-    core_items: Vec<String>,
-) -> Result<String, String> {
-    // 创建装备块
-    let mut blocks = Vec::new();
-
-    // 初始装备块
-    if !starter_items.is_empty() {
-        blocks.push(ItemBlock {
-            block_type: "起手装备".to_string(),
-            items: starter_items.into_iter().map(|id| RecommendedItem {
-                id,
-                count: 1,
-            }).collect(),
-        });
-    }
-
-    // 核心装备块
-    if !core_items.is_empty() {
-        blocks.push(ItemBlock {
-            block_type: "核心装备".to_string(),
-            items: core_items.into_iter().map(|id| RecommendedItem {
-                id,
-                count: 1,
-            }).collect(),
-        });
-    }
-
-    // 创建装备套装
-    let item_set = ItemSet {
-        title: format!("{} 推荐出装", champion_name),
-        champion: champion_name.to_string(),
-        mode: "any".to_string(),
-        map: "any".to_string(),
-        blocks,
-    };
-
-    create_item_set(client, item_set).await?;
-    Ok(format!("成功创建 {} 的装备推荐", champion_name))
 }
