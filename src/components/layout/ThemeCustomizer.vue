@@ -31,7 +31,7 @@
                 : 'border-muted hover:border-primary/40 hover:scale-105'
             )
           "
-          @click="settingsStore.setColor(color.name)"
+          @click="() => settingsStore.setColor(color.name)"
           type="button"
         >
           <div
@@ -59,8 +59,8 @@
             cn(
               'flex h-9 w-12 items-center justify-center rounded-lg border text-xs font-medium transition-all duration-150',
               settingsStore.selectedRadius === radius.value
-                ? 'border-primary bg-accent shadow scale-105'
-                : 'border-muted hover:border-primary/40 hover:scale-105'
+                ? 'border-primary bg-accent shadow '
+                : 'border-muted hover:border-primary/40 '
             )
           "
           @click="settingsStore.setRadius(radius.value)"
@@ -75,14 +75,30 @@
     <div>
       <Label class="text-sm font-semibold mb-2 block">主题模式</Label>
       <div class="flex items-center gap-3">
-        <Switch :model-value="settingsStore.isDark" @update:model-value="settingsStore.toggleTheme" id="dark-mode" />
-        <Label for="dark-mode" class="text-sm font-medium">
-          <transition name="fade">
-            <span :key="settingsStore.isDark ? 'dark' : 'light'">{{
-              settingsStore.isDark ? '深色模式' : '浅色模式'
-            }}</span>
-          </transition>
-        </Label>
+        <button
+          :class="
+            cn(
+              'flex items-center rounded-lg gap-1 border text-sm font-medium transition-co duration-150  border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground px-4 py-2 h-8',
+              !settingsStore.isDark ? 'border-primary shadow' : 'border-muted hover:border-primary/40  '
+            )
+          "
+          @click="() => settingsStore.toggleTheme(false)"
+          type="button"
+        >
+          <Sun class="w-4 h-4" /> Light
+        </button>
+        <button
+          :class="
+            cn(
+              'flex items-center rounded-lg gap-1  border text-sm font-medium transition-co duration-150  border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground px-4 py-2 h-8',
+              settingsStore.isDark ? 'border-primary  shadow  ' : 'border-muted hover:border-primary/40  '
+            )
+          "
+          @click="() => settingsStore.toggleTheme(true)"
+          type="button"
+        >
+          <Moon class="w-4 h-4" /> Dark
+        </button>
       </div>
       <div class="text-xs text-muted-foreground mt-1">
         当前状态: <span class="font-semibold">{{ settingsStore.isDark ? '深色' : '浅色' }}</span>
@@ -105,8 +121,8 @@
             cn(
               'flex items-center justify-center rounded-lg border text-xs h-10 font-medium transition-all duration-150',
               settingsStore.selectedStyle === style.name
-                ? 'border-primary bg-accent shadow scale-105'
-                : 'border-muted hover:border-primary/40 hover:scale-105'
+                ? 'border-primary bg-accent shadow '
+                : 'border-muted hover:border-primary/40 '
             )
           "
           @click="settingsStore.setStyle(style.name)"
@@ -122,9 +138,23 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
-import { RotateCcw } from 'lucide-vue-next'
+import { RotateCcw, Sun, Moon } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
 
 const settingsStore = useSettingsStore()
+
+// 动态切换 <html> 的 class
+function setThemeClass(theme: string, isDark: boolean) {
+  const html = document.documentElement
+  // 先收集所有 theme-xxx 和 dark
+  const removeList: string[] = []
+  html.classList.forEach((cls) => {
+    if (cls.startsWith('theme-') || cls === 'dark') removeList.push(cls)
+  })
+  removeList.forEach((cls) => html.classList.remove(cls))
+  html.classList.add(`theme-${theme}`)
+  if (isDark) html.classList.add('dark')
+}
 
 const htmlHasDarkClass = ref(false)
 const updateHtmlClassStatus = () => {
@@ -133,6 +163,7 @@ const updateHtmlClassStatus = () => {
 
 onMounted(() => {
   settingsStore.initTheme()
+  setThemeClass(settingsStore.selectedColor, settingsStore.isDark)
   updateHtmlClassStatus()
   const observer = new MutationObserver(updateHtmlClassStatus)
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })

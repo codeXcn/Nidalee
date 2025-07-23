@@ -1,11 +1,11 @@
-import { applyColorTheme as applyTheme, colors, radiusOptions, styles, type ColorThemeName } from '@/lib/theme'
+import { colors, radiusOptions, styles } from '@/lib/theme'
 import { computed, ref } from 'vue'
 
 export const useSettingsStore = defineStore(
   'settings',
   () => {
     // 主题设置
-    const selectedColor = ref<ColorThemeName>('neutral')
+    const selectedColor = ref<string>('zinc')
     const selectedRadius = ref(0.5)
     const selectedStyle = ref('new-york')
     const isDark = ref(false)
@@ -29,16 +29,22 @@ export const useSettingsStore = defineStore(
       isDark: isDark.value
     }))
 
-    // 应用颜色主题
-    const applyColorTheme = (colorName: ColorThemeName) => {
-      applyTheme(colorName)
-      console.log('[SettingsStore] 应用颜色主题:', colorName)
+    // 主题相关class同步
+    function setThemeClass(theme: string, isDark: boolean) {
+      const html = document.documentElement
+      const removeList: string[] = []
+      html.classList.forEach((cls) => {
+        if (cls.startsWith('theme-') || cls === 'dark') removeList.push(cls)
+      })
+      removeList.forEach((cls) => html.classList.remove(cls))
+      html.classList.add(`theme-${theme}`)
+      if (isDark) html.classList.add('dark')
     }
 
     // 设置颜色
     const setColor = (colorName: string) => {
-      selectedColor.value = colorName as ColorThemeName
-      applyColorTheme(colorName as ColorThemeName)
+      selectedColor.value = colorName
+      setThemeClass(selectedColor.value, isDark.value)
     }
 
     // 设置圆角
@@ -55,12 +61,7 @@ export const useSettingsStore = defineStore(
     // 切换主题
     const toggleTheme = (newValue: boolean) => {
       isDark.value = newValue
-      if (newValue) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-      applyColorTheme(selectedColor.value)
+      setThemeClass(selectedColor.value, isDark.value)
     }
 
     // 重置主题
@@ -69,11 +70,8 @@ export const useSettingsStore = defineStore(
       selectedRadius.value = 0.5
       selectedStyle.value = 'new-york'
       isDark.value = false
-
-      document.documentElement.classList.remove('dark')
+      setThemeClass(selectedColor.value, isDark.value)
       document.documentElement.style.setProperty('--radius', '0.5rem')
-
-      applyColorTheme('neutral')
     }
 
     // 初始化主题
@@ -90,16 +88,11 @@ export const useSettingsStore = defineStore(
 
         if (!hasPersistedTheme) {
           isDark.value = true
-          document.documentElement.classList.add('dark')
         }
       }
 
       // 应用当前状态到 DOM
-      if (isDark.value) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+      setThemeClass(selectedColor.value, isDark.value)
 
       // 应用圆角设置
       document.documentElement.style.setProperty('--radius', `${selectedRadius.value}rem`)
@@ -109,9 +102,6 @@ export const useSettingsStore = defineStore(
         console.log('[SettingsStore] 系统主题偏好变化:', e.matches ? 'dark' : 'light')
         // 这里可以选择是否要跟随系统主题，当前保持用户设置
       })
-
-      // 应用初始颜色主题
-      applyColorTheme(selectedColor.value)
     }
 
     // 应用设置方法
@@ -230,7 +220,6 @@ export const useSettingsStore = defineStore(
       toggleTheme,
       resetTheme,
       initTheme,
-      applyColorTheme,
 
       // 应用设置方法
       setAutoStart,

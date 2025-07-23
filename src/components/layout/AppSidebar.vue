@@ -18,7 +18,9 @@
                           : 'linear-gradient(90deg, var(--color-primary, #f59e42), #7c3aed)'
                     }"
                   >
-                    Nidalee
+                    <RadiantText class="transition ease-out" :duration="5">
+                      <span>Nidalee~</span>
+                    </RadiantText>
                   </div>
                 </div>
               </div>
@@ -105,14 +107,14 @@ const menuItems = [
     icon: TrendingUp
   },
   {
-    title: '自动功能',
-    url: '/auto-functions',
-    icon: Zap
-  },
-  {
     title: 'OP.GG',
     url: '/opgg',
     icon: Trophy
+  },
+  {
+    title: '自动功能',
+    url: '/auto-functions',
+    icon: Zap
   }
 ]
 

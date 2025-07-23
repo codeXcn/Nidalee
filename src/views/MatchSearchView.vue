@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isConnected" class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4">
     <SummonerSearchBox v-model:summoner-name="searchText" @on-search="onSearch" />
     <!-- names数组的tags（shadcn-vue Badge + tailwind） -->
     <div v-if="names.length" class="mb-2 flex gap-2 flex-wrap">
@@ -26,7 +26,6 @@
       :match-statistics="currentRestult?.matches"
     />
   </div>
-  <ClientDisconnected v-else />
 </template>
 <script lang="ts" setup>
 import { appContextKey, type AppContext } from '@/types'

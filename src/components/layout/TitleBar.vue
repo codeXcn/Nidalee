@@ -1,8 +1,8 @@
 <template>
   <div data-tauri-drag-region class="titlebar">
-    <div class="titlebar-left animate-pulse">
+    <div class="titlebar-left">
       <img src="../../assets/logo.svg" alt="logo" class="logo" />
-      <span class="title">Nidalee - 高性能、体积小巧的智能英雄联盟游戏助手</span>
+      <span class="title">Nidalee - Made by <span class="animate-pulse"> ❤️ </span> CodexLin </span>
     </div>
     <div class="titlebar-right">
       <div class="titlebar-button" id="titlebar-minimize" @click="minimizeWindow">

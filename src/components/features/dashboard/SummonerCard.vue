@@ -1,5 +1,5 @@
 <template>
-  <Card v-if="summonerInfo" class="overflow-hidden py-0">
+  <Card v-if="summonerInfo" class="overflow-hidden py-0 gap-0">
     <!-- 头部渐变背景 -->
     <div
       class="p-6 text-white"

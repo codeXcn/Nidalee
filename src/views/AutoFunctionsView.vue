@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isConnected" class="min-h-screen bg-background">
+  <div class="min-h-screen bg-background">
     <!-- 通知组件已移除，使用 toast 替代 -->
     <div class="max-w-7xl mx-auto">
       <!-- 标题和状态 -->
@@ -98,7 +98,6 @@
       </div>
     </div>
   </div>
-  <ClientDisconnected v-else />
 </template>
 
 <script setup lang="ts">

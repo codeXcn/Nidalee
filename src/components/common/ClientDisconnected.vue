@@ -1,11 +1,6 @@
 <template>
   <div class="relative flex min-h-[calc(100vh-180px)] w-full flex-col items-center justify-center bg-background">
-    <span
-      class="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
-    >
-      Nidalee
-    </span>
-    <p class="text-muted-foreground my-2">请确保客户端已启动并联网，或稍后重试。</p>
+    <MorphingText class="lg:text-[4rem] text-muted-foreground" :texts="texts" />
     <ParticlesBg
       class="absolute inset-0"
       :quantity="100"
@@ -19,4 +14,27 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/ui/settingsStore'
+const texts = [
+  '等待连接英雄联盟客户端...',
+  'Nidalee - 智能游戏助手',
+  '检测游戏进程中...',
+  '智能符文推荐，一键导入',
+  '等待客户端启动中...',
+  '实时对局数据分析',
+  '检查网络连接状态...',
+  '自动选择最优符文配置',
+  '等待召唤师上线...',
+  'OP.GG 配置一键同步',
+  '检测游戏窗口...',
+  '智能英雄选择建议',
+  '准备连接服务器...',
+  '个性化游戏体验',
+  '等待客户端响应...',
+  '让游戏更简单',
+  '让胜利更轻松',
+  '检测游戏状态...',
+  '实时对局统计信息',
+  '等待连接建立...',
+  'Nidalee-你的游戏伙伴'
+]
 </script>

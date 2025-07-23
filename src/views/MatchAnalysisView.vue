@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isConnected" class="min-h-screen">
+  <div class="min-h-screen">
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->
@@ -111,7 +111,6 @@
       </SheetContent>
     </Sheet>
   </div>
-  <ClientDisconnected v-else />
 </template>
 
 <script setup lang="ts">

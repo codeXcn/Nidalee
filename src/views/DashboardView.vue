@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isConnected" class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4">
     <!-- 用户信息卡片 -->
     <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" />
 
@@ -19,7 +19,6 @@
       @fetch-match-history="handleFetchMatchHistory"
     />
   </div>
-  <ClientDisconnected v-else />
 </template>
 
 <script setup lang="ts">
