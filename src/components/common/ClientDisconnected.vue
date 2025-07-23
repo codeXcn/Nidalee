@@ -15,10 +15,11 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 const texts = [
+  'Nidalee - By CodexLin',
   '等待连接英雄联盟客户端...',
-  'Nidalee - 智能游戏助手',
+  '智能分析敌我玩家',
   '检测游戏进程中...',
-  '智能符文推荐，一键导入',
+  '符文出装推荐，一键导入',
   '等待客户端启动中...',
   '实时对局数据分析',
   '检查网络连接状态...',
@@ -35,6 +36,6 @@ const texts = [
   '检测游戏状态...',
   '实时对局统计信息',
   '等待连接建立...',
-  'Nidalee-你的游戏伙伴'
+  'Nidalee - By CodexLin'
 ]
 </script>
