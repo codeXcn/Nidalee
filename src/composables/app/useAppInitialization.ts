@@ -6,12 +6,16 @@ import { useConnectionStore } from '@/stores/core/connectionStore'
 import { useDataStore } from '@/stores/core/dataStore'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { ref } from 'vue'
+import { useDeviceWebSocket } from './useDeviceWebSocket'
 
 /**
  * 应用初始化组合式函数
  * 职责：处理应用启动时的初始化逻辑
  */
 export function useAppInitialization() {
+  // @ts-expect-error 跳过检查
+  const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL
+  useDeviceWebSocket(wsBaseUrl)
   const dataStore = useDataStore()
   const settingsStore = useSettingsStore()
   const activityStore = useActivityStore()

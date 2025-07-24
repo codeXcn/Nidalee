@@ -81,6 +81,7 @@ declare module 'vue' {
     ItemsCard: typeof import('./../src/components/features/opgg/components/ItemsCard.vue')['default']
     Label: typeof import('./../src/components/ui/label/Label.vue')['default']
     LineShadowText: typeof import('./../src/components/ui/line-shadow-text/LineShadowText.vue')['default']
+    Loading: typeof import('./../src/components/common/Loading.vue')['default']
     MatchmakingPanel: typeof import('./../src/components/features/game/MatchmakingPanel.vue')['default']
     MorphingText: typeof import('./../src/components/ui/morphing-text/MorphingText.vue')['default']
     NeonBorder: typeof import('./../src/components/ui/neon-border/NeonBorder.vue')['default']

@@ -3,7 +3,6 @@ use crate::{http_client, lcu};
 use reqwest::Client;
 use serde_json;
 use serde_json::Value;
-
 #[tauri::command]
 pub async fn get_live_player_list() -> Result<String, String> {
     let client = reqwest::Client::builder()
@@ -278,3 +277,68 @@ async fn invoke_command_internal(
         _ => Err("未知命令".to_string()),
     }
 }
+#[tauri::command]
+pub async fn get_machine_hash() -> Result<String, String> {
+    use std::process::Command;
+    use sha2::{Sha256, Digest};
+
+    // 获取主板序列号
+    #[cfg(target_os = "windows")]
+    fn get_board_sn() -> Option<String> {
+        let output = Command::new("wmic")
+            .args(&["baseboard", "get", "serialnumber"])
+            .output()
+            .ok()?;
+        String::from_utf8(output.stdout).ok()?.lines().nth(1).map(|s| s.trim().to_string())
+    }
+    #[cfg(target_os = "linux")]
+    fn get_board_sn() -> Option<String> {
+        let output = Command::new("cat")
+            .arg("/sys/class/dmi/id/board_serial")
+            .output()
+            .ok()?;
+        Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
+    }
+    #[cfg(target_os = "macos")]
+    fn get_board_sn() -> Option<String> {
+        let output = Command::new("ioreg")
+            .args(&["-l"])
+            .output()
+            .ok()?;
+        let out = String::from_utf8_lossy(&output.stdout);
+        out.lines()
+            .find(|line| line.contains("IOPlatformSerialNumber"))
+            .and_then(|line| line.split('=').nth(1))
+            .map(|s| s.replace("\"", "").trim().to_string())
+    }
+
+    // 获取MAC地址
+    fn get_mac() -> Option<String> {
+        use mac_address::get_mac_address;
+        match get_mac_address() {
+            Ok(Some(ma)) => Some(ma.to_string()),
+            _ => None,
+        }
+    }
+
+    let board_sn = get_board_sn().unwrap_or_default();
+    let mac = get_mac().unwrap_or_default();
+
+    log::info!("主板序列号: {}", board_sn);
+    log::info!("MAC地址: {}", mac);
+
+    if board_sn.is_empty() && mac.is_empty() {
+        return Err("无法获取主板序列号和MAC地址".to_string());
+    }
+
+    let raw = format!("{}-{}", board_sn, mac);
+
+    // SHA256哈希
+    let mut hasher = Sha256::new();
+    hasher.update(raw.as_bytes());
+    let hash = hasher.finalize();
+    let hash_hex = format!("{:x}", hash);
+
+    Ok(hash_hex)
+}
+

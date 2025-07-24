@@ -12,7 +12,7 @@ export function useConnection() {
   const isConnected = computed(() => connectionStore.isConnected)
   const connectionState = computed(() => connectionStore.connectionState)
   const connectionError = computed(() => connectionStore.connectionError)
-
+  const hasAuth = computed(() => connectionStore.hasAuth)
   // 直接使用 store 中更完善的状态文本
   const connectionMessage = computed(() => connectionStore.statusText)
 
@@ -29,6 +29,7 @@ export function useConnection() {
 
   return {
     // 状态
+    hasAuth,
     isConnected,
     connectionState,
     connectionError,

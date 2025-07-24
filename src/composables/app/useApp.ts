@@ -12,7 +12,7 @@ export function useApp() {
   const settingsStore = useSettingsStore()
   const appInit = useAppInitialization()
   const appEvents = useAppEvents()
-  const { isConnected, connectionMessage, checkConnection } = useConnection()
+  const { isConnected, connectionMessage, checkConnection, hasAuth } = useConnection()
   // 主题状态
   const isDark = computed(() => settingsStore.isDark)
 
@@ -38,7 +38,7 @@ export function useApp() {
   return {
     // 主题相关
     isDark,
-
+    hasAuth,
     // 连接相关
     isConnected,
     connectionMessage,
