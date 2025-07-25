@@ -5,10 +5,12 @@ import { reactiveOmit } from '@vueuse/core'
 import { ComboboxGroup, ComboboxLabel } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<ComboboxGroupProps & {
-  class?: HTMLAttributes['class']
-  heading?: string
-}>()
+const props = defineProps<
+  ComboboxGroupProps & {
+    class?: HTMLAttributes['class']
+    heading?: string
+  }
+>()
 
 const delegatedProps = reactiveOmit(props, 'class')
 </script>

@@ -1,1 +1,1 @@
-export { default as MorphingText } from "./MorphingText.vue";
+export { default as MorphingText } from './MorphingText.vue'

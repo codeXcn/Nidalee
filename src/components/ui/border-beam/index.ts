@@ -1,1 +1,1 @@
-export { default as BorderBeam } from "./BorderBeam.vue";
+export { default as BorderBeam } from './BorderBeam.vue'

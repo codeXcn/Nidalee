@@ -1,54 +1,48 @@
 <template>
-  <div :class="cn(
-  'relative inline-block h-10 w-full max-w-sm overflow-hidden rounded-lg p-px z-10',
-  props.class,
-)" :style="{
-  '--neon-border-duration': durationInSeconds,
-}">
-    <div :class="cn(
-  'neon-border-one rounded-lg',
-  animationType != 'none' ? 'animate-neon-border' : '',
-)"></div>
-    <div :class="cn(
-  'neon-border-two rounded-lg',
-  animationType != 'none' ? 'animate-neon-border' : '',
-)"></div>
+  <div
+    :class="cn('relative inline-block h-10 w-full max-w-sm overflow-hidden rounded-lg p-px z-10', props.class)"
+    :style="{
+      '--neon-border-duration': durationInSeconds
+    }"
+  >
+    <div :class="cn('neon-border-one rounded-lg', animationType != 'none' ? 'animate-neon-border' : '')"></div>
+    <div :class="cn('neon-border-two rounded-lg', animationType != 'none' ? 'animate-neon-border' : '')"></div>
     <slot> </slot>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { cn } from "@/lib/utils";
-import type { HTMLAttributes } from "vue";
+import { cn } from '@/lib/utils'
+import type { HTMLAttributes } from 'vue'
 
 interface Props {
-  color1?: string;
-  color2?: string;
-  animationType?: "none" | "half" | "full";
-  duration?: number;
-  class?: HTMLAttributes["class"];
+  color1?: string
+  color2?: string
+  animationType?: 'none' | 'half' | 'full'
+  duration?: number
+  class?: HTMLAttributes['class']
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  color1: "#0496ff",
-  color2: "#ff0a54",
+  color1: '#0496ff',
+  color2: '#ff0a54',
   duration: 6,
-  animationType: "half",
-});
+  animationType: 'half'
+})
 
-const durationInSeconds = computed(() => `${props.duration}s`);
-const animWidth = computed(() => `${getWidth(props.animationType)}%`);
-const colorType1 = computed(() => props.color1);
-const colorType2 = computed(() => props.color2);
+const durationInSeconds = computed(() => `${props.duration}s`)
+const animWidth = computed(() => `${getWidth(props.animationType)}%`)
+const colorType1 = computed(() => props.color1)
+const colorType2 = computed(() => props.color2)
 
-function getWidth(animationType: "none" | "half" | "full") {
+function getWidth(animationType: 'none' | 'half' | 'full') {
   switch (animationType) {
-    case "none":
-      return 12;
-    case "half":
-      return 50;
-    case "full":
-      return 100;
+    case 'none':
+      return 12
+    case 'half':
+      return 50
+    case 'full':
+      return 100
   }
 }
 </script>
@@ -71,20 +65,14 @@ function getWidth(animationType: "none" | "half" | "full") {
 }
 
 .neon-border-one::before {
-  content: "";
+  content: '';
   position: absolute;
   overflow: hidden;
   top: 0;
   left: 0;
   width: v-bind(animWidth);
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    v-bind(colorType1),
-    v-bind(colorType1),
-    transparent,
-    transparent
-  );
+  background: linear-gradient(135deg, v-bind(colorType1), v-bind(colorType1), transparent, transparent);
 }
 
 .neon-border-two {
@@ -97,19 +85,13 @@ function getWidth(animationType: "none" | "half" | "full") {
   inset: 0;
 }
 .neon-border-two::before {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0%;
   right: 0%;
   overflow: hidden;
   width: v-bind(animWidth);
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    transparent,
-    transparent,
-    v-bind(colorType2),
-    v-bind(colorType2)
-  );
+  background: linear-gradient(135deg, transparent, transparent, v-bind(colorType2), v-bind(colorType2));
 }
 </style>

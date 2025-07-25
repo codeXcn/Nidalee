@@ -1,1 +1,1 @@
-export { default as NeonBorder } from "./NeonBorder.vue";
+export { default as NeonBorder } from './NeonBorder.vue'

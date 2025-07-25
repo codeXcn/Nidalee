@@ -8,7 +8,7 @@
         'radiant-animation bg-clip-text bg-no-repeat [background-position:0_0] [background-size:var(--radiant-width)_100%] [transition:background-position_1s_cubic-bezier(.6,.6,0,1)_infinite]',
         // Radiant gradient
         'bg-gradient-to-r from-transparent via-black via-50% to-transparent  dark:via-white',
-        $props.class,
+        $props.class
       )
     "
   >
@@ -17,27 +17,27 @@
 </template>
 
 <script lang="ts" setup>
-import { cn } from "@/lib/utils";
-import { computed } from "vue";
+import { cn } from '@/lib/utils'
+import { computed } from 'vue'
 
 const props = defineProps({
   duration: {
     type: Number,
-    default: 10,
+    default: 10
   },
   radiantWidth: {
     type: Number,
-    default: 100,
+    default: 100
   },
-  class: String,
-});
+  class: String
+})
 
 const styleVar = computed(() => {
   return {
-    "--radiant-anim-duration": `${props.duration}s`,
-    "--radiant-width": `${props.radiantWidth}px`,
-  };
-});
+    '--radiant-anim-duration': `${props.duration}s`,
+    '--radiant-width': `${props.radiantWidth}px`
+  }
+})
 </script>
 
 <style scoped>
