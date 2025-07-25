@@ -63,11 +63,11 @@ const tabs = [
     label: '生涯名片',
     icon: Users
   },
-  {
-    id: 'champion-builds',
-    label: '符文出装',
-    icon: Settings
-  },
+  // {
+  //   id: 'champion-builds',
+  //   label: '符文出装',
+  //   icon: Settings
+  // },
   {
     id: 'more',
     label: '更多功能',

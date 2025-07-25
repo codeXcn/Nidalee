@@ -2,6 +2,7 @@
 :root {
   --font-display: 'Satoshi', 'Noto Sans SC', 'Microsoft YaHei', 'sans-serif' ;
 }
+
 .theme-zinc {
   --background: oklch(1.000 0.000 0.0);
   --foreground: oklch(0.141 0.004 285.8);

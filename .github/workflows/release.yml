@@ -40,6 +40,7 @@ jobs:
       - name: 🏗️ Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
+          VITE_WS_BASE_URL: ${{ vars.WS_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            # 使用之前配置的私钥
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}

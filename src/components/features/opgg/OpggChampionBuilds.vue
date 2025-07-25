@@ -28,9 +28,7 @@
           :champion-id="opggData.config.value.championId"
           :champion-build="opggData.state.value.championBuild"
           @load-build="opggData.loadChampionBuild"
-          @load-tier-list="opggData.loadTierList"
           @apply-best-runes="handleApplyBestRunes"
-          @test-component="opggData.testComponent"
         />
       </div>
 
@@ -52,7 +50,7 @@
         v-if="opggData.state.value.message && !opggData.state.value.message.includes('✨')"
         class="border-blue-200 bg-blue-50/80 dark:border-blue-800 dark:bg-blue-950/80 rounded-xl shadow-md"
       >
-        <CardContent class="pt-6">
+        <CardContent>
           <div class="flex items-center gap-3">
             <Info class="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <div>

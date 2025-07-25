@@ -1,22 +1,33 @@
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import viteCompression from 'vite-plugin-compression'
+import { defineConfig, PluginOption } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import Components from 'unplugin-vue-components/vite'
-import ViteAutoImport from 'unplugin-auto-import/vite'
-import { visualizer } from 'rollup-plugin-visualizer'
+import AutoImport from 'unplugin-auto-import/vite'
 import removeConsole from 'vite-plugin-remove-console'
-const host = process.env.TAURI_DEV_HOST
+import { visualizer } from 'rollup-plugin-visualizer'
+import vueDevTools from 'vite-plugin-vue-devtools'
+
+const isDev = process.env.NODE_ENV === 'development'
+const isProd = process.env.NODE_ENV === 'production'
+const host = process.env.TAURI_DEV_HOST || false
+
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      // Vue 3 优化配置
+      template: {
+        compilerOptions: {
+          // 生产环境移除注释和空白
+          comments: !isProd,
+          whitespace: isProd ? 'condense' : 'preserve'
+        }
+      }
+    }),
     vueJsx(),
-    vueDevTools(),
     tailwindcss(),
-    ViteAutoImport({
+    AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
       dts: 'types/auto-imports.d.ts',
       dirs: ['./src/composables']
@@ -28,24 +39,29 @@ export default defineConfig({
       dirs: ['src/components', 'src/components/features', 'src/components/layout', 'src/components/ui'],
       // 用于转换目标的过滤器。
       include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/],
-      // 生成 `components.d.ts` 全局声明文件，
       dts: 'types/components.d.ts'
     }),
-    viteCompression({
-      verbose: false,
-      disable: false,
-      threshold: 10240,
-      algorithm: 'gzip',
-      ext: '.gz'
-    }),
-    visualizer(),
-    removeConsole()
-  ],
+    // 开发环境插件
+    isDev && vueDevTools(),
+    // 生产环境插件
+    isProd && removeConsole(),
+    // 构建分析
+    isProd &&
+      process.env.ANALYZE === 'true' &&
+      visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true
+      })
+  ].filter(Boolean) as PluginOption[],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+
   server: {
     port: 1422,
     strictPort: false,
@@ -58,8 +74,30 @@ export default defineConfig({
         }
       : undefined,
     watch: {
-      // 3. tell vite to ignore watching `src-tauri`
       ignored: ['**/src-tauri/**']
+    }
+  },
+  clearScreen: false,
+  envPrefix: ['VITE_', 'TAURI_ENV_*'],
+  build: {
+    target: process.env.TAURI_ENV_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) return 'vendor_vue'
+            if (id.includes('pinia')) return 'vendor_pinia'
+            if (id.includes('@tanstack')) return 'vendor_tanstack'
+            if (id.includes('tailwind-merge') || id.includes('tw-animate-css') || id.includes('tailwind-scrollbar'))
+              return 'vendor_tailwind'
+            return 'vendor'
+          }
+        }
+      }
     }
   }
 })

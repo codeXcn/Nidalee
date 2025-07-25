@@ -33,7 +33,7 @@
             :model-value="delayModel"
             @update:model-value="(val: number[] | undefined) => (delayModel = val || [0])"
             :max="10000"
-            :min="0"
+            :min="1000"
             :step="100"
             class="w-full"
           />
@@ -45,7 +45,7 @@
                 (val: string | number) => (debouncedDelay = typeof val === 'string' ? parseInt(val) || 0 : val)
               "
               type="number"
-              :min="0"
+              :min="1000"
               :max="10000"
               :step="100"
               class="w-28 text-center text-sm"

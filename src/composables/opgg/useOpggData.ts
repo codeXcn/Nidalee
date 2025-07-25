@@ -40,23 +40,23 @@ export function useOpggData() {
   const regions = [
     { value: 'global', label: '全球' },
     { value: 'kr', label: '韩服' },
-    { value: 'na', label: '北美' },
-    { value: 'euw', label: '欧洲西部' },
-    { value: 'eune', label: '欧洲北欧东部' },
-    { value: 'jp', label: '日服' },
-    { value: 'br', label: '巴西' },
-    { value: 'lan', label: '拉丁美洲北部' },
-    { value: 'las', label: '拉丁美洲南部' },
-    { value: 'oce', label: '大洋洲' },
-    { value: 'tr', label: '土耳其' },
-    { value: 'ru', label: '俄罗斯' }
+    { value: 'na', label: '北美' }
+    // { value: 'euw', label: '欧洲西部' },
+    // { value: 'eune', label: '欧洲北欧东部' },
+    // { value: 'jp', label: '日服' },
+    // { value: 'br', label: '巴西' },
+    // { value: 'lan', label: '拉丁美洲北部' },
+    // { value: 'las', label: '拉丁美洲南部' },
+    // { value: 'oce', label: '大洋洲' },
+    // { value: 'tr', label: '土耳其' },
+    // { value: 'ru', label: '俄罗斯' }
   ]
 
   const modes = [
-    { value: 'ranked', label: '排位赛' },
-    { value: 'aram', label: '大乱斗' },
-    { value: 'arena', label: '斗魂竞技场' },
-    { value: 'urf', label: '无限火力' }
+    { value: 'ranked', label: '排位赛' }
+    // { value: 'aram', label: '大乱斗' },
+    // { value: 'arena', label: '斗魂竞技场' }
+    // { value: 'urf', label: '无限火力' }
   ]
 
   const tiers = [

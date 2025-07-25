@@ -105,7 +105,7 @@
                 (val: string | number) => (debouncedDelay = typeof val === 'string' ? parseInt(val) || 0 : val)
               "
               type="number"
-              :min="0"
+              :min="1000"
               :max="10000"
               :step="100"
               class="w-28 text-center text-sm"

@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex min-h-[calc(100vh-180px)] w-full flex-col items-center justify-center bg-background">
+  <div class="relative flex h-lvh w-full flex-col items-center justify-center bg-background">
     <MorphingText class="lg:text-[4rem] text-muted-foreground" :texts="texts" />
     <ParticlesBg
       class="absolute inset-0"

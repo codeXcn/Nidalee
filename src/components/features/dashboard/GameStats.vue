@@ -130,7 +130,14 @@
               >
                 <div class="flex items-center space-x-2">
                   <div class="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <span class="text-xs font-bold">{{ getChampionName(champion.championId).charAt(0) }}</span>
+                    <img
+                      v-if="champion.championId"
+                      :src="getChampionIconUrl(champion.championId)"
+                      lazyload
+                      alt=""
+                      class="h-8 w-8 rounded-full"
+                    />
+                    <span v-else class="text-xs font-bold">{{ getChampionName(champion.championId).charAt(0) }}</span>
                   </div>
                   <div>
                     <p class="font-medium text-sm">{{ getChampionName(champion.championId) }}</p>
@@ -175,7 +182,15 @@
               <div class="flex-1 p-4 flex flex-col">
                 <!-- 标题区 -->
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-base font-semibold text-foreground">{{ getChampionName(game.championId) }}</span>
+                  <div class="flex items-center space-x-2">
+                    <img
+                      v-if="game.championId"
+                      :src="getChampionIconUrl(game.championId)"
+                      alt=""
+                      class="h-8 w-8 rounded-full border-2 border-primary ring-1 ring-primary/20"
+                    />
+                    <span class="text-base font-semibold text-foreground">{{ getChampionName(game.championId) }}</span>
+                  </div>
                   <Badge :variant="game.win ? 'default' : 'destructive'" class="text-xs px-2 py-0.5">
                     {{ game.win ? '胜利' : '失败' }}
                   </Badge>
@@ -249,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { getChampionName } from '@/lib'
+import { getChampionIconUrl, getChampionName } from '@/lib'
 import {
   AlertCircle,
   Award,

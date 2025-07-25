@@ -5,10 +5,10 @@
       {{ loading ? '加载中...' : '获取详细数据' }}
     </Button>
 
-    <Button @click="onLoadTierList" :disabled="loading" variant="secondary" class="flex items-center gap-2">
+    <!-- <Button @click="onLoadTierList" :disabled="loading" variant="secondary" class="flex items-center gap-2">
       <List class="w-4 h-4" />
       获取层级列表
-    </Button>
+    </Button> -->
 
     <Button
       @click="onApplyBestRunes"
@@ -20,10 +20,10 @@
       应用最佳符文
     </Button>
 
-    <Button @click="onTestComponent" variant="secondary" class="flex items-center gap-2">
+    <!-- <Button @click="onTestComponent" variant="secondary" class="flex items-center gap-2">
       <TestTube class="w-4 h-4" />
       测试组件功能
-    </Button>
+    </Button> -->
   </div>
 </template>
 
@@ -48,7 +48,5 @@ defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const onLoadBuild = () => emit('load-build')
-const onLoadTierList = () => emit('load-tier-list')
 const onApplyBestRunes = () => emit('apply-best-runes')
-const onTestComponent = () => emit('test-component')
 </script>

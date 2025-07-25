@@ -7,7 +7,7 @@ import { shallowRef, computed } from 'vue'
 export const useConnectionStore = defineStore('connection', () => {
   const hasAuth = shallowRef<boolean | undefined>(undefined)
   // 核心状态：使用 shallowRef 进行优化，因为我们只处理原始类型
-  const connectionState = shallowRef<ConnectionState | undefined>(undefined)
+  const connectionState = shallowRef<ConnectionState>('Disconnected')
   const connectionError = shallowRef<string | null>(null)
 
   // 计算属性

@@ -3,6 +3,8 @@
   position: absolute;
   font-size: 32px;
   opacity: 0;
+  color: var(--color-primary, #888);
+  /* 默认色为灰色，支持主题变量 */
 }
 .z-1 {
   animation: swayUpToRight 2s ease-out infinite;
@@ -30,9 +32,9 @@
 
 <template>
   <div class="flex items-center justify-center h-full">
-    <div class="z z-1">Z</div>
-    <div class="z z-2">Z</div>
-    <div class="z z-3">Z</div>
-    <div class="z z-4">Z</div>
+    <div class="z z-1 dark:text-gray-400 text-gray-500">Z</div>
+    <div class="z z-2 dark:text-gray-400 text-gray-500">Z</div>
+    <div class="z z-3 dark:text-gray-400 text-gray-500">Z</div>
+    <div class="z z-4 dark:text-gray-400 text-gray-500">Z</div>
   </div>
 </template>

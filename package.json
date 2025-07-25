@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm lint:oxlint && pnpm build-only",
+    "build:analyze": "cross-env ANALYZE=true pnpm build-only",
+    "build:prod": "NODE_ENV=production pnpm build",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
@@ -13,7 +15,9 @@
     "lint:oxlint": "oxlint src/ --fix --ignore-path .gitignore",
     "lint:eslint": "eslint src/ --fix",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "clean": "rm -rf dist node_modules/.vite",
+    "prebuild": "pnpm clean && pnpm type-check"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.83.0",
@@ -41,11 +45,11 @@
     "typescript-eslint": "^8.33.1",
     "uuid": "^11.1.0",
     "vue": "^3.5.13",
-    "vue-draggable-next": "^2.2.1",
     "vue-router": "^4.5.0",
     "vue-sonner": "^2.0.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@tailwindcss/vite": "^4.1.8",
     "@tauri-apps/cli": "^2.5.0",
     "@tsconfig/node22": "^22.0.1",
@@ -69,7 +73,6 @@
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.7.0",
     "vite": "7.0.0",
-    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-remove-console": "^2.2.0",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vue-tsc": "^2.2.8"

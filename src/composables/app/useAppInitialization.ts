@@ -14,7 +14,7 @@ import { useDeviceWebSocket } from './useDeviceWebSocket'
  */
 export function useAppInitialization() {
   // @ts-expect-error 跳过检查
-  const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL
+  const wsBaseUrl = import.meta.env.WS_BASE_URL || import.meta.env.VITE_WS_BASE_URL
   useDeviceWebSocket(wsBaseUrl)
   const dataStore = useDataStore()
   const settingsStore = useSettingsStore()
