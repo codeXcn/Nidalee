@@ -120,7 +120,67 @@ pub fn refresh_auth_info() -> Result<LcuAuthInfo, String> {
 }
 
 fn get_lcu_cmdline() -> Option<String> {
-    let mut system = SYSTEM.lock().unwrap();
+    #[cfg(target_os = "windows")]
+    {
+        get_lcu_cmdline_windows()
+    }
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        get_lcu_cmdline_unix()
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    {
+        log::error!("[LCU] 当前操作系统暂不支持自动获取 LoL 参数");
+        None
+    }
+}
+
+pub fn invalidate_auth_info() {
+    let mut info = AUTH_INFO.write().unwrap();
+    *info = None;
+    let mut ts = AUTH_TIMESTAMP.write().unwrap();
+    *ts = None;
+    log::info!("[LCU] AuthInfo 缓存已清除");
+}
+
+/// 验证 AuthInfo 是否真正可用（通过简单的 API 测试）
+pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .timeout(Duration::from_secs(5))
+        .build();
+
+    let client = match client {
+        Ok(c) => c,
+        Err(_) => return false,
+    };
+
+    let url = format!(
+        "https://127.0.0.1:{}/lol-summoner/v1/current-summoner",
+        auth.app_port
+    );
+    let response = client
+        .get(&url)
+        .basic_auth("riot", Some(&auth.remoting_auth_token))
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) => {
+            let success = resp.status().is_success();
+            log::debug!("[LCU] 连接验证结果: {}, 状态码: {}", success, resp.status());
+            success
+        }
+        Err(e) => {
+            log::debug!("[LCU] 连接验证失败: {}", e);
+            false
+        }
+    }
+}
+#[cfg(target_os = "windows")]
+fn get_lcu_cmdline_windows() -> Option<String> {
+   let mut system = SYSTEM.lock().unwrap();
     system
         .refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
@@ -184,46 +244,72 @@ fn get_lcu_cmdline() -> Option<String> {
     log::debug!("[LCU] 未找到包含有效 LCU 参数的客户端进程");
     None
 }
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn get_lcu_cmdline_unix() -> Option<String> {
+    let mut system = SYSTEM.lock().unwrap();
+    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
-pub fn invalidate_auth_info() {
-    let mut info = AUTH_INFO.write().unwrap();
-    *info = None;
-    let mut ts = AUTH_TIMESTAMP.write().unwrap();
-    *ts = None;
-    log::info!("[LCU] AuthInfo 缓存已清除");
-}
+    for (_pid, process) in system.processes() {
+        let name = process.name().to_lowercase();
+        if name.contains("leagueclientux") {
+            let cmdline = process
+                .cmd()
+                .iter()
+                .map(|s| s.to_string_lossy())
+                .collect::<Vec<_>>()
+                .join(" ");
 
-/// 验证 AuthInfo 是否真正可用（通过简单的 API 测试）
-pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .timeout(Duration::from_secs(5))
-        .build();
-
-    let client = match client {
-        Ok(c) => c,
-        Err(_) => return false,
-    };
-
-    let url = format!(
-        "https://127.0.0.1:{}/lol-summoner/v1/current-summoner",
-        auth.app_port
-    );
-    let response = client
-        .get(&url)
-        .basic_auth("riot", Some(&auth.remoting_auth_token))
-        .send()
-        .await;
-
-    match response {
-        Ok(resp) => {
-            let success = resp.status().is_success();
-            log::debug!("[LCU] 连接验证结果: {}, 状态码: {}", success, resp.status());
-            success
-        }
-        Err(e) => {
-            log::debug!("[LCU] 连接验证失败: {}", e);
-            false
+            if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
+                return Some(cmdline);
+            }
         }
     }
+    None
 }
+
+// #[cfg(target_os = "macos")]
+// fn get_lcu_cmdline_macos() -> Option<String> {
+//     use std::process::Command;
+
+//     let output = Command::new("sh")
+//         .arg("-c")
+//         .arg("ps -ax -o command | grep 'LeagueClientUx' | grep -- '--remoting-auth-token' | grep -- '--app-port' | grep -v grep")
+//         .output()
+//         .ok()?;
+
+//     if !output.status.success() {
+//         return None;
+//     }
+
+//     let result = String::from_utf8_lossy(&output.stdout);
+//     for line in result.lines() {
+//         if line.contains("--remoting-auth-token") && line.contains("--app-port") {
+//             return Some(line.to_string());
+//         }
+//     }
+
+//     None
+// }
+// #[cfg(target_os = "linux")]
+// fn get_lcu_cmdline_linux() -> Option<String> {
+//     use std::process::Command;
+
+//     let output = Command::new("sh")
+//         .arg("-c")
+//         .arg("ps -e -o args | grep 'LeagueClientUx' | grep -- '--remoting-auth-token' | grep -- '--app-port' | grep -v grep")
+//         .output()
+//         .ok()?;
+
+//     if !output.status.success() {
+//         return None;
+//     }
+
+//     let result = String::from_utf8_lossy(&output.stdout);
+//     for line in result.lines() {
+//         if line.contains("--remoting-auth-token") && line.contains("--app-port") {
+//             return Some(line.to_string());
+//         }
+//     }
+
+//     None
+// }
