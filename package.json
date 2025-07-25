@@ -15,9 +15,7 @@
     "lint:oxlint": "oxlint src/ --fix --ignore-path .gitignore",
     "lint:eslint": "eslint src/ --fix",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/",
-    "clean": "rm -rf dist node_modules/.vite",
-    "prebuild": "pnpm clean && pnpm type-check"
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.83.0",
