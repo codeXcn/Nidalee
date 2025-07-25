@@ -51,7 +51,7 @@ jobs:
           releaseName: 'Nidalee v__VERSION__'
           releaseDraft: true
           prerelease: false
-          args: ''
+          args: '--version ${{ github.ref_name }}'
 
   release-mac:
     name: "🚀 Release (macOS)"
@@ -95,4 +95,4 @@ jobs:
           releaseName: 'Nidalee v__VERSION__'
           releaseDraft: true
           prerelease: false
-          args: ''
+          args: '--version ${{ github.ref_name }}'
