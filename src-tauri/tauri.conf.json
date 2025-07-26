@@ -31,7 +31,7 @@
   "bundle": {
     "createUpdaterArtifacts": false,
     "active": true,
-    "targets": ["msi"],
+    "targets": ["msi", "dmg"],
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "resources": [],
     "externalBin": [],
@@ -49,6 +49,11 @@
       "tsp": false,
       "wix": {
         "language": "zh-CN"
+      },
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": null,
+        "signingIdentity": null
       }
     }
   },
