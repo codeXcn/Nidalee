@@ -29,8 +29,9 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
-    "targets": "all",
+    "targets": ["msi"],
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "resources": [],
     "externalBin": [],
@@ -51,15 +52,4 @@
       }
     }
   }
-  // "plugins": {
-  //   "updater": {
-  //     "enabled": true,
-  //     "dialog": true,
-  //     "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5MjI1M0NGQjk1RkZDMTkKUldRWi9GKzV6MU1pR2JUQWdhdk1TRjhaQmFPbHpHeERDeTRtSUJZNkdONnpRT01ZRGtwZU1JZUUK",
-  //     "endpoints": ["https://api.github.com/repos/codexlin/Nidalee/releases/latest"],
-  //     "headers": {
-  //       "Authorization": "token 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"
-  //     }
-  //   }
-  // }
 }
