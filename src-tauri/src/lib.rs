@@ -47,6 +47,9 @@ pub fn run() {
             lcu::opgg::commands::get_opgg_champion_positions,
             lcu::opgg::commands::apply_opgg_runes,
             commands::get_machine_hash,
+            lcu::summoner::commands::get_recent_matches_by_puuid,
+            lcu::summoner::commands::get_summoners_and_histories,
+            lcu::summoner::commands::set_summoner_background_skin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

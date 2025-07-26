@@ -250,7 +250,7 @@ fn get_lcu_cmdline_unix() -> Option<String> {
     system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
     for (_pid, process) in system.processes() {
-        let name = process.name().to_lowercase();
+        let name = process.name().to_string_lossy().to_lowercase();
         if name.contains("leagueclientux") {
             let cmdline = process
                 .cmd()

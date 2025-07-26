@@ -1,5 +1,5 @@
 
-use crate::lcu::matches::service::get_recent_matches_by_summoner_id;
+use crate::lcu::matches::service::get_recent_matches_by_puuid;
 use crate::lcu::request::{lcu_get, lcu_patch_no_content};
 use crate::lcu::summoner::service::get_summoner_by_id;
 use crate::lcu::types::{ChampSelectPlayer, ChampSelectSession, MatchStatistics, SummonerInfo};
@@ -232,7 +232,7 @@ pub async fn get_champselect_team_players_info(
     log::info!("准备批量查最近10场战绩, 总人数: {}", info_map.len());
     for (sid, info) in &info_map {
         log::info!("查找召唤师 {} recent matches", sid);
-        if let Ok(matches) = get_recent_matches_by_summoner_id(client, &info.puuid, 20).await {
+        if let Ok(matches) = get_recent_matches_by_puuid(client, &info.puuid, 20).await {
             log::info!("查到 {:?} 场", matches);
             match_map.insert(sid.clone(), matches);
         } else {

@@ -252,7 +252,7 @@ pub async fn get_game_detail_logic(client: &Client, game_id: u64) -> Result<Game
 }
 
 /// 获取指定召唤师最近几场简单战绩
-pub async fn get_recent_matches_by_summoner_id(
+pub async fn get_recent_matches_by_puuid(
     client: &Client,
     puuid: &str,
     count: usize,

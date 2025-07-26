@@ -1,5 +1,11 @@
 use crate::{http_client, lcu};
-use std::collections::HashMap;
+
+#[tauri::command]
+pub async fn get_recent_matches_by_puuid(puuid: String, count: Option<usize>) -> Result<lcu::types::MatchStatistics, String> {
+    let client = http_client::get_lcu_client();
+    let count = count.unwrap_or(20);
+    lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count).await 
+}
 
 #[tauri::command]
 pub async fn get_current_summoner() -> Result<lcu::types::SummonerInfo, String> {
@@ -36,7 +42,7 @@ pub async fn get_summoners_and_histories(
         let puuid = summoner.puuid.clone();
         if !puuid.is_empty() {
             fill_summoner_extra_info(client, summoner).await;
-            match lcu::matches::service::get_recent_matches_by_summoner_id(client, &puuid, 20).await
+            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, 20).await
             {
                 Ok(matches) => {
                     result.push(lcu::types::SummonerWithMatches {

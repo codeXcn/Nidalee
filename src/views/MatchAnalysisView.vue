@@ -3,12 +3,14 @@
     <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+      <div class="grid grid-cols-1 gap-6 lg:gap-8">
         <!-- 分层递进动画：动画只加在子卡片上 -->
         <TeamCard
+          v-if="session.myTeam"
           :team="session.myTeam"
           team-type="ally"
           :local-player-cell-id="session.localPlayerCellId"
+          :summoner-stats="summonerStats || []"
           @select="openSummonerDetails"
         />
         <template v-if="session.theirTeam && session.theirTeam.length">
@@ -128,7 +130,13 @@ const { enrichedSession } = useChampSelectSession()
 
 const shouldShowMatchAnalysis = ref(false)
 // 使用搜索召唤师战绩的钩子
-const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
+const {
+  summonerStats,
+  fetchSummonerInfo,
+  currentRestult,
+  loading: searchLoading,
+  getRencentMatchesByPuuid
+} = useSearchMatches()
 
 // 使用游戏状态 store 来监听状态变化
 const gameStore = useGameStore()
@@ -142,10 +150,10 @@ const dataStore = useDataStore()
 const session = computed(() => {
   if (players.value) {
     const theirTeam = players.value
-    const data = { ...enrichedSession.value, theirTeam }
+    const data = enrichedSession.value ? { ...enrichedSession.value, theirTeam } : { theirTeam }
     return data
   } else {
-    return enrichedSession.value
+    return enrichedSession.value || null
   }
 })
 const players = computed(() => {
@@ -184,27 +192,21 @@ const openSummonerDetails = async (player: EnrichedChampSelectPlayer | EnrichedL
     await fetchSummonerInfo([player.displayName])
   }
 }
-
-// const { data: builds, refetch: refetchBuilds } = useBuildsByAliasQuery(source.value, champion.value)
-// const { data: builds } = useQuery({
-//   queryKey: ['builds-by-alias', source, champion],
-//   queryFn: () => invoke<BuildSection>('get_builds_by_alias', { source, champion }),
-//   enabled: computed(() => !!source && !!champion) // 有参数才请求
-// })
-// watch(
-//   () => builds.value,
-//   (val) => {
-//     console.log('builds', val, allRunes.value)
-//   },
-//   { deep: true }
-// )
-
 watchEffect(async () => {
   const phase = currentPhase.value
   console.log('Current game phase:', phase)
   shouldShowMatchAnalysis.value =
     (!!enrichedSession.value && phase === 'ChampSelect') || phase === 'GameStart' || phase === 'InProgress'
-
+  if (isConnected.value && !summonerStats.value && enrichedSession.value) {
+    console.log('enrichedSession', enrichedSession.value)
+    if (!Array.isArray(enrichedSession.value.myTeam)) console.log('myTeam', enrichedSession.value.myTeam)
+    const ids = enrichedSession.value.myTeam?.map((p: EnrichedLivePlayer) => p.puuid).filter(Boolean) || []
+    console.log('获取战绩的puuid列表:', ids)
+    await getRencentMatchesByPuuid(ids, 6)
+    if (summonerStats.value) {
+      console.log('Fetched summoner stats:', summonerStats.value)
+    }
+  }
   if (phase === 'InProgress' && isConnected.value) {
     console.log('in progress, refetching player list')
     await refetch()
@@ -244,7 +246,7 @@ const getStatusTitle = () => {
 const getStatusDescription = () => {
   switch (currentPhase.value) {
     case 'None':
-      return '当前没有进行任何游戏活动。启动英雄联盟客户端并开始匹配以查看对局分析。'
+      return '当前没有进行任何游戏活动。开始游戏以查看对局分析。'
     case 'Lobby':
       return '正在房间中等待，准备开始匹配对手。'
     case 'Matchmaking':

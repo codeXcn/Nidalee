@@ -1,3 +1,4 @@
+import type { MatchStatistics } from '@/types/generated/MatchStatistics'
 import { invoke } from '@tauri-apps/api/core'
 
 // 专门处理战绩数据获取的 composable
@@ -6,7 +7,7 @@ export function useSearchMatches() {
   const error = ref('')
   const result = ref<SummonerWithMatches[] | null>(null)
   const currentRestult = ref<SummonerWithMatches | null>(null)
-
+  const summonerStats = ref<MatchStatistics[] | null>(null)
   const searchText = ref('')
   const cunrrentIndex = ref(-1)
   const names = ref<string[]>([])
@@ -57,13 +58,32 @@ export function useSearchMatches() {
       loading.value = false
     }
   }
+  const getRencentMatchesByPuuid = async (puuid: string[], count: number = 20) => {
+    try {
+      const matches = await Promise.all(
+        puuid.map((id) => invoke<MatchStatistics>('get_recent_matches_by_puuid', { puuid: id, count }))
+      )
+      // const matches = await invoke<MatchStatistics>('get_recent_matches_by_puuid', { puuid, count })
+      if (matches) {
+        summonerStats.value = matches
+        console.log('获取到的战绩数据:', matches)
+      } else {
+        console.warn('未获取到战绩数据')
+      }
+    } catch (error) {
+      console.error('获取战绩数据失败:', error)
+      summonerStats.value = null
+    }
+  }
   watch(cunrrentIndex, (val) => {
     if (result.value) {
       currentRestult.value = result.value[val]
     }
   })
   return {
+    getRencentMatchesByPuuid,
     currentRestult,
+    summonerStats,
     names,
     searchText,
     cunrrentIndex,
