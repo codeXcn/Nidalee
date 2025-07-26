@@ -49,11 +49,6 @@
       "tsp": false,
       "wix": {
         "language": "zh-CN"
-      },
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": null,
-        "signingIdentity": null
       }
     }
   },

@@ -52,7 +52,7 @@ jobs:
           releaseName: 'Nidalee v__VERSION__'
           releaseDraft: true
           prerelease: false
-          args: 'build'
+          args: ''
 
   release-mac:
     name: "🚀 Release (macOS)"
@@ -98,4 +98,4 @@ jobs:
           releaseName: 'Nidalee v__VERSION__'
           releaseDraft: true
           prerelease: false
-          args: 'build'
+          args: ''
