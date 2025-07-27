@@ -82,6 +82,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Zap } from 'lucide-vue-next'
+import { useCommunityDragonPerksQuery } from '@/composables/useLolApiQuery'
+import { getPerkIconUrlByCommunityDragon } from '@/lib'
 
 // 使用后端生成的类型
 interface Props {
@@ -94,20 +96,28 @@ const emit = defineEmits<{
   applyRunes: [index: number]
 }>()
 
+// 获取Community Dragon符文数据
+const { data: communityDragonPerks } = useCommunityDragonPerksQuery()
+
 // 格式化百分比
 const formatPercentage = (value: number): string => {
   return (value * 100).toFixed(1) + '%'
 }
 
-// 获取符文图标URL
+// 获取符文图标URL - 使用Community Dragon API
 const getRuneIconUrl = (runeId: number): string => {
-  return `/src/assets/RuneIconFiles/${runeId}.png`
+  if (!communityDragonPerks.value) {
+    return ''
+  }
+  return getPerkIconUrlByCommunityDragon(runeId, communityDragonPerks.value)
 }
 
 // 符文图标错误处理
 const onRuneImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
-  img.src = '/src/assets/RuneIconFiles/5001.png'
+  // 直接使用默认图标
+  img.src =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzY2NjY2NiIvPgo8dGV4dCB4PSIxNiIgeT0iMjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPj88L3RleHQ+Cjwvc3ZnPgo='
 }
 
 // 处理符文应用

@@ -1,4 +1,4 @@
-name: "🚀 Release (Windows)"
+name: "🚀 Release (自动构建发布)"
 
 on:
   push:
@@ -8,36 +8,52 @@ on:
 
 jobs:
   release:
-    name: "🚀 Release (Windows)"
+    name: "Build & Release (Win) (构建发布)"
     permissions:
       contents: write
     runs-on: windows-latest
     steps:
-      - name: 📦 Checkout repository
+      - name: 📦 Checkout repository (检出代码)
         uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust
+      - name: 🦀 Setup Rust (安装Rust)
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
 
-      - name: 🗄️ Rust cache
+      - name: 🗄️ Rust cache (Rust缓存)
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: 🟢 Setup Node.js
+      - name: 🟢 Setup Node.js (安装Node.js)
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
 
-      - name: 📥 Setup pnpm
+      - name: 📥 Setup pnpm (安装pnpm)
         uses: pnpm/action-setup@v4
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install dependencies (安装依赖)
         run: pnpm install --no-frozen-lockfile
 
-      - name: 🏗️ Build and Release
+      - name: 🔧 Update version in tauri.conf.json (更新版本号)
+        run: |
+          $version = "${{ github.ref_name }}".Replace("v", "")
+          $content = Get-Content "src-tauri/tauri.conf.json" -Raw
+          $content = $content -replace '"version": "2\.0\.0"', "`"version`": `"$version`""
+          Set-Content "src-tauri/tauri.conf.json" $content
+          Write-Host "Updated version to $version in tauri.conf.json"
+
+      - name: 🔧 Update version in Cargo.toml (更新Cargo版本)
+        run: |
+          $version = "${{ github.ref_name }}".Replace("v", "")
+          $content = Get-Content "src-tauri/Cargo.toml" -Raw
+          $content = $content -replace 'version = "2\.0\.0"', "version = `"$version`""
+          Set-Content "src-tauri/Cargo.toml" $content
+          Write-Host "Updated version to $version in Cargo.toml"
+
+      - name: 🏗️ Build and Release (构建发布)
         uses: tauri-apps/tauri-action@v0
         env:
           NODE_ENV: production
@@ -57,36 +73,48 @@ jobs:
           args: ''
 
   release-mac:
-    name: "🚀 Release (macOS)"
+    name: "Build & Release (macOS) (构建发布)"
     permissions:
       contents: write
     runs-on: macos-latest
     steps:
-      - name: 📦 Checkout repository
+      - name: 📦 Checkout repository (检出代码)
         uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust
+      - name: 🦀 Setup Rust (安装Rust)
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
 
-      - name: 🗄️ Rust cache
+      - name: 🗄️ Rust cache (Rust缓存)
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: 🟢 Setup Node.js
+      - name: 🟢 Setup Node.js (安装Node.js)
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
 
-      - name: 📥 Setup pnpm
+      - name: 📥 Setup pnpm (安装pnpm)
         uses: pnpm/action-setup@v4
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install dependencies (安装依赖)
         run: pnpm install --no-frozen-lockfile
 
-      - name: 🏗️ Build and Release
+      - name: 🔧 Update version in tauri.conf.json (更新版本号)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed -i '' 's/"version": "2\.0\.0"/"version": "'$VERSION'"/g' src-tauri/tauri.conf.json
+          echo "Updated version to $VERSION in tauri.conf.json"
+
+      - name: 🔧 Update version in Cargo.toml (更新Cargo版本)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed -i '' 's/version = "2\.0\.0"/version = "'$VERSION'"/g' src-tauri/Cargo.toml
+          echo "Updated version to $VERSION in Cargo.toml"
+
+      - name: 🏗️ Build and Release (构建发布)
         uses: tauri-apps/tauri-action@v0
         env:
           NODE_ENV: production

@@ -143,6 +143,20 @@ export interface CommunityDragonChampionSummary {
   roles: string[]
 }
 
+// Community Dragon 符文数据类型
+export interface CommunityDragonPerk {
+  id: number
+  name: string
+  majorChangePatchVersion: string
+  tooltip: string
+  shortDesc: string
+  longDesc: string
+  recommendationDescriptor: string
+  iconPath: string
+  endOfGameStatDescs: string[]
+  recommendationDescriptorAttributes: Record<string, any>
+}
+
 export interface CommunityDragonSkin {
   id: number
   isBase: boolean
@@ -518,6 +532,42 @@ export async function fetchChampionSummary(): Promise<ApiResponse<CommunityDrago
       success: true,
       data: data.value,
       version: 'latest'
+    }
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * 获取Community Dragon符文数据
+ */
+export async function fetchCommunityDragonPerks(version?: string): Promise<ApiResponse<CommunityDragonPerk[]>> {
+  try {
+    const gameVersion = version || (await getLatestVersion())
+    const url = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/v1/perks.json`
+
+    const { data, error, statusCode } = await useApiFetch(url).json<CommunityDragonPerk[]>()
+
+    if (error.value) {
+      throw new Error(error.value)
+    }
+
+    if (statusCode.value !== 200) {
+      throw new Error(`HTTP ${statusCode.value}`)
+    }
+
+    if (!data.value) {
+      throw new Error('No data received')
+    }
+
+    return {
+      success: true,
+      data: data.value,
+      version: gameVersion
     }
   } catch (error) {
     return {

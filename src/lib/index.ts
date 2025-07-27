@@ -1,5 +1,6 @@
 // 数据API模块
 export * from './dataApi'
+import type { CommunityDragonPerk } from './dataApi'
 
 // 主题配置模块
 export * from './theme'
@@ -87,6 +88,30 @@ export const getCommunityDragonUrl = (path: string): string => {
   // 移除开头的斜杠并详细完整URL
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
   return `https://raw.communitydragon.org/latest/plugins/${cleanPath}`
+}
+
+// 根据符文ID获取符文图标URL（使用Community Dragon）
+export const getPerkIconUrlByCommunityDragon = (perkId: number, perks: CommunityDragonPerk[]): string => {
+  const perk = perks.find((p) => p.id === perkId)
+
+  if (!perk || !perk.iconPath) {
+    // 如果找不到符文，返回默认图标
+    return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/${perkId}.png`
+  }
+
+  // 处理iconPath，截取/lol-game-data/assets/v1/perk-images之后的部分
+  const iconPath = perk.iconPath
+  const basePath = '/lol-game-data/assets/v1/perk-images'
+
+  if (iconPath.includes(basePath)) {
+    const relativePath = iconPath.substring(iconPath.indexOf(basePath) + basePath.length)
+    // 移除开头的斜杠并转换为小写
+    const cleanPath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath
+    return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/${cleanPath.toLowerCase()}`
+  }
+
+  // 如果无法解析路径，返回默认路径
+  return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/${perkId}.png`
 }
 
 /**

@@ -14,7 +14,8 @@ import type {
   RiotMap,
   RiotGameMode,
   RiotGameType,
-  ApiResponse
+  ApiResponse,
+  CommunityDragonPerk
 } from '@/lib/dataApi'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -91,6 +92,8 @@ export function useChampionSummaryQuery() {
   return useQuery<ApiResponse<CommunityDragonChampionSummary[]>, unknown, CommunityDragonChampionSummary[]>({
     queryKey: ['championSummary'],
     queryFn: () => dataApi.fetchChampionSummary(),
+    staleTime: 2 * 60 * 60 * 1000, // 2小时缓存
+    gcTime: 24 * 60 * 60 * 1000, // 24小时垃圾回收
     select: (res) => res.data as CommunityDragonChampionSummary[]
   })
 }
@@ -129,9 +132,19 @@ export function useGameTypesQuery() {
 }
 
 export function useQueuesQuery() {
-  return useQuery<ApiResponse<QueueInfo[]>, unknown, QueueInfo[]>({
+  return useQuery({
     queryKey: ['queues'],
     queryFn: () => dataApi.fetchQueues(),
     select: (res) => res.data as QueueInfo[]
+  })
+}
+
+export function useCommunityDragonPerksQuery() {
+  return useQuery({
+    queryKey: ['communityDragonPerks'],
+    queryFn: () => dataApi.fetchCommunityDragonPerks(),
+    select: (res) => res.data as CommunityDragonPerk[],
+    staleTime: 2 * 60 * 60 * 1000, // 2小时缓存
+    gcTime: 24 * 60 * 60 * 1000 // 24小时垃圾回收
   })
 }
