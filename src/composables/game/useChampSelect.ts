@@ -1,6 +1,4 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useRouter } from 'vue-router'
-import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
 
 export function useChampSelect() {
   /**

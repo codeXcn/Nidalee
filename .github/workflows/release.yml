@@ -47,9 +47,11 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           # 使用之前配置的私钥密码
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }}
+          # 传递版本号给 Tauri
+          TAURI_VERSION: ${{ github.ref_name }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Nidalee v__VERSION__'
+          releaseName: 'Nidalee ${{ github.ref_name }}'
           releaseDraft: true
           prerelease: false
           args: ''
@@ -92,10 +94,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }}
+          # 传递版本号给 Tauri
+          TAURI_VERSION: ${{ github.ref_name }}
 
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Nidalee v__VERSION__'
+          releaseName: 'Nidalee ${{ github.ref_name }}'
           releaseDraft: true
           prerelease: false
           args: ''

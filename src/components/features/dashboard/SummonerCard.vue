@@ -309,14 +309,11 @@
 <script setup lang="ts">
 import { getTierIconUrl } from '@/lib'
 import { Shield, Trophy, User, Users } from 'lucide-vue-next'
-import { useRoute } from 'vue-router'
 import { useSessionStore } from '@/stores/features/sessionStore'
-
-const route = useRoute()
-const isDashboard = computed(() => route.name === 'dashboard')
 
 defineProps<{
   summonerInfo: any
+  isDashboard?: boolean
 }>()
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()

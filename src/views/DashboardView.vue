@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4">
     <!-- 用户信息卡片 -->
-    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" />
+    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" is-dashboard />
 
     <!-- 顶部统计卡片 -->
     <StatisticsCards

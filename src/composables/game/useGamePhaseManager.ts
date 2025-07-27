@@ -1,8 +1,8 @@
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
-import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
 import { useGameStore } from '@/stores/features/gameStore'
 import { useMatchmaking } from './useMatchmaking'
 import { useSummonerAndMatchUpdater } from './useSummonerAndMatchUpdater'
+import { useAutoFunctionStore } from '@/stores'
 
 // 专门处理游戏阶段变化的逻辑
 export function useGamePhaseManager() {
@@ -28,6 +28,10 @@ export function useGamePhaseManager() {
     gameStore.updateGamePhase(phase || 'None')
 
     if (phase) {
+      // 只处理接受对局，选人/禁用由 gameStore 处理
+      if (phase === 'ReadyCheck') {
+        handleAutoAcceptMatch()
+      }
       if (phase && previousPhase !== phase) {
         // 只记录具体阶段活动
         switch (phase) {
@@ -36,9 +40,11 @@ export function useGamePhaseManager() {
             break
           case 'Lobby':
             activityLogger.log.info('进入队列匹配中', 'game')
+            gameStore.clearChampSelect()
             break
           case 'ReadyCheck':
             activityLogger.log.success('找到对局，等待接受', 'game')
+            gameStore.clearChampSelect()
             break
           case 'ChampSelect':
             activityLogger.log.info('进入英雄选择阶段', 'game')
@@ -51,14 +57,10 @@ export function useGamePhaseManager() {
             break
         }
       }
-      // 只处理接受对局，选人/禁用由 gameStore 处理
-      if (phase === 'ReadyCheck') {
-        handleAutoAcceptMatch()
-      }
       // 检查是否从游戏中退出
       if (previousPhase === 'InProgress' && phase !== 'InProgress') {
         console.log('[🎮 GamePhaseManager] 🏁 检测到游戏退出，清理选人和房间状态')
-        gameStore.updateChampSelectSession(null)
+        gameStore.clearChampSelect()
         gameStore.updateLobbyInfo(null)
         activityLogger.log.info('游戏已结束，已清理游戏状态', 'game')
         updateSummonerAndMatches()
@@ -66,12 +68,11 @@ export function useGamePhaseManager() {
     } else {
       console.log('[🎮 GamePhaseManager] 🔄 游戏阶段重置为空')
       // 阶段为空时也清理游戏状态
-      gameStore.updateChampSelectSession(null)
+      gameStore.clearChampSelect()
       gameStore.updateLobbyInfo(null)
     }
     console.log('[🎮 GamePhaseManager] ===== 阶段变更处理完成 =====\n')
   }
-
   // 处理自动接受对局
   const handleAutoAcceptMatch = async () => {
     const { autoFunctions } = autoFunctionStore
@@ -94,7 +95,6 @@ export function useGamePhaseManager() {
       console.log('[🤖 GamePhaseManager] ⚪ 自动接受对局未启用')
     }
   }
-
   return {
     handleGamePhaseChange
   }

@@ -1,13 +1,8 @@
-import { useGameStore } from '@/stores/features/gameStore'
 import { invoke } from '@tauri-apps/api/core'
-import { listen } from '@tauri-apps/api/event'
 
 export function useMatchmaking() {
-  const gameStore = useGameStore()
-
   const matchmakingState = ref<MatchmakingState | null>(null)
   const matchInfo = ref<MatchInfo | null>(null)
-
   const handleMatchmaking = async () => {
     try {
       if (matchmakingState.value?.searchState === 'Searching') {
@@ -37,24 +32,26 @@ export function useMatchmaking() {
   }
 
   // 只监听，不解绑
-  onMounted(async () => {
-    await listen<MatchmakingState>('matchmaking-state-changed', (event) => {
-      console.log('[Event] matchmaking-state-changed:', event.payload)
-      const payload = event.payload
-      matchmakingState.value = payload
+  // onMounted(async () => {
+  //   await listen<MatchmakingState>('matchmaking-state-changed', (event) => {
+  //     console.log('[Event] matchmaking-state-changed:', event.payload)
+  //     const payload = event.payload
+  //     matchmakingState.value = payload
+  //     if (payload.searchState === 'Found' || payload.searchState === 'ReadyCheck') {
+  //       handleAutoAcceptMatch()
+  //     }
+  //     // 当匹配状态为 Invalid 且有选人阶段信息时，清除选人阶段信息
+  //     if (payload.searchState === 'Invalid' && gameStore.champSelectSession) {
+  //       gameStore.updateChampSelectSession(null)
+  //       console.log('清除选人阶段信息')
+  //     }
+  //   })
 
-      // 当匹配状态为 Invalid 且有选人阶段信息时，清除选人阶段信息
-      if (payload.searchState === 'Invalid' && gameStore.champSelectSession) {
-        gameStore.updateChampSelectSession(null)
-        console.log('清除选人阶段信息')
-      }
-    })
-
-    await listen<MatchInfo>('match-info-change', (event) => {
-      console.log('match-info-change', event.payload)
-      matchInfo.value = event.payload
-    })
-  })
+  //   await listen<MatchInfo>('match-info-change', (event) => {
+  //     console.log('match-info-change', event.payload)
+  //     matchInfo.value = event.payload
+  //   })
+  // })
 
   return {
     matchmakingState,

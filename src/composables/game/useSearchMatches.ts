@@ -13,6 +13,7 @@ export function useSearchMatches() {
   const names = ref<string[]>([])
   async function fetchSummonerInfo(names: string[]): Promise<SummonerWithMatches[] | null> {
     try {
+      loading.value = true
       const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', { names })
       if (Array.isArray(matches) && matches.length > 0) {
         result.value = matches

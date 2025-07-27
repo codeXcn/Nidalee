@@ -4,7 +4,7 @@ use crate::{http_client, lcu};
 pub async fn get_recent_matches_by_puuid(puuid: String, count: Option<usize>) -> Result<lcu::types::MatchStatistics, String> {
     let client = http_client::get_lcu_client();
     let count = count.unwrap_or(20);
-    lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count).await 
+    lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count).await
 }
 
 #[tauri::command]
@@ -31,6 +31,7 @@ pub async fn get_summoner_by_id(id: u64) -> Result<Option<lcu::types::SummonerIn
 #[tauri::command]
 pub async fn get_summoners_and_histories(
     names: Vec<String>,
+    count: Option<usize>,
 ) -> Result<Vec<lcu::types::SummonerWithMatches>, String> {
     use lcu::summoner::service::fill_summoner_extra_info;
     let client = http_client::get_lcu_client();
@@ -42,7 +43,7 @@ pub async fn get_summoners_and_histories(
         let puuid = summoner.puuid.clone();
         if !puuid.is_empty() {
             fill_summoner_extra_info(client, summoner).await;
-            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, 20).await
+            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, count.unwrap_or(20)).await
             {
                 Ok(matches) => {
                     result.push(lcu::types::SummonerWithMatches {

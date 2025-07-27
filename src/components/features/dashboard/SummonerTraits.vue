@@ -340,7 +340,7 @@ const analyzeTraits = (): Trait[] => {
         score: mainMode.count,
         variant: 'outline',
         icon: mainMode.icon,
-        type: mainMode.type
+        type: mainMode.type as 'good' | 'bad'
       })
     }
   }

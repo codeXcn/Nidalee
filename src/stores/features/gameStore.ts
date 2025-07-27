@@ -27,7 +27,8 @@ export const useGameStore = defineStore(
     const executedActions = shallowRef({
       banChampion: false,
       selectChampion: false,
-      lockInProgress: false
+      lockInProgress: false,
+      applyRune: false
     })
 
     // 计算属性
@@ -42,7 +43,8 @@ export const useGameStore = defineStore(
       executedActions.value = {
         banChampion: false,
         selectChampion: false,
-        lockInProgress: false
+        lockInProgress: false,
+        applyRune: false
       }
     }
     // 更新游戏阶段
@@ -85,8 +87,9 @@ export const useGameStore = defineStore(
         const { checkAndExecuteAutoActions: checkAutoActions, getAutoOpggChampionId } = useChampSelect()
         const activityLogger = useActivityLogger()
         const championId = getAutoOpggChampionId(session, autoFunctionStore.autoFunctions)
-        if (championId) {
+        if (championId && !executedActions.value.applyRune) {
           console.log('[GameStore] 选完英雄 自动跳转 OPGG 并应用符文:', championId)
+          executedActions.value.applyRune = true
           router.push({ name: 'opgg', query: { championId } })
         }
         console.log('[GameStore] 检查自动操作...')
@@ -147,7 +150,8 @@ export const useGameStore = defineStore(
       executedActions.value = {
         banChampion: false,
         selectChampion: false,
-        lockInProgress: false
+        lockInProgress: false,
+        applyRune: false
       }
     }
 
@@ -176,7 +180,8 @@ export const useGameStore = defineStore(
       setGameResult,
       resetGameState,
       clearChampSelect,
-      checkAndExecuteAutoActions
+      checkAndExecuteAutoActions,
+      clearExecutedActions
     }
   },
   {

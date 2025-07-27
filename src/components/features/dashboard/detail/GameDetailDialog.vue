@@ -90,7 +90,12 @@
                     <TableCell class="flex items-center space-x-2">
                       <img :src="getProfileIconUrl(participant.profileIconId)" class="h-8 w-8 rounded-full" />
                       <div class="flex-1 flex items-center justify-between min-w-0">
-                        <span class="font-medium truncate">{{ participant.summonerName }}</span>
+                        <span
+                          class="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                          @click="openSummonerDetails(participant)"
+                          title="点击查看召唤师详情"
+                          >{{ participant.summonerName }}</span
+                        >
                         <div class="flex items-center gap-1">
                           <button
                             class="text-primary hover:text-primary/80 focus:outline-none"
@@ -221,7 +226,12 @@
                     <TableCell class="flex items-center space-x-2">
                       <img :src="getProfileIconUrl(participant.profileIconId)" class="h-8 w-8 rounded-full" />
                       <div class="flex-1 flex items-center justify-between min-w-0">
-                        <span class="font-medium truncate">{{ participant.summonerName }}</span>
+                        <span
+                          class="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                          @click="openSummonerDetails(participant)"
+                          title="点击查看召唤师详情"
+                          >{{ participant.summonerName }}</span
+                        >
                         <div class="flex items-center gap-1">
                           <button
                             class="text-primary hover:text-primary/80 focus:outline-none"
@@ -336,12 +346,92 @@
         </div>
       </ScrollArea>
     </DialogContent>
+
+    <!-- 召唤师详情抽屉 -->
+    <Sheet v-model:open="isDetailsOpen">
+      <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
+        <div
+          class="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-6"
+        >
+          <SheetHeader>
+            <div class="flex items-center justify-between">
+              <SheetTitle class="flex items-center gap-4 text-left">
+                <div v-if="currentRestult" class="flex items-center gap-4">
+                  <!-- 使用查询到的召唤师信息 -->
+                  <div
+                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
+                  >
+                    <span class="text-lg font-bold text-primary">{{
+                      currentRestult.displayName?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-foreground">{{ currentRestult.displayName || '未知召唤师' }}</h3>
+                    <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
+                  </div>
+                </div>
+                <div v-else-if="selectedPlayer" class="flex items-center gap-4">
+                  <!-- 查询中或失败时显示原始玩家信息 -->
+                  <div
+                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
+                  >
+                    <span class="text-lg font-bold text-primary">{{
+                      selectedPlayer.displayName?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-foreground">{{ selectedPlayer.displayName || '未知召唤师' }}</h3>
+                    <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
+                  </div>
+                </div>
+              </SheetTitle>
+
+              <SheetClose
+                class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary text-muted-foreground hover:text-foreground"
+              >
+                <X class="h-4 w-4" />
+                <span class="sr-only">关闭</span>
+              </SheetClose>
+            </div>
+          </SheetHeader>
+        </div>
+
+        <div class="p-6 pt-4 space-y-6">
+          <!-- 加载状态 -->
+          <div v-if="searchLoading" class="flex items-center justify-center py-8">
+            <div class="flex items-center gap-3">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <span class="text-muted-foreground">正在查询召唤师战绩...</span>
+            </div>
+          </div>
+
+          <!-- 战绩数据 -->
+          <div v-else-if="currentRestult" class="space-y-6">
+            <!-- 召唤师信息卡片 -->
+            <SummonerCard :summoner-info="currentRestult.summonerInfo" />
+
+            <!-- 游戏统计 -->
+            <GameStats :is-connected="true" :match-history-loading="false" :match-statistics="currentRestult.matches" />
+          </div>
+
+          <!-- 无数据状态 -->
+          <div v-else class="flex items-center justify-center py-8">
+            <div class="text-center">
+              <Info class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 class="text-lg font-semibold mb-2 text-foreground">暂无战绩数据</h3>
+              <p class="text-muted-foreground">未能获取到该召唤师的战绩信息</p>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import { useFormatters } from '@/composables/utils/useFormatters'
+import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import {
   getChampionIconUrl,
   getChampionName,
@@ -356,6 +446,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { useClipboard } from '@vueuse/core'
 import { ref, watch, defineModel } from 'vue'
 import { toast } from 'vue-sonner'
+import { Info, X } from 'lucide-vue-next'
 
 const props = defineProps<{
   selectedGame: RecentGame | null
@@ -370,6 +461,13 @@ const loading = ref(false)
 const gameDetailData = ref<GameDetail | null>(null)
 const dataStore = useDataStore()
 const gameVersion = computed(() => dataStore.gameVersion)
+
+// 召唤师详情相关
+const isDetailsOpen = ref(false)
+const selectedPlayer = ref<any>(null)
+
+// 使用搜索召唤师战绩的钩子
+const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
 
 // 监听游戏数据变化
 watch(
@@ -392,6 +490,21 @@ watch(
     }
   }
 )
+
+// 打开召唤师详情
+const openSummonerDetails = async (participant: any) => {
+  selectedPlayer.value = {
+    displayName: participant.summonerName
+  }
+  isDetailsOpen.value = true
+  if (
+    participant.summonerName &&
+    participant.summonerName !== '未知玩家' &&
+    participant.summonerName !== '未知召唤师'
+  ) {
+    await fetchSummonerInfo([participant.summonerName])
+  }
+}
 
 // 表格列定义
 const columns = [

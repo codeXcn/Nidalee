@@ -14,7 +14,12 @@
           @select="openSummonerDetails"
         />
         <template v-if="session.theirTeam && session.theirTeam.length">
-          <TeamCard :team="session.theirTeam" team-type="enemy" @select="openSummonerDetails" />
+          <TeamCard
+            :team="session.theirTeam"
+            team-type="enemy"
+            :summoner-stats="theirTeamStats || []"
+            @select="openSummonerDetails"
+          />
         </template>
         <template v-else>
           <div class="text-center text-muted-foreground mt-2">敌方队伍将在进入游戏后显示</div>
@@ -124,6 +129,7 @@ import { appContextKey, type AppContext } from '@/types'
 import { Info, X } from 'lucide-vue-next'
 import { useGameAssets } from '@/composables/game/useGameAssets'
 import { useDataStore } from '@/stores/core/dataStore'
+import { invoke } from '@tauri-apps/api/core'
 
 const { isConnected } = inject(appContextKey) as AppContext
 const { enrichedSession } = useChampSelectSession()
@@ -143,32 +149,50 @@ const gameStore = useGameStore()
 const { currentPhase } = storeToRefs(gameStore)
 const enabled = computed(() => currentPhase.value === 'InProgress')
 const { data: playerList, refetch } = usePlayerListQuery(enabled)
-
+const theirTeamStats = ref<MatchStatistics[] | null>(null)
 const { getChampionIconUrl } = useGameAssets()
 const dataStore = useDataStore()
 
 const session = computed(() => {
-  if (players.value) {
+  if (Array.isArray(players.value) && players.value.length > 0) {
     const theirTeam = players.value
-    const data = enrichedSession.value ? { ...enrichedSession.value, theirTeam } : { theirTeam }
+    const data = { ...enrichedSession.value, theirTeam }
+    console.log('session', data)
     return data
   } else {
     return enrichedSession.value || null
   }
 })
-const players = computed(() => {
-  if (!Array.isArray(playerList.value)) {
-    return []
-  }
-  console.log('players', playerList.value)
-  // 只取敌方队伍
-  return playerList.value
-    .filter((p: LiveClientPlayer) => p.team === 'CHAOS')
-    .map((p: LiveClientPlayer): EnrichedLivePlayer => {
+
+const players = ref<EnrichedLivePlayer[]>([])
+
+// 使用 watch 监听 playerList 变化
+watch(
+  () => playerList.value,
+  async (newPlayerList) => {
+    if (!Array.isArray(newPlayerList)) {
+      players.value = []
+      return
+    }
+
+    console.log('players', newPlayerList)
+    const CHAOS_LIST = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
+    const names = CHAOS_LIST.map((p: LiveClientPlayer) => p.summonerName)
+
+    try {
+      const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', { names, count: 6 })
+      theirTeamStats.value = matches.map((m) => m.matches)
+      console.log('matches', theirTeamStats.value, summonerStats.value)
+    } catch (error) {
+      console.error('获取敌方队伍战绩失败:', error)
+      theirTeamStats.value = []
+    }
+
+    // 只取敌方队伍
+    players.value = CHAOS_LIST.map((p: LiveClientPlayer): EnrichedLivePlayer => {
       // 从 championName 映射到 championId
       const champion = Object.values(dataStore.champions).find((c) => c.name === p.championName)
       const championId = champion ? parseInt(champion.key, 10) : 0
-
       // 在这里进行字段的适配和转换
       return {
         displayName: p.summonerName,
@@ -179,7 +203,8 @@ const players = computed(() => {
         championIcon: getChampionIconUrl(championId)
       }
     })
-})
+  }
+)
 // 召唤师详情相关 - 必须在 watchEffect 之前声明
 const isDetailsOpen = ref(false)
 // 注意：selectedPlayer 的类型现在可能需要更通用，因为它可能来自选人阶段或游戏中
