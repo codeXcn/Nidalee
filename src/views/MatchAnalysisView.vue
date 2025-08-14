@@ -14,6 +14,20 @@
           @select="openSummonerDetails"
         />
         <template v-if="session.theirTeam && session.theirTeam.length">
+          <!-- 添加提示信息 -->
+          <div v-if="currentPhase === 'ChampSelect'" class="text-center text-muted-foreground mb-2">
+            <div class="flex items-center justify-center gap-2 text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              敌方队伍信息将在进入游戏后实时更新
+            </div>
+          </div>
           <TeamCard
             :team="session.theirTeam"
             team-type="enemy"
@@ -153,7 +167,7 @@ const theirTeamStats = ref<MatchStatistics[] | null>(null)
 const { getChampionIconUrl } = useGameAssets()
 const dataStore = useDataStore()
 
-const session = computed(() => {
+const session = computed<ChampSelectSession>(() => {
   if (Array.isArray(players.value) && players.value.length > 0) {
     const theirTeam = players.value
     const data = { ...enrichedSession.value, theirTeam }
@@ -176,8 +190,43 @@ watch(
     }
 
     console.log('players', newPlayerList)
-    const CHAOS_LIST = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
-    const names = CHAOS_LIST.map((p: LiveClientPlayer) => p.summonerName)
+
+    // 修复：正确识别队伍，而不是简单假设 CHAOS 是敌方
+    // 需要根据本地玩家信息来确定哪个队伍是敌方
+    let enemyTeam: LiveClientPlayer[] = []
+
+    if (enrichedSession.value?.localPlayerCellId !== undefined) {
+      // 如果有选人阶段的会话信息，使用它来确定队伍
+      const localPlayer = enrichedSession.value.myTeam?.find(
+        (p: EnrichedChampSelectPlayer) => p.cellId === enrichedSession.value.localPlayerCellId
+      )
+      if (localPlayer) {
+        // 根据本地玩家的队伍信息来确定敌方队伍
+        // 这里需要根据实际情况调整逻辑
+        const localPlayerName = localPlayer.displayName || localPlayer.summonerId
+
+        // 在实时玩家列表中查找本地玩家，确定其队伍
+        const localPlayerInGame = newPlayerList.find((p: LiveClientPlayer) => p.summonerName === localPlayerName)
+        if (localPlayerInGame) {
+          const localTeam = localPlayerInGame.team
+          // 敌方队伍就是与本地玩家不同的队伍
+          enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team !== localTeam)
+          console.log(`本地玩家 ${localPlayerName} 在队伍 ${localTeam}，敌方队伍:`, enemyTeam)
+        } else {
+          // 如果找不到本地玩家，回退到原来的逻辑
+          console.warn('无法找到本地玩家，使用回退逻辑')
+          enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
+        }
+      } else {
+        // 回退逻辑
+        enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
+      }
+    } else {
+      // 没有选人阶段信息时的回退逻辑
+      enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
+    }
+
+    const names = enemyTeam.map((p: LiveClientPlayer) => p.summonerName)
 
     try {
       const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', { names, count: 6 })
@@ -189,7 +238,7 @@ watch(
     }
 
     // 只取敌方队伍
-    players.value = CHAOS_LIST.map((p: LiveClientPlayer): EnrichedLivePlayer => {
+    players.value = enemyTeam.map((p: LiveClientPlayer): EnrichedLivePlayer => {
       // 从 championName 映射到 championId
       const champion = Object.values(dataStore.champions).find((c) => c.name === p.championName)
       const championId = champion ? parseInt(champion.key, 10) : 0

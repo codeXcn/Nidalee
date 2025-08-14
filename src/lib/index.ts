@@ -389,7 +389,8 @@ export const getChampionName = (championId: number | string | null): string => {
     '901': '炽炎雏龙',
     '902': '明烛',
     '910': '异画师',
-    '950': '百裂冥犬'
+    '950': '百裂冥犬',
+    '804': '不破之誓'
   }
   return championMap[championId] || `英雄${championId}`
 }
@@ -468,7 +469,17 @@ export const getChampionDetail = async (
   )
   return await resp.json()
 }
-
+// 获取单个英雄详细信息根据id
+export const getChampionInfoById = async (
+  championId: number,
+  gameVersion: string,
+  language: string = 'zh_CN'
+): Promise<any> => {
+  const resp = await fetch(
+    `https://raw.communitydragon.org/${gameVersion}/plugins/rcp-be-lol-game-data/global/${language}/v1/champions/${championId}.json`
+  )
+  return await resp.json()
+}
 // 获取所有物品数据
 export const getAllItems = async (gameVersion: string, language: string = 'zh_CN'): Promise<any> => {
   const resp = await fetch(`https://ddragon.leagueoflegends.com/cdn/${gameVersion}/data/${language}/item.json`)

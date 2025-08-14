@@ -93,7 +93,7 @@ export function useChampionSummaryQuery() {
     queryKey: ['championSummary'],
     queryFn: () => dataApi.fetchChampionSummary(),
     staleTime: 2 * 60 * 60 * 1000, // 2小时缓存
-    gcTime: 24 * 60 * 60 * 1000, // 24小时垃圾回收
+    gcTime: 4 * 60 * 60 * 1000, // 4小时垃圾回收
     select: (res) => res.data as CommunityDragonChampionSummary[]
   })
 }

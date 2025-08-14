@@ -11,7 +11,10 @@
       <div v-if="perks && perks.length > 0" class="space-y-4">
         <div v-for="(rune, index) in perks.slice(0, 3)" :key="index" class="p-4 border rounded-lg">
           <div class="flex items-center justify-between mb-4">
-            <div class="font-medium">符文配置 #{{ index + 1 }}</div>
+            <div class="font-medium">
+              <span class="text-base">符文</span>
+              <span class="text-lg font-bold text-primary ml-1">{{ getRuneSchemeNumber(index) }}</span>
+            </div>
             <Button @click="handleApplyRunes(index)" size="sm" variant="outline" class="flex items-center gap-2">
               <Zap class="w-4 h-4" />
               应用此符文
@@ -123,5 +126,33 @@ const onRuneImageError = (event: Event) => {
 // 处理符文应用
 const handleApplyRunes = (index: number) => {
   emit('applyRunes', index)
+}
+
+// 获取符文配置标题
+const getRuneConfigTitle = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '符文方案一'
+    case 1:
+      return '符文方案二'
+    case 2:
+      return '符文方案三'
+    default:
+      return `符文方案${index + 1}`
+  }
+}
+
+// 获取符文方案编号
+const getRuneSchemeNumber = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '一'
+    case 1:
+      return '二'
+    case 2:
+      return '三'
+    default:
+      return `${index + 1}`
+  }
 }
 </script>

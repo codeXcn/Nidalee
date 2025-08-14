@@ -79,6 +79,7 @@ declare global {
   const useChampionDetailsQuery: typeof import('../src/composables/useLolApiQuery')['useChampionDetailsQuery']
   const useChampionSummaryQuery: typeof import('../src/composables/useLolApiQuery')['useChampionSummaryQuery']
   const useChampionsQuery: typeof import('../src/composables/useLolApiQuery')['useChampionsQuery']
+  const useCommunityDragonPerksQuery: typeof import('../src/composables/useLolApiQuery')['useCommunityDragonPerksQuery']
   const useConnection: typeof import('../src/composables/connection/useConnection')['useConnection']
   const useConnectionEvents: typeof import('../src/composables/connection/useConnectionEvents')['useConnectionEvents']
   const useCssModule: typeof import('vue')['useCssModule']

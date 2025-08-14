@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 .env.*
+types/components.d.ts
+types/auto-imports.d.ts

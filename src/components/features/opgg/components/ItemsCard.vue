@@ -48,7 +48,10 @@
           </div>
           <!-- 文本区，始终左对齐 -->
           <div class="flex-1">
-            <div class="font-medium">起始装备 #{{ index + 1 }}</div>
+            <div class="font-medium">
+              <span class="text-base">起始装备</span>
+              <span class="text-lg font-bold text-green-600 ml-1">{{ getStartItemSchemeNumber(index) }}</span>
+            </div>
             <div class="text-xs text-muted-foreground mt-1">
               {{ item.ids.map(getItemName).join(' ') }}
             </div>
@@ -101,7 +104,10 @@
           </div>
           <!-- 文本区，始终左对齐 -->
           <div class="flex-1">
-            <div class="font-medium">核心装备 #{{ index + 1 }}</div>
+            <div class="font-medium">
+              <span class="text-base">核心装备</span>
+              <span class="text-lg font-bold text-purple-600 ml-1">{{ getCoreItemSchemeNumber(index) }}</span>
+            </div>
             <div class="text-xs text-muted-foreground mt-1">
               {{ item.ids.map(getItemName).join(' ') }}
             </div>
@@ -191,7 +197,10 @@
           </div>
           <!-- 文本区，始终左对齐 -->
           <div class="flex-1">
-            <div class="font-medium">鞋子选择 #{{ index + 1 }}</div>
+            <div class="font-medium">
+              <span class="text-base">鞋子选择</span>
+              <span class="text-lg font-bold text-blue-600 ml-1">{{ getBootSchemeNumber(index) }}</span>
+            </div>
             <div class="text-xs text-muted-foreground mt-1">
               {{ boot.ids.map(getItemName).join(' ') }}
             </div>
@@ -261,4 +270,88 @@ const filteredLastItems = computed(() => {
     .filter((item) => !coreItemIds.value.includes(item.id))
     .sort((a, b) => b.pickRate - a.pickRate)
 })
+
+// 获取起始装备的标题
+const getStartItemTitle = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '起始装备方案一'
+    case 1:
+      return '起始装备方案二'
+    case 2:
+      return '起始装备方案三'
+    default:
+      return `起始装备方案${index + 1}`
+  }
+}
+
+// 获取起始装备方案的编号
+const getStartItemSchemeNumber = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '一'
+    case 1:
+      return '二'
+    case 2:
+      return '三'
+    default:
+      return ''
+  }
+}
+
+// 获取核心装备的标题
+const getCoreItemTitle = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '核心装备方案一'
+    case 1:
+      return '核心装备方案二'
+    case 2:
+      return '核心装备方案三'
+    default:
+      return `核心装备方案${index + 1}`
+  }
+}
+
+// 获取核心装备方案的编号
+const getCoreItemSchemeNumber = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '一'
+    case 1:
+      return '二'
+    case 2:
+      return '三'
+    default:
+      return ''
+  }
+}
+
+// 获取鞋子选择的标题
+const getBootTitle = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '鞋子选择方案一'
+    case 1:
+      return '鞋子选择方案二'
+    case 2:
+      return '鞋子选择方案三'
+    default:
+      return `鞋子选择方案${index + 1}`
+  }
+}
+
+// 获取鞋子选择方案的编号
+const getBootSchemeNumber = (index: number): string => {
+  switch (index) {
+    case 0:
+      return '一'
+    case 1:
+      return '二'
+    case 2:
+      return '三'
+    default:
+      return ''
+  }
+}
 </script>
