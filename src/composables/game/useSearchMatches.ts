@@ -1,4 +1,3 @@
-import type { MatchStatistics } from '@/types/generated/MatchStatistics'
 import { invoke } from '@tauri-apps/api/core'
 
 // 专门处理战绩数据获取的 composable

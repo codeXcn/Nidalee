@@ -3,24 +3,6 @@ use crate::{http_client, lcu};
 use reqwest::Client;
 use serde_json;
 use serde_json::Value;
-#[tauri::command]
-pub async fn get_live_player_list() -> Result<String, String> {
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true) // 👈 忽略证书错误
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    let resp = client
-        .get("https://127.0.0.1:2999/liveclientdata/playerlist")
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let text = resp.text().await.map_err(|e| e.to_string())?;
-    Ok(text)
-}
-
-// 删除 start_matchmaking、stop_matchmaking、accept_match、decline_match 的 tauri 命令实现
 
 // ===== 英雄出装和符文相关命令 =====
 

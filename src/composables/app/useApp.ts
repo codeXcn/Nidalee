@@ -1,8 +1,5 @@
-import { useConnection } from '@/composables/connection/useConnection'
-import { useSettingsStore } from '@/stores/ui/settingsStore'
-import { computed, onMounted, onUnmounted } from 'vue'
-import { useAppEvents } from '@/composables'
-import { useAppInitialization } from '@/composables'
+import { useSettingsStore } from '@/stores'
+import { useAppInitialization,useConnection,useAppEvents } from '@/composables'
 
 /**
  * 主应用组合式函数

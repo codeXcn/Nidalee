@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { ref, onMounted } from 'vue'
 import { useConnectionStore } from '@/stores/core/connectionStore'
 
-export function useDeviceWebSocket(baseUrl: string) {
+export function useDeviceWebSocket() {
   const router = useRouter()
   const ws = ref<ReturnType<typeof useWebSocket> | null>(null)
   const deviceId = ref<string | null>(null)
@@ -14,14 +14,14 @@ export function useDeviceWebSocket(baseUrl: string) {
   // 引入 Pinia store
   const connectionStore = useConnectionStore()
   onMounted(async () => {
-    console.log('onMounted')
+    console.log('useDeviceWebSocket', import.meta.env.VITE_WS_BASE_URL)
     try {
       // 1. 获取唯一设备ID
       const hash = await invoke<string>('get_machine_hash')
       deviceId.value = hash
 
       // 2. 拼接 WebSocket 地址
-      const wsUrl = `${baseUrl}/${hash}`
+      const wsUrl = `${import.meta.env.VITE_WS_BASE_URL}/${hash}`
 
       // 3. 建立 WebSocket 连接
       const wsInstance = useWebSocket(wsUrl, {

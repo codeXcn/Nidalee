@@ -22,7 +22,7 @@ export function useAppEvents() {
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
 
   // 处理游戏阶段变化
-  const handleGameflowPhaseChange = (event: any) => {
+  const handleGameFlowPhaseChange = (event: any) => {
     console.log('[AppEvents] 游戏阶段变化:', event.payload)
     const phase = event.payload as string | null
     handleGamePhaseChange(phase ? { phase } : null)
@@ -65,7 +65,7 @@ export function useAppEvents() {
     isListeningStarted = true // 立即设置标记，防止并发调用
 
     try {
-      await listen('gameflow-phase-change', handleGameflowPhaseChange)
+      await listen('gameflow-phase-change', handleGameFlowPhaseChange)
       await listen('lobby-change', handleLobbyChangeEvent)
       await listen('champ-select-session-changed', handleChampSelectSessionChanged)
       await listen('connection-state-changed', handleConnectionStateChangeDebounced)
@@ -83,11 +83,6 @@ export function useAppEvents() {
     isListeningStarted = false
     console.log('[AppEvents] 全局事件监听已停止 (标记已重置)')
   }
-
-  // 生命周期管理
-  onMounted(() => {
-    startListening()
-  })
 
   return {
     updateMatchHistory,

@@ -44,52 +44,94 @@ export function useGameHelper() {
     tier?: string
     division?: string
   }): Promise<void> {
-    // 判断是签名还是段位修改，分别 loading
+    // 路由到更明确的职责函数，并做输入校验
+    const providedAny = !!statusMessage || !!queue || !!tier || !!division
+    if (!providedAny) {
+      toast.error('无有效内容可修改', { description: '请提供签名或完整段位信息', duration: 4000 })
+      return
+    }
+
     const isNote = !!statusMessage && !queue && !tier && !division
     const isRank = !!queue && !!tier && !!division
-    if (isNote) updatingNote.value = true
-    if (isRank) updatingRank.value = true
+    const hasPartialRank = (queue || tier || division) && !isRank
+
+    if (hasPartialRank) {
+      toast.error('段位信息不完整', { description: '需同时提供 队列/段位/分段', duration: 5000 })
+      return
+    }
+
+    if (isNote) {
+      await setSummonerNote(statusMessage!)
+      return
+    }
+    if (isRank) {
+      await setSummonerRank({ queue: queue!, tier: tier!, division: division! })
+      return
+    }
+
+    // 兜底：既非纯签名也非完整段位（如全部为空已提前 return），直接透传
     try {
-      await invoke('set_summoner_chat_profile', {
-        statusMessage,
-        queue,
-        tier,
-        division
-      })
-      if (isNote) {
-        toast.success('签名修改成功', {
-          description: '召唤师签名已更新',
-          duration: 3000
-        })
-        activityLogger.logSettings.setCareerBackground('修改签名')
-      } else if (isRank) {
-        toast.success('段位信息修改成功', {
-          description: '聊天段位已更新',
-          duration: 3000
-        })
-        activityLogger.logSettings.setCareerBackground('修改段位')
-      } else {
-        toast.success('资料修改成功', { duration: 3000 })
-      }
+      await invoke('set_summoner_chat_profile', { statusMessage, queue, tier, division })
+      toast.success('资料修改成功', { duration: 3000 })
     } catch (error) {
-      if (isNote) {
-        toast.error('签名修改失败', {
-          description: String(error),
-          duration: 5000
-        })
-      } else if (isRank) {
-        toast.error('段位信息修改失败', {
-          description: String(error),
-          duration: 5000
-        })
-      } else {
-        toast.error('资料修改失败', { description: String(error), duration: 5000 })
-      }
-    } finally {
-      if (isNote) updatingNote.value = false
-      if (isRank) updatingRank.value = false
+      toast.error('资料修改失败', { description: String(error), duration: 5000 })
     }
   }
 
-  return { setSummonerBackgroundSkin, setSummonerChatProfile, updatingNote, updatingRank }
+  /**
+   * 仅修改签名
+   */
+  async function setSummonerNote(statusMessage: string): Promise<void> {
+    if (!statusMessage?.trim()) {
+      toast.error('签名内容为空', { description: '请输入有效的签名内容', duration: 4000 })
+      return
+    }
+    updatingNote.value = true
+    try {
+      await invoke('set_summoner_chat_profile', { statusMessage })
+      toast.success('签名修改成功', { description: '召唤师签名已更新', duration: 3000 })
+      activityLogger.logSettings.setCareerBackground('修改签名')
+    } catch (error) {
+      toast.error('签名修改失败', { description: String(error), duration: 5000 })
+    } finally {
+      updatingNote.value = false
+    }
+  }
+
+  /**
+   * 仅修改段位信息（需全部提供）
+   */
+  async function setSummonerRank({
+    queue,
+    tier,
+    division
+  }: {
+    queue: string
+    tier: string
+    division: string
+  }): Promise<void> {
+    if (!queue || !tier || !division) {
+      toast.error('段位信息不完整', { description: '需同时提供 队列/段位/分段', duration: 5000 })
+      return
+    }
+    updatingRank.value = true
+    try {
+      await invoke('set_summoner_chat_profile', { queue, tier, division })
+      toast.success('段位信息修改成功', { description: '聊天段位已更新', duration: 3000 })
+      activityLogger.logSettings.setCareerBackground('修改段位')
+    } catch (error) {
+      toast.error('段位信息修改失败', { description: String(error), duration: 5000 })
+    } finally {
+      updatingRank.value = false
+    }
+  }
+
+  return {
+    setSummonerBackgroundSkin,
+    setSummonerChatProfile,
+    setSummonerNote,
+    setSummonerRank,
+    updatingNote,
+    updatingRank
+  }
 }

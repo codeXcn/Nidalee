@@ -32,7 +32,7 @@ export function useOpggRunes() {
       const championName = getChampionName(championId)
 
       // 调用Tauri命令应用符文
-      const result = await invoke<string>('apply_opgg_runes', {
+      await invoke<string>('apply_opgg_runes', {
         region: config.region,
         mode: config.mode,
         championId: championId,

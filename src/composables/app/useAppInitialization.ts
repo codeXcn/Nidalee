@@ -13,9 +13,7 @@ import { useDeviceWebSocket } from './useDeviceWebSocket'
  * 职责：处理应用启动时的初始化逻辑
  */
 export function useAppInitialization() {
-  // @ts-expect-error 跳过检查
-  const wsBaseUrl = import.meta.env.WS_BASE_URL || import.meta.env.VITE_WS_BASE_URL
-  useDeviceWebSocket(wsBaseUrl)
+  useDeviceWebSocket()
   const dataStore = useDataStore()
   const settingsStore = useSettingsStore()
   const activityStore = useActivityStore()

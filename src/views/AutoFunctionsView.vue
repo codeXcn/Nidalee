@@ -103,10 +103,8 @@
 <script setup lang="ts">
 import { useActivityLogger } from '@/composables/utils/useActivityLogger'
 import { useAutoFunctionStore } from '@/stores/autoFunctionStore'
-import { appContextKey, type AppContext } from '@/types'
 import { X } from 'lucide-vue-next'
 
-const { isConnected } = inject(appContextKey) as AppContext
 const autoFunctionStore = useAutoFunctionStore()
 const activityLogger = useActivityLogger()
 
@@ -116,45 +114,6 @@ const autoFunctions = computed(() => {
   console.log('[AutoFunctionsView] autoFunctions computed:', functions)
   return functions
 })
-
-// watch(
-//   [
-//     () => autoFunctionStore.autoFunctions.acceptMatch.enabled,
-//     () => autoFunctionStore.autoFunctions.selectChampion.enabled,
-//     () => autoFunctionStore.autoFunctions.runeConfig.enabled,
-//     () => autoFunctionStore.autoFunctions.banChampion.enabled
-//   ],
-//   ([acceptMatch, selectChampion, runeConfig, banChampion], [oldAccept, oldSelect, oldRune, oldBan]) => {
-//     if (acceptMatch !== oldAccept) {
-//       if (acceptMatch) {
-//         activityLogger.logSettings.autoFunctionEnabled('自动接受对局')
-//       } else {
-//         activityLogger.logSettings.autoFunctionDisabled('自动接受对局')
-//       }
-//     }
-//     if (selectChampion !== oldSelect) {
-//       if (selectChampion) {
-//         activityLogger.logSettings.autoFunctionEnabled('自动选择英雄')
-//       } else {
-//         activityLogger.logSettings.autoFunctionDisabled('自动选择英雄')
-//       }
-//     }
-//     if (runeConfig !== oldRune) {
-//       if (runeConfig) {
-//         activityLogger.logSettings.autoFunctionEnabled('自动符文配置')
-//       } else {
-//         activityLogger.logSettings.autoFunctionDisabled('自动符文配置')
-//       }
-//     }
-//     if (banChampion !== oldBan) {
-//       if (banChampion) {
-//         activityLogger.logSettings.autoFunctionEnabled('自动禁用英雄')
-//       } else {
-//         activityLogger.logSettings.autoFunctionDisabled('自动禁用英雄')
-//       }
-//     }
-//   }
-// )
 
 const enabledFunctionsCount = computed(() => autoFunctionStore.enabledFunctionsCount)
 const isAnyFunctionEnabled = computed(() => autoFunctionStore.isAnyFunctionEnabled)
