@@ -5,18 +5,11 @@
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild>
             <router-link to="/">
-              <!-- 顶部Logo -->
               <div class="flex items-center gap-3 px-2 py-2 select-none">
                 <img src="@/assets/logo.png" class="w-10 h-10 rounded-xl shadow-lg border border-gray-200 bg-white" />
                 <div class="flex flex-col justify-center min-w-0">
                   <div
-                    class="font-extrabold text-xl leading-tight tracking-wide truncate bg-gradient-to-r bg-clip-text text-transparent"
-                    :style="{
-                      backgroundImage:
-                        $colorMode === 'dark'
-                          ? 'linear-gradient(90deg, var(--color-primary, #f59e42), #312e81)'
-                          : 'linear-gradient(90deg, var(--color-primary, #f59e42), #7c3aed)'
-                    }"
+                    class="font-extrabold text-xl leading-tight tracking-wide truncate bg-gradient-to-r bg-clip-text text-transparent from-primary to-purple-600"
                   >
                     <RadiantText class="transition ease-out" :duration="5">
                       <span>Nidalee~</span>
@@ -62,6 +55,10 @@
     </SidebarContent>
 
     <SidebarFooter>
+      <div class="px-2 pb-4">
+        <GitHubStarButtonBeautiful />
+      </div>
+
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild :tooltip="'设置'" :is-active="isActiveRoute('/settings')">
@@ -82,7 +79,6 @@
 import { BarChart3, Gamepad2, Search, Settings, TrendingUp, Zap, TestTube, Trophy } from 'lucide-vue-next'
 const route = useRoute()
 
-// @ts-expect-error 跳过检查
 const isDev = import.meta.env.DEV
 
 const menuItems = [

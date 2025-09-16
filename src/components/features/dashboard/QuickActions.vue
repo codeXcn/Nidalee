@@ -10,7 +10,6 @@
       <!-- <MatchmakingPanel /> -->
 
       <div class="space-y-4">
-        <!-- 自动接受对局 -->
         <div
           class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
         >
@@ -26,7 +25,6 @@
           <Switch v-model="autoFunctions.acceptMatch.enabled" />
         </div>
 
-        <!-- 自动选择英雄 -->
         <div
           class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
         >
@@ -42,7 +40,6 @@
           <Switch v-model="autoFunctions.selectChampion.enabled" />
         </div>
 
-        <!-- 自动符文配置 -->
         <div
           class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
         >
@@ -58,7 +55,6 @@
           <Switch v-model="autoFunctions.runeConfig.enabled" />
         </div>
 
-        <!-- 自动禁用英雄 -->
         <div
           class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
         >

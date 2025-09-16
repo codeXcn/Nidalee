@@ -1,6 +1,5 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- 游戏连接状态 -->
     <Card
       :class="[
         'relative p-6 rounded-xl shadow-sm border-l-4 transition-all duration-300',

@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- 搜索栏 -->
     <div class="relative">
       <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
       <Input
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- 统计信息 -->
     <div v-if="!loading && !error" class="flex items-center justify-between text-sm text-muted-foreground px-1">
       <span>{{ filteredChampions.length }} / {{ champions.length }} 个英雄</span>
       <div class="flex items-center gap-4">
@@ -28,17 +26,14 @@
       </div>
     </div>
 
-    <!-- 英雄网格 -->
     <ScrollArea class="h-[min(600px,calc(85vh-200px))] w-full rounded-lg border border-border bg-muted/20">
       <div class="p-6">
-        <!-- 加载状态 -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-16 text-center">
           <div class="h-10 w-10 animate-spin rounded-full border-3 border-primary border-t-transparent mb-6"></div>
           <p class="text-muted-foreground font-medium text-lg">正在加载英雄数据...</p>
           <p class="text-sm text-muted-foreground mt-2">请稍候片刻</p>
         </div>
 
-        <!-- 错误状态 -->
         <div v-else-if="error" class="flex flex-col items-center justify-center py-16 text-center">
           <div
             class="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mb-6 border border-destructive/20"
@@ -55,7 +50,6 @@
           </button>
         </div>
 
-        <!-- 英雄列表 -->
         <div v-else>
           <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
             <div
@@ -79,7 +73,6 @@
                     {{ champion.name.slice(0, 2).toUpperCase() }}
                   </AvatarFallback>
                 </Avatar>
-                <!-- 悬停效果光环 -->
                 <div
                   class="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-sm"
                 ></div>
@@ -95,7 +88,7 @@
             </div>
           </div>
 
-          <!-- 无结果状态 -->
+          <!-- no result -->
           <div
             v-if="!loading && !error && filteredChampions.length === 0"
             class="flex flex-col items-center justify-center py-20 text-center"
@@ -125,13 +118,11 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-// 状态
 const searchText = ref('')
 const champions = ref<ChampionInfo[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-// 计算属性
 const filteredChampions = computed(() => {
   if (!searchText.value.trim()) {
     return champions.value
@@ -146,12 +137,10 @@ const filteredChampions = computed(() => {
   )
 })
 
-// 方法
 const selectChampion = (champion: ChampionInfo) => {
   emit('select', champion)
 }
 
-// 加载英雄数据
 const loadChampions = async () => {
   try {
     loading.value = true
@@ -180,7 +169,6 @@ const loadChampions = async () => {
   }
 }
 
-// 生命周期
 onMounted(() => {
   loadChampions()
 })

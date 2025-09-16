@@ -47,7 +47,6 @@ import { useColorMode } from '@vueuse/core'
 const isDark = computed(() => useColorMode().value == 'dark')
 
 function handleContact() {
-  // 这里可以跳转到客服页面或弹出联系方式
   window.open('https://codexlin.com', '_blank')
 }
 </script>

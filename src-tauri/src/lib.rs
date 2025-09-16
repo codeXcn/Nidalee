@@ -1,13 +1,13 @@
 // 应用库 - 提供应用运行的核心功能
 mod app;
-mod commands;
 mod http_client;
 mod lcu;
 mod tray;
-
+mod common;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(app::setup_app)
         .invoke_handler(tauri::generate_handler![
             // 认证 / 连接
@@ -41,7 +41,7 @@ pub fn run() {
             lcu::summoner::commands::set_summoner_chat_profile,
             lcu::summoner::commands::set_summoner_background_skin,
 
-            // 召唤师符文（LCU perks）
+            // 召唤师符文
             lcu::perks::commands::get_lcu_rune_styles,
             lcu::perks::commands::get_lcu_perks,
             lcu::perks::commands::get_lcu_perk_icon,
@@ -52,15 +52,18 @@ pub fn run() {
             lcu::opgg::commands::get_opgg_tier_list,
             lcu::opgg::commands::get_opgg_champion_positions,
             lcu::opgg::commands::apply_opgg_runes,
-
-            // 本地/通用命令
-            commands::get_machine_hash,
-            commands::get_champions_list,
-            commands::get_champion_builds,
-            commands::get_champion_build_new,
-            commands::get_champion_runes,
-            commands::get_all_runes,
-            commands::apply_champion_build,
+            common::commands::machine::get_machine_hash,
+            common::commands::builds::get_champions_list,
+            common::commands::builds::get_champion_builds,
+            common::commands::builds::get_champion_build_new,
+            common::commands::builds::get_champion_runes,
+            common::commands::builds::get_all_runes,
+            common::commands::builds::apply_champion_build,
+            common::commands::game::launch_game,
+            common::commands::game::detect_game_path,
+            common::commands::game::select_game_path,
+            common::commands::game::save_game_path,
+            common::commands::game::get_saved_game_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

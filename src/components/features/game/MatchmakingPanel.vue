@@ -61,6 +61,5 @@
 import { Zap } from 'lucide-vue-next'
 import { useMatchmaking } from '@/composables'
 
-// 直接使用 matchmaking composable，不依赖 store
 const { matchmakingState, handleMatchmaking, handleAcceptMatch, handleDeclineMatch } = useMatchmaking()
 </script>

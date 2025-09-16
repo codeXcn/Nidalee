@@ -73,7 +73,7 @@ export function useGamePhaseManager() {
     }
     console.log('[🎮 GamePhaseManager] ===== 阶段变更处理完成 =====\n')
   }
-  // 处理自动接受对局
+
   const handleAutoAcceptMatch = async () => {
     const { autoFunctions } = autoFunctionStore
 

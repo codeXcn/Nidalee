@@ -8,21 +8,17 @@ import { computed } from 'vue'
 export function useConnection() {
   const connectionStore = useConnectionStore()
 
-  // 直接从 store 中获取响应式状态
   const isConnected = computed(() => connectionStore.isConnected)
   const connectionState = computed(() => connectionStore.connectionState)
   const connectionError = computed(() => connectionStore.connectionError)
   const hasAuth = computed(() => connectionStore.hasAuth)
-  // 直接使用 store 中更完善的状态文本
   const connectionMessage = computed(() => connectionStore.statusText)
 
-  // 代理 store 中的方法
   const checkConnection = () => {
     console.log('手动检查连接🙌')
     return connectionStore.checkConnection()
   }
 
-  // 更新为调用 reset 方法
   const clearConnection = () => {
     connectionStore.reset()
   }

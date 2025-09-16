@@ -6,6 +6,7 @@
       <span class="text-sm font-medium text-foreground">
         {{ isConnected ? summonerInfo?.displayName || '未知召唤师' : '未连接' }}
       </span>
+      <GameLauncher v-if="!isConnected" class="ml-2" />
     </div>
 
     <!-- 等级和段位信息 -->

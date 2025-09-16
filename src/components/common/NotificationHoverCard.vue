@@ -6,14 +6,12 @@
         aria-label="查看活动通知"
       >
         <Bell :size="17" class="text-muted-foreground group-hover:text-foreground transition-colors" />
-        <!-- 通知数量徽章 -->
         <span
           v-if="unreadCount > 0"
           class="absolute -top-1 -right-2 h-6 w-6 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce shadow-lg border-2 border-background"
         >
           {{ unreadCount > 9 ? '9+' : unreadCount }}
         </span>
-        <!-- 脉冲动画环 -->
         <div
           v-if="unreadCount > 0"
           class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-ping opacity-20"
@@ -26,7 +24,6 @@
       :align="align"
       class="!border-none w-[320px] p-0 shadow-2xl bg-background/95 backdrop-blur-lg rounded-2xl"
     >
-      <!-- 头部 -->
       <div class="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-primary/5 to-primary/10 rounded-t-2xl">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
@@ -36,7 +33,6 @@
             <h3 class="text-base font-semibold text-foreground">{{ title }}</h3>
           </div>
           <div class="flex items-center space-x-2">
-            <!-- 错误/警告统计 -->
             <div v-if="errorCount > 0" class="flex items-center space-x-1">
               <div class="h-2 w-2 bg-red-500 rounded-full"></div>
               <span class="text-xs text-red-600 font-medium">{{ errorCount }}</span>
@@ -45,7 +41,6 @@
               <div class="h-2 w-2 bg-yellow-500 rounded-full"></div>
               <span class="text-xs text-yellow-600 font-medium">{{ warningCount }}</span>
             </div>
-            <!-- 未读徽章 -->
             <Badge v-if="unreadCount > 0" variant="secondary" class="text-xs bg-red-500/10 text-red-600 border-red-200">
               {{ unreadCount }} 条未读
             </Badge>
@@ -53,7 +48,6 @@
         </div>
       </div>
 
-      <!-- 活动内容 -->
       <ScrollArea>
         <div class="px-3 py-2 max-h-[260px]">
           <div class="space-y-2">
@@ -62,14 +56,12 @@
               :key="activity.id"
               class="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card/70 hover:bg-card transition-all duration-200 shadow-sm"
             >
-              <!-- 类型icon+圆点 -->
               <span
                 class="flex items-center justify-center w-7 h-7 rounded-full"
                 :class="[getActivityTypeConfig(activity.type).bg, getActivityTypeConfig(activity.type).text]"
               >
                 <span class="text-base">{{ getActivityTypeConfig(activity.type).icon }}</span>
               </span>
-              <!-- 内容 -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-center">
                   <span class="text-sm font-medium text-foreground truncate flex-1">{{ activity.message }}</span>
@@ -92,7 +84,6 @@
         </div>
       </ScrollArea>
 
-      <!-- 底部操作栏 -->
       <div class="px-4 py-2 border-t border-border/30 bg-muted/20 rounded-b-2xl">
         <div class="flex items-center justify-between">
           <button
@@ -136,28 +127,22 @@ withDefaults(
   }
 )
 
-// 使用 ActivityStore
 const activityStore = useActivityStore()
 const { formatRelativeTime } = useFormatters()
 
-// 从 store 获取活动数据
 const activities = computed(() => activityStore.recentActivities)
 
-// 计算统计信息
 const errorCount = computed(() => activityStore.errorCount)
 const warningCount = computed(() => activityStore.warningCount)
 
-// 计算未读数量
 const unreadCount = computed(() => {
   return activities.value?.filter((activity) => !activity.read)?.length || 0
 })
 
-// 处理标记全部已读
 const handleMarkAllRead = () => {
   activityStore.markAllAsRead()
 }
 
-// 处理查看全部（此处实现为清理全部活动）
 const handleClearAll = () => {
   activityStore.clearActivities()
 }

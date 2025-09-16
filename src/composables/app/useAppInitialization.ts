@@ -24,7 +24,6 @@ export function useAppInitialization() {
   const isInitialized = ref(false)
   const initializationError = ref<string | null>(null)
 
-  // 初始化游戏版本
   const initializeGameVersion = async () => {
     try {
       console.log('[AppInit] 获取游戏版本...')
@@ -40,7 +39,6 @@ export function useAppInitialization() {
     }
   }
 
-  // 初始化连接状态
   const initializeConnection = async () => {
     try {
       console.log('[AppInit] 初始化连接状态...')
@@ -61,7 +59,6 @@ export function useAppInitialization() {
     }
   }
 
-  // 初始化应用
   const initializeApp = async () => {
     try {
       console.log('[AppInit] 开始应用初始化...')
@@ -85,14 +82,12 @@ export function useAppInitialization() {
     }
   }
 
-  // 清理资源
   const cleanup = () => {
     console.log('[AppInit] 清理应用资源...')
     isInitialized.value = false
     initializationError.value = null
   }
 
-  // 重新初始化
   const reinitialize = async () => {
     console.log('[AppInit] 重新初始化应用...')
     cleanup()

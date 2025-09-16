@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-8">
-    <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
         <h3 class="text-lg font-bold text-foreground">主题定制器</h3>
@@ -16,7 +15,6 @@
       </Button>
     </div>
 
-    <!-- Color Selection -->
     <div>
       <Label class="text-sm font-semibold mb-2 block">主题主色</Label>
       <div class="grid grid-cols-3 gap-3">
@@ -48,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Radius Selection -->
     <div>
       <Label class="text-sm font-semibold mb-2 block">圆角风格</Label>
       <div class="flex gap-2">
@@ -71,7 +68,6 @@
       </div>
     </div>
 
-    <!-- Theme Mode -->
     <div>
       <Label class="text-sm font-semibold mb-2 block">主题模式</Label>
       <div class="flex items-center gap-3">
@@ -110,7 +106,6 @@
       </div>
     </div>
 
-    <!-- Style Selection -->
     <div>
       <Label class="text-sm font-semibold mb-2 block">风格</Label>
       <div class="grid grid-cols-2 gap-3">

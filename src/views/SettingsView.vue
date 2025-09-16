@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-background via-muted/60 to-background/80 py-10 px-4">
     <div class="max-w-4xl mx-auto space-y-8">
-      <!-- 顶部标题 -->
       <div class="flex items-center gap-4 mb-4">
         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary shadow">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -17,8 +16,6 @@
           <p class="text-muted-foreground text-base mt-1">自定义您的应用程序外观和行为</p>
         </div>
       </div>
-
-      <!-- 主题设置卡片 -->
       <Card
         class="p-8 rounded-2xl shadow-xl bg-gradient-to-br from-white/80 to-muted/60 dark:from-background/80 dark:to-muted/40 border border-border"
       >
@@ -32,8 +29,6 @@
           </div>
         </div>
       </Card>
-
-      <!-- 预留：其他设置卡片 -->
       <Card
         class="p-8 rounded-2xl shadow-xl bg-gradient-to-br from-white/80 to-muted/60 dark:from-background/80 dark:to-muted/40 border border-border"
       >

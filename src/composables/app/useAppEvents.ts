@@ -21,46 +21,38 @@ export function useAppEvents() {
   const { handleGamePhaseChange } = gamePhaseManager
   const { handleChampSelectChange, handleLobbyChange } = champSelectManager
 
-  // 处理游戏阶段变化
   const handleGameFlowPhaseChange = (event: any) => {
     console.log('[AppEvents] 游戏阶段变化:', event.payload)
     const phase = event.payload as string | null
     handleGamePhaseChange(phase ? { phase } : null)
   }
 
-  // 处理大厅变化
   const handleLobbyChangeEvent = (event: any) => {
     console.log('[AppEvents] 大厅变化:', event.payload)
     const lobbyInfo = event.payload as LobbyInfo | null
     handleLobbyChange(lobbyInfo)
   }
 
-  // 处理英雄选择会话变化
   const handleChampSelectSessionChanged = (event: any) => {
     console.log('[AppEvents] 英雄选择会话变化:', event.payload)
     const session = event.payload as ChampSelectSession | null
     handleChampSelectChange(session)
   }
 
-  // 连接状态变化处理
   const handleConnectionStateChange = async (event: any) => {
     console.log('[AppEvents-handleConnectionStateChange] 连接状态变化:', event.payload)
     const state = event.payload as ConnectedState
     await connectionStore.updateConnectionState(isObject(state) ? state.state : state)
   }
 
-  // 防抖处理
   const handleConnectionStateChangeDebounced = debounce({ delay: 300 }, handleConnectionStateChange)
 
-  // 新增：监听游戏结束事件
   const handleGameFinished = () => {
     console.log('[AppEvents] 游戏结束事件')
     document.dispatchEvent(new CustomEvent('game-finished'))
   }
 
-  // 统一的事件监听启动
   const startListening = async () => {
-    // 关键：检查模块级别的状态
     if (isListeningStarted) return
     isListeningStarted = true // 立即设置标记，防止并发调用
 

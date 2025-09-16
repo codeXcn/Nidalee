@@ -44,7 +44,6 @@ export function useGameHelper() {
     tier?: string
     division?: string
   }): Promise<void> {
-    // 路由到更明确的职责函数，并做输入校验
     const providedAny = !!statusMessage || !!queue || !!tier || !!division
     if (!providedAny) {
       toast.error('无有效内容可修改', { description: '请提供签名或完整段位信息', duration: 4000 })

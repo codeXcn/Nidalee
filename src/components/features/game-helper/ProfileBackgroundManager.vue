@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- 生涯背景设置区域 -->
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
@@ -11,7 +10,6 @@
       </CardHeader>
       <CardContent>
         <div v-if="!selectedChampion">
-          <!-- 搜索栏 -->
           <div class="relative mb-4">
             <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
@@ -29,7 +27,6 @@
               </button>
             </div>
           </div>
-          <!-- 英雄网格 -->
           <ScrollArea class="h-[min(600px,calc(85vh-200px))] w-full rounded-lg border border-border bg-muted/20">
             <div class="p-6">
               <div v-if="loadingChampions" class="flex flex-col items-center justify-center py-16 text-center">
@@ -150,7 +147,6 @@
                     class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300 z-10"
                   ></div>
 
-                  <!-- 应用中的加载覆盖层 -->
                   <div
                     v-if="applyingSkinId === skin.id"
                     class="absolute inset-0 bg-primary/80 flex items-center justify-center z-30 rounded-3xl"
@@ -210,7 +206,9 @@ const {
 } = useChampionSummaryQuery()
 const champions = computed<ChampionInfo[]>(() =>
   championsData.value
-    ? championsData.value.filter((c: any) => c.id > 0).sort((a: any, b: any) => a.name.localeCompare(b.name))
+    ? championsData.value
+        .filter((c: any) => c.id > 0 && !c.alias.includes('Ruby_'))
+        .sort((a: any, b: any) => a.name.localeCompare(b.name))
     : []
 )
 const selectedChampion = ref<ChampionInfo | null>(null)

@@ -1,11 +1,8 @@
 <template>
   <div class="px-4">
-    <!-- 右侧工具栏 -->
     <div class="flex items-center space-x-2">
-      <!-- 通知弹出框 -->
       <NotificationHoverCard title="系统活动" side="bottom" align="end" />
 
-      <!-- 刷新按钮 -->
       <button
         class="cursor-pointer p-3 rounded-xl bg-gradient-to-br from-background/80 to-muted/60 backdrop-blur-sm border border-border/50 hover:border-border transition-all duration-200 focus:outline-none shadow-lg hover:shadow-xl group"
         @click="refreshData"
@@ -26,7 +23,6 @@ import { RefreshCw } from 'lucide-vue-next'
 const activityLogger = useActivityLogger()
 const connectionStore = useConnectionStore()
 
-// 从store中获取状态
 const { isConnected } = storeToRefs(connectionStore)
 const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
 

@@ -1,10 +1,8 @@
 <template>
   <div class="min-h-screen">
-    <!-- 主要内容 -->
     <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
       <!-- 队伍分析卡片 -->
       <div class="grid grid-cols-1 gap-6 lg:gap-8">
-        <!-- 分层递进动画：动画只加在子卡片上 -->
         <TeamCard
           v-if="session.myTeam"
           :team="session.myTeam"
@@ -53,7 +51,7 @@
         </p>
       </div>
     </div>
-    <!-- 召唤师详情抽屉 -->
+    <!-- 召唤师详情 -->
     <Sheet v-model:open="isDetailsOpen">
       <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
         <div

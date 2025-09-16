@@ -5,7 +5,6 @@
       召唤师特征
     </h4>
 
-    <!-- 特征标签 -->
     <div class="flex flex-wrap gap-1">
       <template v-for="trait in traits" :key="trait.name">
         <button
@@ -42,7 +41,6 @@
       </template>
     </div>
 
-    <!-- 特征详情 -->
     <div v-if="selectedTrait" class="bg-card border rounded-lg p-4 transition-all duration-200 hover:shadow-sm">
       <div class="flex items-start gap-3">
         <div class="p-2 bg-muted rounded-lg">
@@ -71,7 +69,6 @@
       </div>
     </div>
 
-    <!-- 特征统计 -->
     <div v-if="traits.length > 1" class="text-xs text-muted-foreground text-center">
       共识别出 {{ traits.length }} 个特征，点击标签查看详情
     </div>

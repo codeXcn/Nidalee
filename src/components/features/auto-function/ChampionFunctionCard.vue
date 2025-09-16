@@ -25,7 +25,6 @@
     <CardContent v-if="enabled" class="space-y-6 pt-0">
       <Separator />
 
-      <!-- 英雄多选与排序区域 -->
       <div class="space-y-4">
         <Label class="text-sm font-medium text-foreground">选择英雄（可按顺序配置多个）</Label>
         <div v-if="championList && championList.length > 0" class="space-y-2">
@@ -77,7 +76,6 @@
         </div>
       </div>
 
-      <!-- 延迟配置区域 -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <Label class="text-sm font-medium text-foreground">执行延迟</Label>
@@ -116,7 +114,6 @@
       </div>
     </CardContent>
 
-    <!-- 英雄选择对话框 -->
     <Dialog v-model:open="showChampionSelector">
       <DialogContent class="!max-w-[85vw] w-[85vw] !max-h-[85vh] overflow-hidden">
         <DialogHeader class="pb-4">

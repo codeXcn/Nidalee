@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-8">
-    <!-- 美化后的 Tabs -->
     <Tabs v-model="activeTab" class="w-full">
       <TabsList class="w-full flex gap-2 bg-transparent p-0 border-0 shadow-none">
         <TabsTrigger
@@ -53,9 +52,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Settings, Sparkles, Users } from 'lucide-vue-next'
-import ProfileBackgroundManager from './ProfileBackgroundManager.vue'
-// import ChampionBuildManager from './ChampionBuildManager.vue'
+import { Sparkles, Users } from 'lucide-vue-next'
 
 const tabs = [
   {

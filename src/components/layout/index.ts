@@ -2,5 +2,4 @@
 export { default as TitleBar } from './TitleBar.vue'
 export { default as AppSidebar } from './AppSidebar.vue'
 export { default as ConnectionStatus } from './ConnectionStatus.vue'
-export { default as ThemeSettings } from './ThemeSettings.vue'
 export { default as ThemeCustomizer } from './ThemeCustomizer.vue'

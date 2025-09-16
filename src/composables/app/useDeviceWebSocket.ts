@@ -11,19 +11,15 @@ export function useDeviceWebSocket() {
   const lastServerMsg = ref<string | null>(null)
   const lastError = ref<string | null>(null)
 
-  // 引入 Pinia store
   const connectionStore = useConnectionStore()
   onMounted(async () => {
     console.log('useDeviceWebSocket', import.meta.env.VITE_WS_BASE_URL)
     try {
-      // 1. 获取唯一设备ID
       const hash = await invoke<string>('get_machine_hash')
       deviceId.value = hash
 
-      // 2. 拼接 WebSocket 地址
       const wsUrl = `${import.meta.env.VITE_WS_BASE_URL}/${hash}`
 
-      // 3. 建立 WebSocket 连接
       const wsInstance = useWebSocket(wsUrl, {
         autoReconnect: {
           retries: 10,
@@ -37,7 +33,6 @@ export function useDeviceWebSocket() {
 
       ws.value = wsInstance
 
-      // 4. 监听状态
       wsInstance.ws.value?.addEventListener('open', () => {
         status.value = 'OPEN'
         console.log('WebSocket连接成功')
@@ -52,7 +47,6 @@ export function useDeviceWebSocket() {
         console.log('WebSocket错误:', e)
       })
 
-      // 5. 监听服务器返回
       wsInstance.ws.value?.addEventListener('message', (event) => {
         lastServerMsg.value = event.data
         try {

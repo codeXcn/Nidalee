@@ -17,7 +17,6 @@
     <CardContent v-if="enabled" class="space-y-6 pt-0">
       <Separator />
 
-      <!-- 延迟配置 -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <Label class="text-sm font-medium text-foreground">执行延迟</Label>
@@ -68,17 +67,15 @@ interface Props {
 
 defineProps<Props>()
 
-// 使用 defineModel 定义双向绑定
 const enabled = defineModel<boolean>('enabled', { default: false })
 const delay = defineModel<number>('delay', { default: 1000 })
 
-// 使用防抖处理延迟设置
 const {
   value: debouncedDelay,
   isPending: isDelayPending,
   flush: flushDelay
 } = useDebouncedNumberModel(delay, {
-  delay: 500, // 500ms 防抖
+  delay: 500,
   min: 0,
   max: 10000,
   step: 100
@@ -95,7 +92,6 @@ const delayModel = computed({
   }
 })
 
-// 格式化延迟显示
 const formatDelayDisplay = (value: number) => {
   if (value < 1000) {
     return `${value}ms`
@@ -103,7 +99,6 @@ const formatDelayDisplay = (value: number) => {
   return `${(value / 1000).toFixed(1)}s`
 }
 
-// 组件卸载时确保保存最后的更改
 onBeforeUnmount(() => {
   flushDelay()
 })

@@ -12,7 +12,6 @@
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <!-- 头像 -->
           <div class="relative">
             <div class="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden">
               <img
@@ -26,7 +25,6 @@
                 @load="handleImageLoad"
               />
 
-              <!-- 加载中的骨架屏 -->
               <div
                 v-if="imageLoading && summonerInfo.profileIconId && !imageLoadError"
                 class="absolute inset-0 w-full h-full flex items-center justify-center"
@@ -34,7 +32,6 @@
                 <div class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
 
-              <!-- 备用显示（无头像ID或加载失败时） -->
               <div
                 v-if="!summonerInfo.profileIconId || imageLoadError || (!imageLoading && imageLoadError)"
                 class="w-full h-full flex items-center justify-center text-white font-bold text-2xl"
@@ -56,7 +53,6 @@
             </div>
           </div>
 
-          <!-- 基本信息 -->
           <div>
             <h2 class="text-2xl font-bold text-white">{{ summonerInfo.displayName }}</h2>
             <p class="text-white/80">等级 {{ summonerInfo.summonerLevel }} 召唤师</p>
@@ -70,7 +66,6 @@
           </div>
         </div>
 
-        <!-- 挑战点数和会话时长 -->
         <div class="text-right text-white">
           <div v-if="summonerInfo.challengePoints" class="mb-2">
             <p class="text-white/80 text-sm">挑战点数</p>
@@ -85,7 +80,6 @@
         </div>
       </div>
 
-      <!-- 经验条 -->
       <div v-if="summonerInfo.percentCompleteForNextLevel" class="mt-4">
         <div class="flex justify-between text-white/80 text-sm mb-1">
           <span>升级进度</span>
@@ -104,7 +98,6 @@
       </div>
     </div>
 
-    <!-- 排位信息部分 -->
     <div class="p-6 bg-background">
       <h3 class="text-lg font-semibold mb-4 flex items-center">
         <Trophy class="h-5 w-5 mr-2 text-yellow-500" />
@@ -112,7 +105,6 @@
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 justify-items-center items-start">
-        <!-- 单人排位 -->
         <div class="space-y-3 flex flex-col items-center min-w-[260px] max-w-[320px] w-full">
           <h4 class="font-medium text-foreground flex items-center justify-center">
             <User class="h-4 w-4 mr-2" />
@@ -201,7 +193,6 @@
           </div>
         </div>
 
-        <!-- 灵活排位（镜像对称） -->
         <div class="space-y-3 flex flex-col items-center min-w-[260px] max-w-[320px] w-full">
           <h4 class="font-medium text-foreground flex items-center justify-center">
             <Users class="h-4 w-4 mr-2" />
@@ -319,24 +310,20 @@ const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
 const sessionStore = useSessionStore()
 
-// 头像相关状态
 const imageLoadError = ref(false)
 const imageLoading = ref(true)
 
-// 处理图片加载错误
 const handleImageError = (event: Event): void => {
   console.warn('头像加载失败:', event)
   imageLoadError.value = true
   imageLoading.value = false
 }
 
-// 处理图片加载成功
 const handleImageLoad = (): void => {
   imageLoadError.value = false
   imageLoading.value = false
 }
 
-// 获取挑战水晶图标
 const getChallengeIcon = (level: string): string => {
   const iconMap: Record<string, string> = {
     IRON: '🥉',
@@ -352,7 +339,6 @@ const getChallengeIcon = (level: string): string => {
   return iconMap[level] || '🏆'
 }
 
-// 格式化排位等级
 const formatRankTier = (tier: string): string => {
   const tierMap: Record<string, string> = {
     IRON: '坚韧黑铁',
@@ -386,7 +372,6 @@ const getRankColor = (tier: string): string => {
   return colorMap[tier] || 'bg-gray-500/20 text-gray-600 dark:text-gray-400'
 }
 
-// 计算胜率
 const getRankWinRate = (wins?: number, losses?: number): number => {
   if (!wins && !losses) return 0
   const totalGames = (wins || 0) + (losses || 0)
@@ -394,7 +379,6 @@ const getRankWinRate = (wins?: number, losses?: number): number => {
   return Math.round(((wins || 0) / totalGames) * 100)
 }
 
-// 胜率趣味风格（emoji方案）
 const getWinRateStyle = (rate: number) => {
   if (rate >= 100) {
     return {
@@ -423,7 +407,6 @@ const getWinRateStyle = (rate: number) => {
   }
 }
 
-// 格式化游戏状态
 const formatGameStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
     hosting_RANKED_SOLO_5x5: '排位单双',
@@ -437,7 +420,6 @@ const formatGameStatus = (status: string): string => {
   return statusMap[status] || status
 }
 
-// 获取游戏状态颜色
 const getGameStatusColor = (status: string): string => {
   if (status.includes('hosting') || status === 'inGame') {
     return 'bg-green-500/20 text-green-600 dark:text-green-400'
@@ -448,7 +430,6 @@ const getGameStatusColor = (status: string): string => {
   return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
 }
 
-// 格式化可用性状态
 const formatAvailability = (availability: string): string => {
   const availabilityMap: Record<string, string> = {
     chat: '可聊天',
@@ -461,7 +442,6 @@ const formatAvailability = (availability: string): string => {
   return availabilityMap[availability] || availability
 }
 
-// 段位描述Tooltip
 const getTierTooltip = (tier: string) => {
   const map: Record<string, string> = {
     IRON: '坚韧黑铁：万丈高楼平地起！',
@@ -480,7 +460,6 @@ const getTierTooltip = (tier: string) => {
 
 const _getTierTooltip = getTierTooltip
 
-// 段位主色发光映射
 const rankGlowColorMap: Record<string, string> = {
   IRON: '#6e6e6e',
   BRONZE: '#b87333',
@@ -493,18 +472,7 @@ const rankGlowColorMap: Record<string, string> = {
   GRANDMASTER: '#f87171',
   CHALLENGER: '#ffe066'
 }
-// 获取rank徽章发光style
-// const getRankGlowStyle = (tier: string) => {
-//   const color = rankGlowColorMap[tier] || '#a3a3a3'
-//   return {
-//     boxShadow: `0 0 0 2px #fff, 0 0 16px 4px ${color}, 0 0 32px 8px ${color}80`,
-//     borderColor: color,
-//     background: '#fff',
-//     transition: 'box-shadow 0.5s, border-color 0.5s'
-//   }
-// }
 
-// 呼吸发光动画style（主色变量）
 const getRankGlowBreathStyle = (tier: string) => {
   const color = rankGlowColorMap[tier] || '#a3a3a3'
   return {
@@ -516,7 +484,6 @@ const getRankGlowBreathStyle = (tier: string) => {
   } as any
 }
 
-// 段位名badge主色渐变风格
 const getBadgeStyle = (tier: string) => {
   const color = rankGlowColorMap[tier] || '#a3a3a3'
   return {
@@ -531,7 +498,6 @@ const getBadgeStyle = (tier: string) => {
     transition: 'all 0.3s ease'
   }
 }
-// LP区块渐变风格
 const getLpBadgeStyle = (tier: string) => {
   const color = rankGlowColorMap[tier] || '#f7c873'
   return {

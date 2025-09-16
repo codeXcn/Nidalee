@@ -52,5 +52,7 @@
       }
     }
   },
-  "plugins": {}
+  "plugins": {
+    "dialog": null
+  }
 }

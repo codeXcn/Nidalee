@@ -10,7 +10,6 @@
       </DialogHeader>
 
       <ScrollArea class="max-h-[60vh] border-none will-change-auto">
-        <!-- 加载状态 -->
         <div v-if="loading" class="flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <span class="ml-3 text-muted-foreground">正在加载游戏详细信息...</span>
@@ -347,7 +346,7 @@
       </ScrollArea>
     </DialogContent>
 
-    <!-- 召唤师详情抽屉 -->
+    <!-- 召唤师详情 -->
     <Sheet v-model:open="isDetailsOpen">
       <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
         <div
@@ -462,11 +461,9 @@ const gameDetailData = ref<GameDetail | null>(null)
 const dataStore = useDataStore()
 const gameVersion = computed(() => dataStore.gameVersion)
 
-// 召唤师详情相关
 const isDetailsOpen = ref(false)
 const selectedPlayer = ref<any>(null)
 
-// 使用搜索召唤师战绩的钩子
 const { fetchSummonerInfo, currentRestult, loading: searchLoading } = useSearchMatches()
 
 // 监听游戏数据变化
@@ -491,7 +488,6 @@ watch(
   }
 )
 
-// 打开召唤师详情
 const openSummonerDetails = async (participant: any) => {
   selectedPlayer.value = {
     displayName: participant.summonerName
@@ -506,7 +502,6 @@ const openSummonerDetails = async (participant: any) => {
   }
 }
 
-// 表格列定义
 const columns = [
   { key: 'summoner', label: '召唤师', class: 'w-[22%]' },
   { key: 'champion', label: '英雄', class: 'w-[15%] text-center' },
@@ -520,7 +515,6 @@ const columns = [
 // 装备槽位
 const itemSlots = [0, 1, 2, 3, 4, 5, 6]
 
-// 格式化函数
 const formatDuration = (seconds: number) => {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -528,7 +522,6 @@ const formatDuration = (seconds: number) => {
 }
 const formatNumber = (num: number) => num.toLocaleString()
 
-// 辅助函数 - 已简化和适配
 const getTeamResult = (teamId: string) => {
   if (!gameDetailData.value) return '未知'
   const team = gameDetailData.value.teams.find((t) => t.teamId && t.teamId.toString() === teamId)

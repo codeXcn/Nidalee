@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Toaster } from 'vue-sonner'
 import { appContextKey } from '@/types'
 import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 

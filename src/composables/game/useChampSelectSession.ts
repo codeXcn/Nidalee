@@ -16,7 +16,6 @@ export function useChampSelectSession() {
     window.dispatchEvent(new CustomEvent('retry-champ-select-session'))
   }
 
-  // 富集玩家数据
   function enrichPlayer(player: ChampSelectPlayer, localPlayerCellId: number): EnrichedChampSelectPlayer {
     // 机器人
     if (player.summonerId === '0') {
@@ -52,7 +51,6 @@ export function useChampSelectSession() {
     }
   }
 
-  // 富集 session
   const enrichedSession = computed(() => {
     const session = gameStore.champSelectSession
     if (!session) return null

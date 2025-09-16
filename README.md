@@ -2,147 +2,158 @@
   <img src="src/assets/logo.svg" alt="Nidalee Logo" width="120" height="120">
 
   <h1>🎮 Nidalee</h1>
-  <p><strong>高性能、体积小巧的智能英雄联盟游戏助手</strong></p>
-  <p>Nidalee 是一款专为英雄联盟玩家设计的智能助手，集自动接受匹配、自动选/禁英雄、实时数据分析与个性化设置于一体，助你高效上分，安全合规无外挂风险。基于 Rust + Tauri，启动快、资源占用低，体积小巧。</p>
+  <p><strong>High-performance, lightweight and intelligent League of Legends assistant</strong></p>
+  <p>Nidalee is a high-performance, lightweight and intelligent assistant for League of Legends players. It integrates auto-accept, auto pick/ban, real-time data analysis and personalized settings, helping you climb the ranks efficiently and safely. Powered by Rust + Tauri, it features fast startup, low resource usage, and a minimal footprint.</p>
 
   <div>
-    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-Hans" target="_blank"><img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg" alt="License"/></a>
-    <img src="https://img.shields.io/badge/platform-Windows-blue.svg" alt="Platform">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg" alt="License"/></a>
     <img src="https://img.shields.io/badge/tauri-2.0.0--alpha-green.svg" alt="Tauri">
     <img src="https://img.shields.io/badge/vue-3.x-brightgreen.svg" alt="Vue">
     <img src="https://img.shields.io/badge/rust-1.75-orange.svg" alt="Rust">
+    <img src="https://img.shields.io/badge/platform-Windows-blue.svg" alt="Platform">
   </div>
 
   <br>
 
   <p>
-    <a href="#-特性">✨ 特性</a> •
-    <a href="#-下载安装">📦 下载</a> •
-    <a href="#-开发">🚀 开发</a> •
-    <a href="docs/user-guide-zh.md">📖 使用指南</a> •
-    <a href="#-贡献">🤝 贡献</a>
+    <a href="#-features">✨ Features</a> •
+    <a href="#-installation">📦 Installation</a> •
+    <a href="#-development">🚀 Development</a> •
+    <a href="#-usage">📖 Usage</a> •
+    <a href="#-contributing">🤝 Contributing</a>
+  </p>
+
+  <p>
+    <a href="./README_ZH.md">简体中文</a> | <a href="./README.md">English</a>
   </p>
 </div>
 
 ---
 
-## ✨ 特性
+## 🌟 Features
 
-- 🤖 **自动化功能**：自动接受匹配、自动选择/禁用英雄
-- 📊 **数据分析**：实时游戏数据分析和统计
-- 🎯 **个性化设置**：可自定义的游戏助手配置,生涯背景配置等等
-- 🔒 **安全可靠**：直接与League Client API交互，无需第三方工具
+### 🎮 Automation
 
-## 📦 下载安装
+- **Auto Accept**: Automatically detect and accept match invitations
+- **Smart Champion Selection**: Auto pick or ban champions based on presets
+- **Rune Configuration**: Automatically fetch and apply optimal rune pages from OP.GG
 
-前往 [Releases](../../releases) 页面下载最新 Windows 版本：
+### 📊 Data Analysis
 
-| 平台 | 下载文件 | 说明 |
-|------|----------|------|
-| **Windows** | `Nidalee_1.0.0_x64_en-US.msi` | Windows 64位安装程序 |
+- **Real-time Match Analysis**
+  - Team Composition Evaluation
+  - Lane Advantage Analysis
+  - Teamfight Capability Score
+  - Intelligent Tactical Suggestions
+- **Player Statistics**
+  - KDA and Win Rate Analysis
+  - Position Preference Analysis
+  - Champion Pool Analysis
+  - Recent Performance Score
 
-### 安装说明
+### 🔍 Information Display
 
-#### Windows
+- **Real-time Match Information**
+  - Teammate and Opponent Details
+  - Champion Counter Relationships
+  - Player Match History
+- **Data Visualization**
+  - Lane Advantage Indicator
+  - Team Strength Comparison
+  - Player Stats Radar Chart
 
-1. 下载 `.msi` 文件
-2. 双击运行安装程序
-3. 按照向导完成安装
+## 🚀 Tech Stack
 
-## 🚀 开发
+- **Frontend**: Vue 3 + TypeScript
+- **Backend**: Rust + Tauri
+- **Communication**: LCP (League Client Protocol)
+- **State Management**: Vue Composition API
+- **UI Framework**: Custom Components
 
-### 环境要求
+## 📦 Installation
 
-- **Node.js** 18+
-- **pnpm** 8+
-- **Rust** 1.70+
-- **Tauri CLI** 2.0+
+Download the latest Windows version from the [Releases](../../releases) page:
 
-### 本地开发
+| Platform | File | Description |
+|----------|------|-------------|
+| **Windows** | `Nidalee_1.0.0_x64_en-US.msi` | Windows 64-bit installer |
 
-```bash
-# 克隆项目
-git clone https://github.com/codexlin/Nidalee.git
-cd Nidalee
+### Installation Steps (Windows)
 
-# 安装依赖
-pnpm install
+1. Download the `.msi` file
+2. Double-click to run the installer
+3. Follow the wizard to complete installation
 
-# 开发模式
-pnpm tauri dev
+## 🔧 Configuration
 
-# 构建生产版本
-pnpm tauri build
-```
+1. Game Client Configuration
+   - Auto-detect LCU authentication info
+   - Support custom port and token
 
-### 项目结构
+2. Feature Module Configuration
+   - Auto accept match toggle
+   - Champion selection presets
+   - Rune page auto-update settings
 
-```
-Nidalee/
-├── src/                    # Vue.js 前端代码
-├── src-tauri/             # Tauri Rust 后端代码
-├── .github/workflows/     # GitHub Actions CI/CD
-├── dist/                  # 构建输出
-└── docs/                  # 项目文档
-```
+## 📝 Usage Guide
 
-## 📋 功能清单
+1. **Auto Accept Match**
+   - Automatically monitor and accept match invitations when enabled
+   - Configurable accept delay
 
-- [x] 基础架构搭建
-- [x] League Client API 集成
-- [x] CI/CD 自动化发布
-- [x] 用户信息获取和展示
-- [x] 召唤师特征分析
-- [x] 自动接受匹配功能
-- [x] 自动选择/禁用英雄
-- [x] 游戏数据分析
-- [x] 个性化设置界面
-- [ ] 多语言支持
+2. **Champion Selection**
+   - Preset priority champions
+   - Set auto-ban champions
+   - Team composition-based recommendations
 
-## 📖 使用指南
+3. **Rune Configuration**
+   - Auto-fetch and apply recommended runes
+   - Support custom rune schemes
+   - Quick switch between champion runes
 
-详细的使用说明请查看 [使用指南](docs/user-guide-zh.md)
+4. **Data Analysis**
+   - Real-time match analysis
+   - Team advantage/disadvantage overview
+   - Tactical suggestions
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交 Pull Request 或 Issue！
+Contributions are welcome! Check out our [Contributors List](CONTRIBUTORS.md).
 
-### 发布流程
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-详见 [发布指南](RELEASE.md)
+## 📄 License
 
-简要步骤：
+This project is licensed under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) (Attribution-NonCommercial-ShareAlike 4.0 International) license.
 
-1. 更新版本号
-2. 创建 git tag: `git tag v1.0.1`
-3. 推送 tag: `git push origin v1.0.1`
-4. GitHub Actions 自动构建并发布
+- Free to copy, distribute, and adapt, but **commercial use is strictly prohibited**.
+- Derivative works must use the same license.
+- Please credit the original author and project link when using.
 
-## 📄 许可证
+See the LICENSE file for full terms.
 
-本项目采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-Hans)（署名-非商业性使用-相同方式共享）国际许可协议。
+## ⚠️ Disclaimer
 
-- 允许自由复制、分发、演绎，但**禁止任何商业用途**。
-- 衍生作品必须采用相同协议。
-- 使用时请注明原作者及项目地址。
+This project is for League of Legends players as an auxiliary tool. All features are based on Riot Games' official League Client API (LCU API) and local client data.
 
-完整条款详见 LICENSE 文件。
+**This tool does not modify, inject, or tamper with game memory, processes, or network data, nor does it provide any cheating, acceleration, or scripting functions.**
 
-## ⚠️ 免责声明
+- Strictly for learning, research, and personal entertainment only.
+- All data interactions are via official APIs; no unofficial operations on the game client, server, or packets.
+- No collection, upload, or leakage of any user privacy or sensitive data.
+- This is open source software, not affiliated with Riot Games or Tencent, nor officially authorized.
+- The developer assumes no legal or financial responsibility for any consequences (including but not limited to account risk, data loss, or functional issues) arising from use.
+- **Commercial use of this project and all derivatives is strictly prohibited. All contributions and redistribution must use the same license.**
 
-本项目 **Nidalee** 仅作为英雄联盟玩家的辅助工具，所有功能均基于 Riot Games 官方公开的 League Client API（LCU API）和客户端本地数据实现。
+**Please ensure your use complies with the League of Legends user agreement and related policies. If in doubt, stop using and consult official support.**
 
-**本工具不进行任何游戏内存、进程、网络数据的篡改，不注入、不修改、不破解游戏客户端，也不具备任何外挂、作弊、加速、脚本等功能。**
+## 🙏 Acknowledgments
 
-- 本项目严格遵守英雄联盟用户协议及相关法律法规，仅供学习、研究和个人娱乐用途。
-- 所有数据交互均通过官方API完成，未对游戏客户端、服务器或数据包进行任何非官方操作。
-- 本工具不会收集、上传或泄露用户的任何隐私信息、账号密码等敏感数据。
-- 本项目为开源软件，与 Riot Games（拳头公司）及腾讯公司无任何直接或间接关联，亦未获得其官方授权。
-- 使用本工具所产生的任何后果（包括但不限于账号风险、数据丢失、功能异常等），开发者不承担任何法律责任和经济责任。
-- **本项目及其所有衍生作品严禁任何商业用途，所有贡献和再分发须采用相同协议。**
-
-**请用户在使用本工具前，务必确保自身行为符合英雄联盟用户协议及相关政策。如有疑问，请及时停止使用并咨询官方客服。**
-
----
-
-**Built with ❤️ using [Tauri 2.0](https://tauri.app/) + [Vue.js](https://vuejs.org/)**
+- [Tauri 2.0](https://tauri.app/)
+- [Vue.js](https://vuejs.org/)
+- [Rust](https://www.rust-lang.org/)
+- [League Client Protocol](https://developer.riotgames.com/)

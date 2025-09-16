@@ -41,8 +41,7 @@ export function useSummonerAndMatchUpdater() {
 
   // 组合：同时更新
   const updateSummonerAndMatches = async () => {
-    await updateSummonerInfo()
-    await updateMatchHistory()
+    await Promise.all([updateSummonerInfo(), updateMatchHistory()])
   }
 
   return {

@@ -4,12 +4,13 @@
     style="will-change: transform, box-shadow"
     @click="emit('select', player)"
   >
-    <!-- 玩家标识区域 -->
     <div class="flex items-start justify-between mb-4">
       <div class="flex items-center gap-3">
         <!-- 英雄头像 -->
         <div class="relative">
-          <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-background/80 group-hover:ring-primary/40 transition-all duration-300">
+          <div
+            class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-background/80 group-hover:ring-primary/40 transition-all duration-300"
+          >
             <img
               v-if="player.championId"
               :src="getChampionIconUrl(player.championId)"
@@ -65,7 +66,9 @@
             <Badge
               v-if="player.assignedPosition"
               class="text-xs font-medium"
-              :class="positionColorMap[player.assignedPosition.toUpperCase()] || 'bg-secondary text-secondary-foreground'"
+              :class="
+                positionColorMap[player.assignedPosition.toUpperCase()] || 'bg-secondary text-secondary-foreground'
+              "
             >
               {{ player.assignedPosition.toUpperCase() }}
             </Badge>
@@ -77,7 +80,9 @@
       <!-- 召唤师技能 -->
       <div class="flex flex-col gap-1">
         <template v-for="(spellId, idx) in [player.spell1Id ?? null, player.spell2Id ?? null]" :key="idx">
-          <div class="w-6 h-6 rounded-md overflow-hidden ring-1 ring-border/60 group-hover:ring-primary/40 transition-all duration-300">
+          <div
+            class="w-6 h-6 rounded-md overflow-hidden ring-1 ring-border/60 group-hover:ring-primary/40 transition-all duration-300"
+          >
             <template v-if="getSpellMeta(spellId).icon">
               <img
                 :src="getSpellMeta(spellId).icon"
@@ -111,7 +116,9 @@
       <!-- 核心数据卡片 -->
       <div class="grid grid-cols-3 gap-2">
         <!-- KDA -->
-        <div class="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-2 text-center">
+        <div
+          class="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-2 text-center"
+        >
           <div class="text-xs text-muted-foreground mb-1">KDA</div>
           <div class="flex items-center justify-center gap-1 text-sm font-medium">
             <span class="text-green-500">{{ playerStats.avgKills?.toFixed(1) || '0' }}</span>
@@ -123,7 +130,9 @@
         </div>
 
         <!-- 胜率 -->
-        <div class="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-lg p-2 text-center">
+        <div
+          class="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-lg p-2 text-center"
+        >
           <div class="text-xs text-muted-foreground mb-1">胜率</div>
           <div :class="getWinRateColor(playerStats.winRate)" class="text-sm font-bold">
             {{ playerStats.winRate?.toFixed(1) || '0' }}%
@@ -131,7 +140,9 @@
         </div>
 
         <!-- 总场次 -->
-        <div class="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-lg p-2 text-center">
+        <div
+          class="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-lg p-2 text-center"
+        >
           <div class="text-xs text-muted-foreground mb-1">场次</div>
           <div class="text-sm font-bold text-orange-500">
             {{ playerStats.totalGames || 0 }}
@@ -152,14 +163,18 @@
             class="relative group/champion"
             :title="`${getChampionName(champion.championId)} (${champion.gamesPlayed}场, ${champion.winRate}%胜率)`"
           >
-            <div class="w-8 h-8 rounded-lg overflow-hidden ring-1 ring-border/60 group-hover/champion:ring-primary/40 transition-all duration-300">
+            <div
+              class="w-8 h-8 rounded-lg overflow-hidden ring-1 ring-border/60 group-hover/champion:ring-primary/40 transition-all duration-300"
+            >
               <img
                 :src="getChampionIconUrl(champion.championId)"
                 :alt="getChampionName(champion.championId)"
                 class="w-full h-full object-cover transition-transform duration-300 group-hover/champion:scale-110"
               />
             </div>
-            <div class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full text-[6px] flex items-center justify-center font-bold bg-background border border-border">
+            <div
+              class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full text-[6px] flex items-center justify-center font-bold bg-background border border-border"
+            >
               {{ champion.gamesPlayed }}
             </div>
           </div>
