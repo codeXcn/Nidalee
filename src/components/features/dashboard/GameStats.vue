@@ -207,7 +207,7 @@
                   <span class="text-muted-foreground">{{ formatGameTime(game.gameDuration) }}</span>
                 </div>
                 <!-- 只保留一条淡色分割线 -->
-                <div class="border-t border-white/10 my-2"></div>
+                <div class="border-t border-blacl/10 dark:border-white/10 my-2"></div>
                 <!-- 底部信息和标签 -->
                 <div class="flex items-end justify-between mt-1">
                   <div class="flex flex-col text-xs text-muted-foreground">

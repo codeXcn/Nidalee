@@ -156,7 +156,7 @@ const loadChampions = async () => {
       // 按名称排序
       championList.sort((a, b) => a.name.localeCompare(b.name))
 
-      champions.value = championList
+      champions.value = championList.filter((champion) => !champion.alias.includes('Ruby_'))
       console.log(`✅ 成功加载 ${championList.length} 个英雄`)
     } else {
       throw new Error(response.error || '获取英雄数据失败')

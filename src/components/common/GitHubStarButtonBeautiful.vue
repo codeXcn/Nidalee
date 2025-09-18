@@ -29,7 +29,7 @@
 
     <!-- 主要内容 -->
     <div
-      class="relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+      class="relative flex items-center gap-2.5 px-2 py-1.5 rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
       :class="[
         isDark
           ? 'border-slate-700/60 hover:border-yellow-500/40 hover:shadow-yellow-500/20'
@@ -88,12 +88,6 @@
           >
             鼓励作者⭐
           </span>
-          <ExternalLink
-            class="w-3.5 h-3.5 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 flex-shrink-0"
-            :class="[
-              isDark ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'
-            ]"
-          />
         </div>
       </div>
     </div>

@@ -28,11 +28,11 @@
             :class="
               selectedTrait?.name === trait.name
                 ? trait.type === 'bad'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-primary text-white'
+                  ? 'bg-red-500/95 text-white/95 dark:bg-red-500/85 dark:text-white/85'
+                  : 'bg-primary/90 text-primary-foreground/95 dark:bg-primary/70 dark:text-primary-foreground/85'
                 : trait.type === 'bad'
-                  ? 'bg-red-100 text-red-500'
-                  : 'bg-gray-100 text-gray-500'
+                  ? 'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-300'
+                  : 'bg-muted text-muted-foreground/90 dark:bg-muted dark:text-muted-foreground/80'
             "
           >
             {{ trait.score }}
@@ -53,8 +53,12 @@
             </h5>
             <Badge
               :variant="selectedTrait.name === primaryTrait?.name ? 'default' : 'outline'"
-              class="text-xs px-2 py-0.5 font-bold border-2 bg-primary/60"
-              :class="selectedTrait.name === primaryTrait?.name ? 'border-primary/400' : 'border-gray-300'"
+              class="text-xs px-2 py-0.5 font-medium border"
+              :class="
+                selectedTrait.name === primaryTrait?.name
+                  ? 'bg-primary/85 dark:bg-primary/70 text-primary-foreground/95 dark:text-primary-foreground/85 border-primary/30 dark:border-primary/25'
+                  : 'bg-primary/10 dark:bg-primary/15 text-primary/90 dark:text-primary/85 border-border dark:border-border/60'
+              "
             >
               {{ selectedTrait.name === primaryTrait?.name ? '主要特征' : '特征详情' }}
             </Badge>

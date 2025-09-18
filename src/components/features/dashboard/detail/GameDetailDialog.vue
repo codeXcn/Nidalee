@@ -17,39 +17,6 @@
 
         <!-- 详细信息内容 -->
         <div v-else-if="gameDetailData" class="space-y-6 px-2.5 will-change-auto">
-          <!-- 基本游戏信息 -->
-          <Card>
-            <div class="px-4">
-              <h4 class="font-semibold mb-3">基本信息</h4>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span class="text-muted-foreground">游戏ID:</span>
-                  <p class="font-mono">{{ gameDetailData.gameId }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">游戏时长:</span>
-                  <p>{{ formatDuration(gameDetailData.gameDuration || 0) }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">地图:</span>
-                  <p>{{ getMapName(gameDetailData.mapId) }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">游戏模式:</span>
-                  <p>{{ formatGameMode(gameDetailData.gameMode || '') }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">队列类型:</span>
-                  <p>{{ getQueueName(gameDetailData.queueId || 0) }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">游戏版本:</span>
-                  <p class="text-xs font-mono">{{ gameDetailData.gameVersion }}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
           <!-- 队伍信息 -->
           <div class="grid grid-cols-1 gap-6">
             <!-- 蓝队 -->
@@ -342,6 +309,38 @@
               <div class="text-xs text-muted-foreground">最多连杀</div>
             </Card>
           </div>
+          <!-- 基本游戏信息 -->
+          <Card>
+            <div class="px-4">
+              <h4 class="font-semibold mb-3">基本信息</h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span class="text-muted-foreground">游戏ID:</span>
+                  <p class="font-mono">{{ gameDetailData.gameId }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">游戏时长:</span>
+                  <p>{{ formatDuration(gameDetailData.gameDuration || 0) }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">地图:</span>
+                  <p>{{ getMapName(gameDetailData.mapId) }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">游戏模式:</span>
+                  <p>{{ formatGameMode(gameDetailData.gameMode || '') }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">队列类型:</span>
+                  <p>{{ getQueueName(gameDetailData.queueId || 0) }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">游戏版本:</span>
+                  <p class="text-xs font-mono">{{ gameDetailData.gameVersion }}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       </ScrollArea>
     </DialogContent>

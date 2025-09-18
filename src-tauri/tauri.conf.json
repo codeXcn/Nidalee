@@ -14,10 +14,10 @@
     "windows": [
       {
         "title": "Nidalee - 高性能、体积小巧的智能英雄联盟游戏助手",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 1000,
-        "minHeight": 700,
+        "width": 1280,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 720,
         "center": true,
         "resizable": true,
         "decorations": false,

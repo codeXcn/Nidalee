@@ -22,6 +22,20 @@
           </Button>
         </div>
       </div>
+      <!-- 功能状态摘要 -->
+      <div v-if="isAnyFunctionEnabled" class="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+        <h3 class="text-lg font-semibold text-foreground mb-4">已启用功能</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            v-for="func in enabledFunctions"
+            :key="func.key"
+            class="flex items-center gap-3 p-3 bg-card rounded-lg border border-border"
+          >
+            <div class="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-medium text-foreground">{{ func.name }}</span>
+          </div>
+        </div>
+      </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <!-- 自动接受对局 -->
@@ -76,21 +90,6 @@
             @champion-reorder="autoFunctionStore.reorderChampionBan"
             @champion-clear="autoFunctionStore.clearChampionBan"
           />
-        </div>
-      </div>
-
-      <!-- 功能状态摘要 -->
-      <div v-if="isAnyFunctionEnabled" class="mt-8 p-6 bg-muted/30 rounded-lg border border-border">
-        <h3 class="text-lg font-semibold text-foreground mb-4">已启用功能</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div
-            v-for="func in enabledFunctions"
-            :key="func.key"
-            class="flex items-center gap-3 p-3 bg-card rounded-lg border border-border"
-          >
-            <div class="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-sm font-medium text-foreground">{{ func.name }}</span>
-          </div>
         </div>
       </div>
     </div>
