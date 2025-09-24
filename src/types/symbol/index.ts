@@ -1,6 +1,6 @@
 export const appContextKey = Symbol('appContext')
 export type AppContext = {
-  refreshConnection: () => void
+  checkConnection: () => void
   fetchMatchHistory: () => void
   isConnected: Ref<boolean>
   isDark: Ref<boolean>

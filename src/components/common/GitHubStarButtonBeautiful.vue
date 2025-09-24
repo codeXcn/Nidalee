@@ -105,10 +105,12 @@
 </template>
 
 <script setup lang="ts">
-import { ExternalLink } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
+import { appContextKey, type AppContext } from '@/types'
 
-const { isDark } = useApp()
+// 使用 inject 获取 App.vue 提供的状态
+const appContext = inject<AppContext>(appContextKey)!
+const { isDark } = appContext
 
 const handleClick = () => {
   setTimeout(() => {

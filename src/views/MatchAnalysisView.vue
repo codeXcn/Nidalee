@@ -1,41 +1,93 @@
 <template>
   <div class="min-h-screen">
-    <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-7xl mx-auto space-y-6">
-      <!-- 队伍分析卡片 -->
-      <div class="grid grid-cols-1 gap-6 lg:gap-8">
-        <TeamCard
-          v-if="session.myTeam"
-          :team="session.myTeam"
-          team-type="ally"
-          :local-player-cell-id="session.localPlayerCellId"
-          :summoner-stats="summonerStats || []"
-          @select="openSummonerDetails"
-        />
-        <template v-if="session.theirTeam && session.theirTeam.length">
-          <!-- 添加提示信息 -->
-          <div v-if="currentPhase === 'ChampSelect'" class="text-center text-muted-foreground mb-2">
-            <div class="flex items-center justify-center gap-2 text-sm">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              敌方队伍信息将在进入游戏后实时更新
+    <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-full mx-auto">
+      <!-- 左右分屏布局 -->
+      <div class="flex gap-3 h-screen max-h-screen overflow-hidden">
+        <!-- 左侧：我方队伍 -->
+        <div class="flex-1 flex flex-col min-w-0">
+          <div class="flex items-center justify-between mb-0">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+              <h2 class="text-lg font-bold text-blue-600 dark:text-blue-400">我方队伍</h2>
             </div>
+            <Badge
+              variant="outline"
+              class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 text-xs"
+            >
+              {{ session.myTeam?.length || 0 }} 人
+            </Badge>
           </div>
-          <TeamCard
-            :team="session.theirTeam"
-            team-type="enemy"
-            :summoner-stats="theirTeamStats || []"
-            @select="openSummonerDetails"
-          />
-        </template>
-        <template v-else>
-          <div class="text-center text-muted-foreground mt-2">敌方队伍将在进入游戏后显示</div>
-        </template>
+
+          <div
+            class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
+          >
+            <TeamCard
+              v-if="session.myTeam"
+              :team="session.myTeam"
+              team-type="ally"
+              :local-player-cell-id="session.localPlayerCellId"
+              :summoner-stats="summonerStats || []"
+              @select="openSummonerDetails"
+            />
+          </div>
+        </div>
+
+        <!-- 分割线 -->
+        <div class="w-px bg-border/50"></div>
+
+        <!-- 右侧：敌方队伍 -->
+        <div class="flex-1 flex flex-col min-w-0">
+          <div class="flex items-center justify-between mb-0">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+              <h2 class="text-lg font-bold text-red-600 dark:text-red-400">敌方队伍</h2>
+              <!-- 添加提示信息 -->
+              <div v-if="currentPhase === 'ChampSelect'" class="text-center text-muted-foreground mb-0">
+                <div class="flex items-center justify-center gap-2 text-xs bg-muted/50 rounded-lg p-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  敌方队伍信息将在进入游戏后实时更新
+                </div>
+              </div>
+            </div>
+
+            <Badge variant="outline" class="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 text-xs">
+              {{ session.theirTeam?.length || 0 }} 人
+            </Badge>
+          </div>
+
+          <div
+            class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
+          >
+            <template v-if="session.theirTeam && session.theirTeam.length">
+              <TeamCard
+                :team="session.theirTeam"
+                team-type="enemy"
+                :summoner-stats="theirTeamStats || []"
+                @select="openSummonerDetails"
+              />
+            </template>
+            <template v-else>
+              <div class="text-center text-muted-foreground mt-8">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <p class="text-sm">敌方队伍将在进入游戏后显示</p>
+              </div>
+            </template>
+          </div>
+        </div>
       </div>
     </div>
 

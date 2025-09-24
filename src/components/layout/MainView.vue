@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { appContextKey } from '@/types'
+import { appContextKey, type AppContext } from '@/types'
 import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 
-const { isDark, checkConnection, isConnected, fetchMatchHistory } = useApp()
-provide(appContextKey, { checkConnection, fetchMatchHistory, isConnected, isDark })
+// 使用 inject 获取 App.vue 提供的状态和方法
+const appContext = inject<AppContext>(appContextKey)!
+const { isConnected } = appContext
 
 usePlayerListQuery(true)
 

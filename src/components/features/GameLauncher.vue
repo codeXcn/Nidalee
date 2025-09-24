@@ -91,7 +91,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { Gamepad2, Settings, FolderOpen, Save, Search } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import { invoke } from '@tauri-apps/api/core'
-import { useApp } from '@/composables/app/useApp'
+import { appContextKey, type AppContext } from '@/types'
 
 // 状态
 const launching = ref(false)
@@ -99,8 +99,9 @@ const showPathConfig = ref(false)
 const gamePath = ref('')
 const statusMessage = ref('')
 
-// 主题
-const { isDark } = useApp()
+// 主题 - 使用 inject 获取 App.vue 提供的状态
+const appContext = inject<AppContext>(appContextKey)!
+const { isDark } = appContext
 
 // 启动游戏
 const launchGame = async () => {
