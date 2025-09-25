@@ -93,7 +93,7 @@ struct ApiPlayer {
 }
 
 /// 获取当前玩家历史战绩统计（自动认证、统一请求、日志耗时）
-pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, String> {
+pub async fn get_match_history(client: &Client, end_count: usize) -> Result<MatchStatistics, String> {
     println!("\n🔍 ===== 开始获取我的战绩 =====");
 
     // 第1步：获取当前召唤师信息来得到PUUID
@@ -107,10 +107,15 @@ pub async fn get_match_history(client: &Client) -> Result<MatchStatistics, Strin
 
     // 第2步：使用PUUID获取对局列表
     println!("\n📍 第2步：使用PUUID获取对局列表");
+    let safe_end = if end_count == 0 { 20 } else { end_count.min(100) };
+    // LCU API 的 endIndex 是包含的，所以需要减1
+    let actual_end_index = if safe_end > 0 { safe_end - 1 } else { 0 };
+    println!("🔢 请求的对局数量: end_count={}, safe_end={}, actual_end_index={}", end_count, safe_end, actual_end_index);
     let match_list_url = format!(
-        "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex=20",
-        puuid
+        "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
+        puuid, actual_end_index
     );
+    println!("🌐 请求URL: {}", match_list_url);
     let match_list_data: Value = lcu_get(client, &match_list_url).await?;
 
     // 第3步：直接分析对局列表数据
@@ -291,8 +296,8 @@ fn analyze_match_list_data(
     let mut champion_stats = std::collections::HashMap::new();
     let mut recent_performance = Vec::new();
 
-    // 只分析前20场游戏
-    let games_to_analyze = games.iter().take(20);
+    // 分析所有获取到的游戏
+    let games_to_analyze = games.iter();
 
     for (index, game) in games_to_analyze.enumerate() {
         println!("\n🎮 分析第 {} 场游戏", index + 1);

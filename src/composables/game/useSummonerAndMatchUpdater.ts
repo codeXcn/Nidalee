@@ -1,4 +1,5 @@
 import { useActivityStore, useDataStore } from '@/stores'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -27,7 +28,10 @@ export function useSummonerAndMatchUpdater() {
   const updateMatchHistory = async () => {
     try {
       dataStore.startLoadingMatchHistory()
-      const matchHistory = await invoke<MatchStatistics>('get_match_history')
+      const settingsStore = useSettingsStore()
+      const matchHistory = await invoke<MatchStatistics>('get_match_history', {
+        count: settingsStore.defaultMatchCount
+      })
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
         activityStore.addActivity('success', '对局历史记录已更新', 'data')

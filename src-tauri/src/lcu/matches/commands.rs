@@ -1,9 +1,11 @@
 use crate::{http_client, lcu};
 
 #[tauri::command]
-pub async fn get_match_history() -> Result<lcu::types::MatchStatistics, String> {
+pub async fn get_match_history(count: Option<u32>) -> Result<lcu::types::MatchStatistics, String> {
     let client = http_client::get_lcu_client();
-    lcu::matches::service::get_match_history(client).await
+    let end_count: usize = count.unwrap_or(20) as usize;
+    println!("🔢 接收到的count参数: {:?}, 转换后的end_count: {}", count, end_count);
+    lcu::matches::service::get_match_history(client, end_count).await
 }
 
 #[tauri::command]

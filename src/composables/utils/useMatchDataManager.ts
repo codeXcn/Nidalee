@@ -1,6 +1,7 @@
 import { useConnectionStore } from '@/stores/core/connectionStore'
 import { useDataStore } from '@/stores/core/dataStore'
 import { invoke } from '@tauri-apps/api/core'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
 
 // 专门处理战绩数据获取的 composable
 export function useMatchDataManager() {
@@ -29,8 +30,13 @@ export function useMatchDataManager() {
       console.log('[MatchDataManager] 开始获取战绩数据')
 
       dataStore.startLoadingMatchHistory()
-      // 调用Tauri API获取战绩数据
-      const matchHistory = await invoke<MatchStatistics>('get_match_history')
+      const settingsStore = useSettingsStore()
+      console.log('[MatchDataManager] 当前设置的对局数量:', settingsStore.defaultMatchCount)
+      console.log('[MatchDataManager] 参数类型:', typeof settingsStore.defaultMatchCount)
+      // 调用Tauri API获取战绩数据（携带对局数量）
+      const matchHistory = await invoke<MatchStatistics>('get_match_history', {
+        count: settingsStore.defaultMatchCount
+      })
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
         console.log('[MatchDataManager] 战绩数据获取成功')
