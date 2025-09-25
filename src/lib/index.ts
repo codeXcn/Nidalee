@@ -1,6 +1,7 @@
 // 数据API模块
 export * from './dataApi'
 import type { CommunityDragonPerk } from './dataApi'
+import { getGameTypeById, getMapById } from '@/common'
 
 // 主题配置模块
 export * from './theme'
@@ -37,27 +38,15 @@ export const formatDuration = (seconds: number): string => {
 }
 
 export const getQueueName = (queueId: number): string => {
-  const queueMap: Record<number, string> = {
-    400: '5v5 征召模式',
-    420: '5v5 排位赛',
-    430: '5v5 匹配模式',
-    440: '5v5 灵活排位',
-    450: '5v5 大乱斗',
-    900: '4v4 无限火力',
-    1020: '克隆大作战',
-    1200: '极地大乱斗'
-  }
-  return queueMap[queueId] || `队列 ${queueId}`
+  // 优先使用游戏类型定义
+  const gameType = getGameTypeById(queueId)
+  return gameType ? gameType.name : '未知队列'
 }
 
 export const getMapName = (mapId: number): string => {
-  const mapNames: Record<number, string> = {
-    11: '召唤师峡谷',
-    12: '嚎哭深渊',
-    21: '纽克萨斯对战',
-    22: '训练模式'
-  }
-  return mapNames[mapId] || `地图${mapId}`
+  // 优先使用地图定义
+  const map = getMapById(mapId)
+  return map ? map.name : '未知地图'
 }
 
 export const formatNumber = (num: number): string => {

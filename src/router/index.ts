@@ -29,11 +29,6 @@ const router = createRouter({
       component: () => import('../views/MatchSearchView.vue')
     },
     {
-      path: '/auto-functions',
-      name: 'auto-functions',
-      component: () => import('../views/AutoFunctionsView.vue')
-    },
-    {
       path: '/test-api',
       name: 'security',
       component: () => import('../views/TestView.vue')

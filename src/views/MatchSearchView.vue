@@ -19,7 +19,7 @@
       v-if="currentRestult"
       :is-connected="isConnected"
       :match-history-loading="loading"
-      :match-statistics="currentRestult?.matches"
+      :match-statistics="filteredCurrentMatches || currentRestult?.matches"
     />
   </div>
 </template>
@@ -28,5 +28,6 @@ import { appContextKey, type AppContext } from '@/types'
 
 const { isConnected } = inject(appContextKey) as AppContext
 
-const { onSearch, cunrrentIndex, names, searchText, loading, currentRestult } = useSearchMatches()
+const { onSearch, cunrrentIndex, names, searchText, loading, currentRestult, filteredCurrentMatches } =
+  useSearchMatches()
 </script>

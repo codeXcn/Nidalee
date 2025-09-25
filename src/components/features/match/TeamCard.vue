@@ -82,9 +82,9 @@
                       "
                       >{{ player.assignedPosition.toUpperCase() }}</Badge
                     >
-                    <Badge v-else class="text-[10px] bg-secondary text-secondary-foreground px-1" variant="secondary"
+                    <!-- <Badge v-else class="text-[10px] bg-secondary text-secondary-foreground px-1" variant="secondary"
                       >未知位置</Badge
-                    >
+                    > -->
                     <div class="flex gap-1">
                       <template v-for="(spellId, idx) in [player.spell1Id ?? null, player.spell2Id ?? null]" :key="idx">
                         <div class="w-5 h-5 rounded overflow-hidden ring-1 ring-border/60">
@@ -238,7 +238,7 @@
                   <div class="flex gap-0.5">
                     <!-- 比赛类型 -->
                     <span class="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">
-                      {{ getGameModeName(match.gameMode) }}
+                      {{ getQueueName(match.queueId) }}
                     </span>
                     <!-- 胜负标识 -->
                     <div
@@ -275,7 +275,7 @@
 
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
-import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
+import { getChampionIconUrl, getChampionName, getSpellMeta, getQueueName } from '@/lib'
 
 const props = withDefaults(
   defineProps<{
@@ -344,28 +344,5 @@ const getWinRateColor = (winRate: number) => {
   return 'text-red-500'
 }
 
-// 游戏模式名称映射
-const getGameModeName = (gameMode: string) => {
-  const modeMap: Record<string, string> = {
-    CLASSIC: '排位赛',
-    ARAM: '大乱斗',
-    URF: '无限火力',
-    PRACTICETOOL: '训练模式',
-    TUTORIAL_MODULE_1: '教程',
-    NEXUSBLITZ: '极限闪击',
-    ARENA: '斗魂竞技场',
-    FLEX: '灵活组排',
-    RANKED_FLEX_SR: '灵活组排',
-    RANKED_SOLO_5x5: '单双排',
-    RANKED_TFT: '云顶排位',
-    TFT: '云顶',
-    ONEFORALL: '一为全',
-    ASSASSINATE: '死斗',
-    CHERRY: '无限火力',
-    HEXAKILL: '六杀',
-    ODYSSEY: '奥德赛',
-    SNOWURF: '雪地无限火力'
-  }
-  return modeMap[gameMode] || gameMode
-}
+// 统一使用公共的队列名称映射（基于 queueId）
 </script>

@@ -241,7 +241,7 @@
 
             <!-- 游戏模式 -->
             <div class="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
-              {{ getGameModeName(match.gameMode) }}
+              {{ getQueueName(match.queueId) }}
             </div>
           </div>
 
@@ -263,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
+import { getChampionIconUrl, getChampionName, getSpellMeta, getQueueName } from '@/lib'
 import { watchEffect } from 'vue'
 
 const props = defineProps<{
@@ -306,17 +306,5 @@ const getWinRateColor = (winRate: number) => {
   return 'text-red-500'
 }
 
-// 游戏模式名称映射
-const getGameModeName = (gameMode: string) => {
-  const modeMap: Record<string, string> = {
-    CLASSIC: '排位',
-    ARAM: '大乱斗',
-    URF: '无限火力',
-    PRACTICETOOL: '训练模式',
-    TUTORIAL_MODULE_1: '教程',
-    NEXUSBLITZ: '极限闪击',
-    ARENA: '斗魂竞技场'
-  }
-  return modeMap[gameMode] || gameMode
-}
+// 统一使用公共的队列名称映射（基于 queueId）
 </script>

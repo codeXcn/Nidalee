@@ -4,7 +4,7 @@
       <DialogHeader>
         <DialogTitle>游戏详细信息</DialogTitle>
         <DialogDescription v-if="selectedGame">
-          {{ getChampionName(selectedGame.championId) }} - {{ formatGameMode(selectedGame.gameMode) }} -
+          {{ getChampionName(selectedGame.championId) }} - {{ getQueueName(selectedGame.queueId) }} -
           {{ formatRelativeTime(selectedGame.gameCreation) }}
         </DialogDescription>
       </DialogHeader>

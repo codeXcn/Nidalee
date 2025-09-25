@@ -20,6 +20,11 @@ export const useSettingsStore = defineStore(
     const careerBackground = ref<string>('')
     const autoRefreshData = ref(true)
     const refreshInterval = ref(30000) // 30秒
+    // 战绩默认过滤设置
+    const defaultQueueTypes = ref<number[]>([420, 440])
+    const applyDefaultFilterOnSearch = ref(true)
+    // 默认获取对局数量
+    const defaultMatchCount = ref<number>(20)
 
     // 计算属性
     const themeConfig = computed(() => ({
@@ -134,6 +139,24 @@ export const useSettingsStore = defineStore(
       refreshInterval.value = Math.max(5000, interval) // 最小5秒
     }
 
+    // 战绩默认过滤方法
+    const setDefaultQueueTypes = (queues: number[]) => {
+      // 去重并排序，避免持久化存储抖动
+      const unique = Array.from(new Set(queues))
+      unique.sort((a, b) => a - b)
+      defaultQueueTypes.value = unique
+    }
+
+    const setApplyDefaultFilterOnSearch = (enabled: boolean) => {
+      applyDefaultFilterOnSearch.value = enabled
+    }
+
+    // 设置默认获取对局数量（仅允许 20/25/30/35/40）
+    const allowedMatchCounts = [20, 25, 30, 35, 40]
+    const setDefaultMatchCount = (count: number) => {
+      defaultMatchCount.value = allowedMatchCounts.includes(count) ? count : 20
+    }
+
     // 重置所有设置
     const resetAllSettings = () => {
       resetTheme()
@@ -159,7 +182,10 @@ export const useSettingsStore = defineStore(
         game: {
           careerBackground: careerBackground.value,
           autoRefreshData: autoRefreshData.value,
-          refreshInterval: refreshInterval.value
+          refreshInterval: refreshInterval.value,
+          defaultQueueTypes: defaultQueueTypes.value,
+          applyDefaultFilterOnSearch: applyDefaultFilterOnSearch.value,
+          defaultMatchCount: defaultMatchCount.value
         }
       }
     }
@@ -184,6 +210,11 @@ export const useSettingsStore = defineStore(
         careerBackground.value = settings.game.careerBackground || ''
         autoRefreshData.value = settings.game.autoRefreshData ?? true
         refreshInterval.value = settings.game.refreshInterval || 30000
+        if (Array.isArray(settings.game.defaultQueueTypes)) {
+          setDefaultQueueTypes(settings.game.defaultQueueTypes)
+        }
+        applyDefaultFilterOnSearch.value = settings.game.applyDefaultFilterOnSearch ?? true
+        setDefaultMatchCount(settings.game.defaultMatchCount ?? 20)
       }
     }
 
@@ -209,6 +240,9 @@ export const useSettingsStore = defineStore(
       careerBackground,
       autoRefreshData,
       refreshInterval,
+      defaultQueueTypes,
+      applyDefaultFilterOnSearch,
+      defaultMatchCount,
 
       // 计算属性
       themeConfig,
@@ -231,6 +265,9 @@ export const useSettingsStore = defineStore(
       setCareerBackground,
       setAutoRefreshData,
       setRefreshInterval,
+      setDefaultQueueTypes,
+      setApplyDefaultFilterOnSearch,
+      setDefaultMatchCount,
       resetAllSettings,
       exportSettings,
       importSettings

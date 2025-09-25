@@ -10,12 +10,19 @@
               <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
               <h2 class="text-lg font-bold text-blue-600 dark:text-blue-400">我方队伍</h2>
             </div>
-            <Badge
-              variant="outline"
-              class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 text-xs"
-            >
-              {{ session.myTeam?.length || 0 }} 人
-            </Badge>
+            <div class="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 text-xs"
+              >
+                {{ session.myTeam?.length || 0 }} 人
+              </Badge>
+              <!-- 类型过滤按钮 -->
+              <Button variant="outline" size="sm" @click="showFilterDialog = true" class="text-xs text-foreground">
+                <Filter class="h-3 w-3 mr-1" />
+                过滤
+              </Button>
+            </div>
           </div>
 
           <div
@@ -181,6 +188,26 @@
         </div>
       </SheetContent>
     </Sheet>
+
+    <!-- 类型过滤对话框 -->
+    <Dialog v-model:open="showFilterDialog">
+      <DialogContent class="!max-w-[90vw] w-[60vw] max-h-[85vh]">
+        <DialogHeader>
+          <DialogTitle>游戏类型过滤</DialogTitle>
+          <DialogDescription class="text-slate-600 dark:text-slate-300">
+            选择要显示的游戏类型，过滤后的战绩将只显示选中类型的对局
+          </DialogDescription>
+        </DialogHeader>
+
+        <GameTypeSelector v-model:selected-types="selectedFilterTypes" />
+
+        <DialogFooter class="flex gap-2 text-foreground">
+          <Button variant="outline" @click="showFilterDialog = false"> 取消 </Button>
+          <Button variant="outline" @click="clearAllFilters"> 清空过滤 </Button>
+          <Button @click="applyFilters"> 应用过滤 </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -190,10 +217,22 @@ import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 import { useGameStore } from '@/stores/features/gameStore'
 import { appContextKey, type AppContext } from '@/types'
-import { Info, X } from 'lucide-vue-next'
+import { Info, X, Filter } from 'lucide-vue-next'
 import { useGameAssets } from '@/composables/game/useGameAssets'
 import { useDataStore } from '@/stores/core/dataStore'
 import { invoke } from '@tauri-apps/api/core'
+import GameTypeSelector from '@/components/ui/GameTypeSelector.vue'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { useSettingsStore } from '@/stores/ui/settingsStore'
+import { storeToRefs } from 'pinia'
 
 const { isConnected } = inject(appContextKey) as AppContext
 const { enrichedSession } = useChampSelectSession()
@@ -205,8 +244,19 @@ const {
   fetchSummonerInfo,
   currentRestult,
   loading: searchLoading,
-  getRencentMatchesByPuuid
+  getRencentMatchesByPuuid,
+  selectedQueueTypes,
+  setFilterTypes,
+  clearFilter
 } = useSearchMatches()
+
+// 过滤相关状态
+const showFilterDialog = ref(false)
+const selectedFilterTypes = ref<number[]>([])
+
+// 系统默认过滤：用于初始化当前视图的局部筛选
+const settingsStore = useSettingsStore()
+const { defaultQueueTypes, applyDefaultFilterOnSearch, defaultMatchCount } = storeToRefs(settingsStore)
 
 // 使用游戏状态 store 来监听状态变化
 const gameStore = useGameStore()
@@ -279,7 +329,10 @@ watch(
     const names = enemyTeam.map((p: LiveClientPlayer) => p.summonerName)
 
     try {
-      const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', { names, count: 6 })
+      const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', {
+        names,
+        count: defaultMatchCount.value
+      })
       theirTeamStats.value = matches.map((m) => m.matches)
       console.log('matches', theirTeamStats.value, summonerStats.value)
     } catch (error) {
@@ -326,7 +379,7 @@ watchEffect(async () => {
     if (!Array.isArray(enrichedSession.value.myTeam)) console.log('myTeam', enrichedSession.value.myTeam)
     const ids = enrichedSession.value.myTeam?.map((p: EnrichedLivePlayer) => p.puuid).filter(Boolean) || []
     console.log('获取战绩的puuid列表:', ids)
-    await getRencentMatchesByPuuid(ids, 6)
+    await getRencentMatchesByPuuid(ids, defaultMatchCount.value)
     if (summonerStats.value) {
       console.log('Fetched summoner stats:', summonerStats.value)
     }
@@ -394,4 +447,42 @@ const getStatusDescription = () => {
       return '开始游戏匹配以查看详细的对局分析数据。'
   }
 }
+
+// 过滤相关方法
+const applyFilters = () => {
+  setFilterTypes(selectedFilterTypes.value)
+  showFilterDialog.value = false
+}
+
+const clearAllFilters = () => {
+  selectedFilterTypes.value = []
+  clearFilter()
+  showFilterDialog.value = false
+}
+
+// 监听当前过滤状态，同步到对话框
+watch(
+  selectedQueueTypes,
+  (newTypes) => {
+    selectedFilterTypes.value = [...newTypes]
+  },
+  { immediate: true }
+)
+
+// 当数据准备好且当前未选择过滤时，按系统默认初始化
+watch(
+  () => [summonerStats.value, applyDefaultFilterOnSearch.value, defaultQueueTypes.value],
+  () => {
+    if (
+      applyDefaultFilterOnSearch.value &&
+      selectedFilterTypes.value.length === 0 &&
+      Array.isArray(defaultQueueTypes.value) &&
+      defaultQueueTypes.value.length > 0
+    ) {
+      selectedFilterTypes.value = [...defaultQueueTypes.value]
+      setFilterTypes(selectedFilterTypes.value)
+    }
+  },
+  { immediate: true }
+)
 </script>

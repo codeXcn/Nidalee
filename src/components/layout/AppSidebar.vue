@@ -104,7 +104,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getVersion } from '@tauri-apps/api/app'
-import { Workflow, Radar, BarChart3, Settings, Sparkles, TestTube, Swords, Trophy } from 'lucide-vue-next'
+import { Radar, BarChart3, Settings, Sparkles, TestTube, Swords, Trophy } from 'lucide-vue-next'
 import { useDataStore } from '@/stores/core/dataStore'
 const route = useRoute()
 
@@ -148,11 +148,6 @@ const menuItems = [
     title: 'OP.GG查询',
     url: '/opgg',
     icon: BarChart3
-  },
-  {
-    title: '自动化配置',
-    url: '/auto-functions',
-    icon: Workflow
   },
   {
     title: '客户端设置',
