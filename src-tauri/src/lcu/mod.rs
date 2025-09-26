@@ -13,6 +13,7 @@ pub mod request;
 pub mod summoner;
 pub mod types;
 pub mod unified_polling;
+pub mod ws;
 
 // Re-export 常用的类型和函数，便于外部使用
 pub use connection::service::ConnectionManager;

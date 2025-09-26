@@ -52,6 +52,9 @@ pub fn run() {
             lcu::opgg::commands::get_opgg_tier_list,
             lcu::opgg::commands::get_opgg_champion_positions,
             lcu::opgg::commands::apply_opgg_runes,
+            // LCU WS 测试命令
+            lcu::ws::commands::start_lcu_ws,
+            lcu::ws::commands::stop_lcu_ws,
             common::commands::machine::get_machine_hash,
             common::commands::builds::get_champions_list,
             common::commands::builds::get_champion_builds,

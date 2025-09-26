@@ -3,6 +3,7 @@ import { Toaster } from 'vue-sonner'
 import 'vue-sonner/style.css'
 import { appContextKey } from './types'
 import ClientDisconnected from './components/common/ClientDisconnected.vue'
+import { listen } from '@tauri-apps/api/event'
 const { isDark, checkConnection, isConnected, fetchMatchHistory } = useApp()
 const theme = computed(() => (isDark.value ? 'dark' : 'light'))
 // 提供方法给子组件使用
@@ -22,6 +23,21 @@ const handleRouteChange = () => {
   randomTransition()
 }
 const route = useRoute()
+
+// 临时添加：监听后端 LCU WS 原始事件，便于联调观察
+let unlistenLcuWs: (() => void) | null = null
+onMounted(async () => {
+  try {
+    unlistenLcuWs = await listen<string>('lcu-ws', (e) => {
+      console.log('[LCU-WS]', e.payload)
+    })
+  } catch (e) {
+    console.error('[LCU-WS] 监听失败:', e)
+  }
+})
+onUnmounted(() => {
+  if (unlistenLcuWs) unlistenLcuWs()
+})
 </script>
 
 <template>

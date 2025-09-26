@@ -29,6 +29,14 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     // 启动连接监控和轮询服务
     start_services(app, connection_manager);
 
+    // 自动启动 LCU WebSocket（仅用于联调测试）
+    {
+        let app_handle = app.handle().clone();
+        tokio::spawn(async move {
+            lcu::ws::service::start_ws(app_handle).await;
+        });
+    }
+
     Ok(())
 }
 
