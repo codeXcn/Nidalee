@@ -24,7 +24,9 @@
   </p>
 
   <p>
-    <a href="./README_ZH.md">简体中文</a> | <a href="./README.md">English</a>
+    
+  [简体中文](./README_ZH.md) | English
+    
   </p>
 </div>
 
