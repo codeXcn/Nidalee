@@ -22,9 +22,10 @@
     <a href="docs/user-guide-zh.md">📖 使用指南</a> •
     <a href="#-贡献">🤝 贡献</a>
   </p>
-
   <p>
-    <a href="./README_ZH.md">简体中文</a> | <a href="./README.md">English</a>
+      
+  简体中文 | [English](./README.md)
+      
   </p>
 </div>
 
