@@ -7,7 +7,7 @@ import { useDataStore } from '@/stores/core/dataStore'
 import { useSettingsStore } from '@/stores/ui/settingsStore'
 import { ref } from 'vue'
 import { useDeviceWebSocket } from './useDeviceWebSocket'
-
+import { useAppUpdater } from './useAppUpdater'
 /**
  * 应用初始化组合式函数
  * 职责：处理应用启动时的初始化逻辑
@@ -71,6 +71,10 @@ export function useAppInitialization() {
 
       // 3. 初始化连接状态
       await initializeConnection()
+
+      // 4. 静默检查应用更新（不打扰用户）
+      const { checkAppUpdate } = useAppUpdater()
+      await checkAppUpdate({ silent: true })
 
       isInitialized.value = true
       console.log('[AppInit] 应用初始化完成')

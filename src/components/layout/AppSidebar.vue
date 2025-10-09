@@ -85,6 +85,33 @@
 
       <div class="px-2 text-xs text-muted-foreground select-none">游戏版本 {{ `v${lolGameVersion}` || '-' }}</div>
 
+      <div v-if="updateAvailable" class="px-2 py-1">
+        <div
+          v-if="!isUpdating"
+          class="text-xs flex items-center gap-2 rounded bg-primary/10 text-primary px-2 py-1 cursor-pointer hover:bg-primary/15"
+          @click="startUpdateNow()"
+        >
+          <span class="inline-flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+          有可用更新 → {{ updateVersion ? `v${updateVersion}` : '' }}（点击下载并安装）
+        </div>
+        <div v-else class="rounded bg-primary/10 text-primary px-2 py-1">
+          <div class="text-xs flex items-center gap-2">
+            <span class="inline-flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            {{ updateStatusText }}
+          </div>
+          <Progress :model-value="updateProgress" class="mt-1 h-1.5" />
+          <span
+            class="sr-only"
+            role="progressbar"
+            :aria-valuemin="0"
+            :aria-valuemax="100"
+            :aria-valuenow="updateProgress"
+          >
+            更新下载进度
+          </span>
+        </div>
+      </div>
+
       <!-- <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild :tooltip="'设置'" :is-active="isActiveRoute('/settings')">
@@ -106,7 +133,19 @@ import { ref, onMounted, computed } from 'vue'
 import { getVersion } from '@tauri-apps/api/app'
 import { Radar, BarChart3, Settings, Sparkles, TestTube, Swords, Trophy } from 'lucide-vue-next'
 import { useDataStore } from '@/stores/core/dataStore'
+import { useAppUpdater } from '@/composables/app/useAppUpdater'
+import { Progress } from '@/components/ui/progress'
 const route = useRoute()
+// 组合式方式获取更新状态与方法（内部是单例，不会重复实例化）
+const { updateAvailable, updateVersion, isUpdating, updateProgress, startUpdateNow } = useAppUpdater()
+
+// 动态状态文案：0% -> 正在连接…；1-99% -> 正在下载…N%；100% -> 正在安装/准备重启
+const updateStatusText = computed(() => {
+  const p = updateProgress.value
+  if (p <= 0) return '正在连接更新服务器…'
+  if (p >= 100) return '正在安装/准备重启…'
+  return `正在下载更新 ${p}%`
+})
 
 const isDev = import.meta.env.DEV
 

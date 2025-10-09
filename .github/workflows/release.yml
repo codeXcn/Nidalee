@@ -41,7 +41,8 @@ jobs:
         run: |
           $version = "${{ github.ref_name }}".Replace("v", "")
           $content = Get-Content "src-tauri/tauri.conf.json" -Raw
-          $content = $content -replace '"version": "2\.0\.0"', "`"version`": `"$version`""
+          # 匹配任意 semver 版本并替换
+          $content = $content -replace '"version"\s*:\s*"[0-9]+\.[0-9]+\.[0-9]+"', "`"version`": `"$version`""
           Set-Content "src-tauri/tauri.conf.json" $content
           Write-Host "Updated version to $version in tauri.conf.json"
 
@@ -49,7 +50,8 @@ jobs:
         run: |
           $version = "${{ github.ref_name }}".Replace("v", "")
           $content = Get-Content "src-tauri/Cargo.toml" -Raw
-          $content = $content -replace 'version = "2\.0\.0"', "version = `"$version`""
+          # 匹配任意 semver 版本并替换
+          $content = $content -replace 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"', "version = `"$version`""
           Set-Content "src-tauri/Cargo.toml" $content
           Write-Host "Updated version to $version in Cargo.toml"
 
@@ -59,18 +61,23 @@ jobs:
           NODE_ENV: production
           VITE_WS_BASE_URL: ${{ vars.WS_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-           # 使用之前配置的私钥
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          # 使用之前配置的私钥密码
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }}
+          # Tauri 更新签名私钥
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # 传递版本号给 Tauri
           TAURI_VERSION: ${{ github.ref_name }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Nidalee ${{ github.ref_name }}'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ''
+      - name: Upload updater manifest as artifact (latest.json)
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-json-windows
+          path: src-tauri/target/release/bundle/**/latest.json
+          if-no-files-found: ignore
 
   release-mac:
     name: "Build & Release (macOS) (构建发布)"
@@ -105,13 +112,15 @@ jobs:
       - name: 🔧 Update version in tauri.conf.json (更新版本号)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          sed -i '' 's/"version": "2\.0\.0"/"version": "'$VERSION'"/g' src-tauri/tauri.conf.json
+          # 匹配任意 semver 版本并替换
+          sed -i '' -E 's/"version"[[:space:]]*:[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"/"version": "'$VERSION'"/g' src-tauri/tauri.conf.json
           echo "Updated version to $VERSION in tauri.conf.json"
 
       - name: 🔧 Update version in Cargo.toml (更新Cargo版本)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          sed -i '' 's/version = "2\.0\.0"/version = "'$VERSION'"/g' src-tauri/Cargo.toml
+          # 匹配任意 semver 版本并替换
+          sed -i '' -E 's/version[[:space:]]*=[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"/version = "'$VERSION'"/g' src-tauri/Cargo.toml
           echo "Updated version to $VERSION in Cargo.toml"
 
       - name: 🏗️ Build and Release (构建发布)
@@ -120,14 +129,87 @@ jobs:
           NODE_ENV: production
           VITE_WS_BASE_URL: ${{ vars.WS_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # 传递版本号给 Tauri
           TAURI_VERSION: ${{ github.ref_name }}
 
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Nidalee ${{ github.ref_name }}'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ''
+
+      - name: 📦 Upload updater manifest as artifact (latest.json)
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-json-mac
+          path: src-tauri/target/release/bundle/**/latest.json
+          if-no-files-found: ignore
+
+  publish-latest-json:
+    name: "Publish latest.json (通用上传)"
+    needs: [release, release-mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 📥 Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 🔍 List downloaded files (调试)
+        run: |
+          ls -R artifacts || true
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 🔗 Merge latest.json from platforms
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          function findAll(dir) {
+            let results = [];
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const p = path.join(dir, entry.name);
+              if (entry.isDirectory()) results = results.concat(findAll(p));
+              else if (entry.isFile() && entry.name === "latest.json") results.push(p);
+            }
+            return results;
+          }
+          const files = fs.existsSync("artifacts") ? findAll("artifacts") : [];
+          if (files.length === 0) {
+            console.log("No latest.json found, skipping");
+            process.exit(0);
+          }
+          if (files.length === 1) {
+            // 单平台构建，直接复制为 latest.json
+            const content = fs.readFileSync(files[0], "utf8");
+            fs.writeFileSync("latest.json", content);
+            console.log("Single latest.json copied.");
+            process.exit(0);
+          }
+          let merged = null;
+          for (const f of files) {
+            const j = JSON.parse(fs.readFileSync(f, "utf8"));
+            if (!merged) { merged = j; continue; }
+            // 合并版本/说明以第一个为准，平台做并集
+            merged.platforms = { ...(merged.platforms||{}), ...(j.platforms||{}) };
+          }
+          fs.writeFileSync("latest.json", JSON.stringify(merged, null, 2));
+          console.log("Merged to latest.json");
+          '
+
+      - name: 📤 Upload latest.json to Release
+        if: ${{ hashFiles('latest.json') != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
