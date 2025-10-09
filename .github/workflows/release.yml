@@ -50,8 +50,8 @@ jobs:
         run: |
           $version = "${{ github.ref_name }}".Replace("v", "")
           $content = Get-Content "src-tauri/Cargo.toml" -Raw
-          # 匹配任意 semver 版本并替换
-          $content = $content -replace 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"', "version = `"$version`""
+          # 仅匹配以 version 开头的行，避免命中 rust-version
+          $content = $content -replace '(?m)^\s*version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"', "version = `"$version`""
           Set-Content "src-tauri/Cargo.toml" $content
           Write-Host "Updated version to $version in Cargo.toml"
 
@@ -119,8 +119,8 @@ jobs:
       - name: 🔧 Update version in Cargo.toml (更新Cargo版本)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          # 匹配任意 semver 版本并替换
-          sed -i '' -E 's/version[[:space:]]*=[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"/version = "'$VERSION'"/g' src-tauri/Cargo.toml
+          # 仅匹配以 version 开头的行，避免命中 rust-version
+          sed -i '' -E 's/^([[:space:]]*)version[[:space:]]*=[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"/\1version = "'$VERSION'"/' src-tauri/Cargo.toml
           echo "Updated version to $VERSION in Cargo.toml"
 
       - name: 🏗️ Build and Release (构建发布)
