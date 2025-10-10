@@ -66,7 +66,7 @@ Nidalee 是一款专为英雄联盟玩家设计的智能助手，集自动接受
 - 安全分发：仅信任官方发布；安装包附带签名（.sig），更新前校验来源与完整性。
 - 现代 UI 与主题：一致的深浅色与 OKLCH 色彩；界面简洁、可读性强。
 - 稳定与扩展：组合式与模块化设计，便于后续功能扩展。
-- 维护者文档：自动更新与签名配置见 [docs/updates.md](docs/updates.md) 与 [docs/tauri-signing.md](docs/tauri-signing.md)。
+- 维护者：签名与安全见 [docs/tauri-signing.md](docs/tauri-signing.md)。
 
 ## 📦 下载安装
 

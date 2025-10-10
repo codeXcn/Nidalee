@@ -1,188 +1,179 @@
-<!-- markdownlint-disable MD033 MD041 -->
-<div align="center">
-  <img src="src/assets/logo.svg" alt="Nidalee Logo" width="120" height="120">
+# 🎮 Nidalee
 
-  <h1>🎮 Nidalee</h1>
-  <p><strong>High-performance, lightweight and intelligent League of Legends assistant</strong></p>
-  <p>Nidalee is a high-performance, lightweight and intelligent assistant for League of Legends players. It integrates auto-accept, auto pick/ban, real-time data analysis and personalized settings, helping you climb the ranks efficiently and safely. Powered by Rust + Tauri, it features fast startup, low resource usage, and a minimal footprint.</p>
+![Nidalee Logo](src/assets/logo.svg)
 
-  <div>
-    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank"><img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg" alt="License"/></a>
-    <img src="https://img.shields.io/badge/tauri-2.x-green.svg" alt="Tauri">
-    <img src="https://img.shields.io/badge/vue-3.x-brightgreen.svg" alt="Vue">
-    <img src="https://img.shields.io/badge/rust-1.75-orange.svg" alt="Rust">
-    <img src="https://img.shields.io/badge/platform-Windows-blue.svg" alt="Platform">
-  </div>
+High-performance, lightweight assistant for League of Legends.
 
-  <br>
+Nidalee integrates auto-accept, auto pick/ban, real‑time data insights, and customizable settings to help you climb efficiently and safely. Powered by Rust + Tauri for fast startup and low resource usage.
 
-  <p>
-    <a href="#-features">✨ Features</a> •
-    <a href="#-installation">📦 Installation</a> •
-    <a href="#-development">🚀 Development</a> •
-    <a href="#-usage">📖 Usage</a> •
-    <a href="#-updates">🔄 Updates</a> •
-    <a href="#-distribution--signature-policy">📦 Distribution & Signature Policy</a> •
-    <a href="#-network--download">🌐 Network & Download</a> •
-    <a href="#-troubleshooting">🛠️ Troubleshooting</a> •
-    <a href="#-contributing">🤝 Contributing</a>
-  </p>
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
+![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
+![Tauri](https://img.shields.io/badge/tauri-2.x-green.svg)
+![Vue](https://img.shields.io/badge/vue-3.x-brightgreen.svg)
+![Rust](https://img.shields.io/badge/rust-1.75-orange.svg)
 
-  <p>
+English | [简体中文](./README_ZH.md)
 
-  [简体中文](./README_ZH.md) | English
+---
 
-  </p>
-</div>
+## ✨ Features
 
+- 🤖 Automation: auto-accept, auto pick/ban
+- � Insights: real-time analysis and statistics
+- 🎯 Personalization: flexible presets, profile backgrounds, etc.
+- 🔒 Safety: interacts only with official League Client API (LCU)
 
-## 🌟 Features
+## ⚡ Quick Preview
 
-### 🎮 Automation
+![Update flow - placeholder](docs/images/update-flow.svg)
 
+![Match analysis - placeholder](docs/images/match-analysis.svg)
 
-### 📊 Data Analysis
+## 💡 Why Nidalee
 
-  - Team Composition Evaluation
-  - Lane Advantage Analysis
-  - Teamfight Capability Score
-  - Intelligent Tactical Suggestions
-  - KDA and Win Rate Analysis
-  - Position Preference Analysis
-  - Champion Pool Analysis
-  - Recent Performance Score
+- Built around LoL’s core flows: accept, pick/ban, match insights; lightweight and easy to use.
+- Rust + Tauri deliver fast startup and low footprint for long-running sessions.
+- Modern UI via shadcn-vue + Tailwind v4; consistent dark/light themes.
+- Clear distribution & signature policy; only official releases are trusted.
 
-### 🔍 Information Display
+## System Overview
 
-  - Teammate and Opponent Details
-  - Champion Counter Relationships
-  - Player Match History
-  - Lane Advantage Indicator
-  - Team Strength Comparison
-  - Player Stats Radar Chart
-
-## 🚀 Tech Stack
-
+- Lightweight & performant: fast startup, low resource usage.
+- Auto update: silent check on launch; one-click update in sidebar; fallback to manual download on failure.
+- Trusted distribution: official Releases only, with detached signatures (.sig) to verify integrity.
+- Modern UI & themes: OKLCH palette, clean and readable design.
+- Stable & extensible: modular, composition-friendly codebase.
+- Maintainers: see signing & security notes in `docs/tauri-signing.md`.
 
 ## 📦 Installation
 
-Download the latest Windows version from the [Releases](../../releases) page:
+Download the latest Windows version from [Releases](https://github.com/codeXcn/Nidalee/releases):
 
-| Platform | File | Description |
-|----------|------|-------------|
-| **Windows** | `Nidalee_1.0.0_x64_en-US.msi` | Windows 64-bit installer |
+| Platform | File | Notes |
+|---|---|---|
+| Windows | `Nidalee_1.0.0_x64_en-US.msi` | 64‑bit installer |
 
-### Installation Steps (Windows)
+### Installation (Windows)
 
-1. Download the `.msi` file
-2. Double-click to run the installer
-3. Launch the app; it will automatically check for updates (the sidebar shows the update prompt and progress)
+1. Download the `.msi`
+2. Double‑click to install
+3. Launch the app; it will auto‑check for updates (the sidebar shows prompts and progress)
 
-> Important: It's recommended to run the app as Administrator (right-click → Run as administrator) to ensure sufficient permissions for auto updates, log writing, and network port binding.
+> Important: It’s recommended to run as Administrator (right‑click → Run as administrator) to ensure permissions for updates, logging, and network ports.
+> Supported systems: Windows 10/11 (x64). Other platforms may be added later.
 
-## 🔧 Configuration
+## 🚀 Development
 
-1. Game Client Configuration
-   - Auto-detect LCU authentication info
-   - Support custom port and token
+### Requirements
 
-2. Feature Module Configuration
-   - Auto accept match toggle
-   - Champion selection presets
-   - Rune page auto-update settings
+- Node.js 20+
+- pnpm 10+
+- Rust 1.70+
+- Tauri CLI 2.0+
 
-## 📝 Usage Guide
+### Local Development
 
-1. **Auto Accept Match**
-   - Automatically monitor and accept match invitations when enabled
-   - Configurable accept delay
+```bash
+git clone https://github.com/codeXcn/Nidalee.git
+cd Nidalee
 
-2. **Champion Selection**
-   - Preset priority champions
-   - Set auto-ban champions
-   - Team composition-based recommendations
+# Install deps
+pnpm install
 
-3. **Rune Configuration**
-   - Auto-fetch and apply recommended runes
-   - Support custom rune schemes
-   - Quick switch between champion runes
+# Dev (Tauri)
+pnpm tauri dev
 
-4. **Data Analysis**
-   - Real-time match analysis
-   - Team advantage/disadvantage overview
-   - Tactical suggestions
+# Build (Tauri)
+pnpm tauri build
+```
+
+### Project Structure
+
+```text
+Nidalee/
+├── src/                    # Vue frontend
+├── src-tauri/              # Tauri Rust backend
+├── .github/workflows/      # GitHub Actions CI/CD
+├── dist/                   # Build output
+└── docs/                   # Documentation
+```
+
+## 📋 Feature Checklist
+
+- [x] Base scaffolding
+- [x] League Client API integration
+- [x] CI/CD automated releases
+- [x] User info and profiling
+- [x] Auto accept match
+- [x] Auto pick/ban
+- [x] Game data analysis
+- [x] Settings UI
+- [ ] i18n
+
+## � Usage
+
+See docs in the `docs/` folder. Chinese user guide: [docs/user-guide-zh.md](docs/user-guide-zh.md)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Check out our [Contributors List](CONTRIBUTORS.md).
+PRs and Issues are welcome!
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### How to Contribute
+
+1. Fork and clone: `git clone https://github.com/<yourname>/Nidalee.git`
+2. Create a feature branch (see naming below)
+3. Install & run: `pnpm install && pnpm tauri dev`
+4. Before commit, run:
+   - Lint & types: `pnpm lint && pnpm type-check`
+   - Optional build: `pnpm tauri build`
+5. Open a PR with clear description, screenshots/GIFs for UI, and related issues
+
+### Branch Naming
+
+- `feature/<scope>-<desc>`  e.g. `feature/updater-ui`
+- `fix/<scope>-<desc>`      e.g. `fix/lcu-auth-retry`
+- `docs/<desc>`             e.g. `docs/update-readme`
+- `refactor/<scope>-<desc>` e.g. `refactor/store-modules`
+- `perf/<scope>-<desc>`     e.g. `perf/table-render`
+- `test/<scope>-<desc>`     e.g. `test/utils-date`
+- `chore/<desc>`            e.g. `chore/ci-cache`
+
+Conventional Commits are encouraged: `type(scope): subject` (≤ 50 chars).
+
+### Release
+
+See [RELEASE.md](RELEASE.md). Tag‑driven CI builds installers and `latest.json`.
+
+## 🌐 Network & Download
+
+- Downloads use GitHub Releases and may be slow in some regions.
+- If a download fails, the app shows “Go to manual download” to open the official Releases page.
+- Additional mirrors may be provided later and will be announced here and in‑app.
+
+## 🛠️ Troubleshooting
+
+- Update fails / stuck: use “Go to manual download” and install from Releases.
+- Windows SmartScreen: click “More info” → “Run anyway”, or unblock in file Properties.
+- Cannot connect to LCU: ensure the League client is running; restart if needed; try running as Administrator; check logs.
+- Permissions / write errors: run as Administrator; if still failing, re‑install from Releases; ensure the install path is writable.
 
 ## 📄 License
 
-This project is licensed under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) (Attribution-NonCommercial-ShareAlike 4.0 International) license.
-
+Licensed under [CC BY‑NC‑SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
 See the LICENSE file for full terms.
 
 ## ⚠️ Disclaimer
 
-This project is for League of Legends players as an auxiliary tool. All features are based on Riot Games' official League Client API (LCU API) and local client data.
+This project is an auxiliary tool for League of Legends. All features rely on Riot Games’ official League Client API (LCU API) and local client data.
 
-**This tool does not modify, inject, or tamper with game memory, processes, or network data, nor does it provide any cheating, acceleration, or scripting functions.**
+This tool does not modify, inject, or tamper with game memory, processes, or network data, nor provide any cheating/automation beyond LCU‑based interactions.
 
+- Use must comply with the game’s user agreement and relevant policies.
+- No personal sensitive data is collected or uploaded by this project.
+- This project is not affiliated with Riot Games or Tencent and is not officially endorsed.
+- You are solely responsible for any consequences arising from usage.
 
-**Please ensure your use complies with the League of Legends user agreement and related policies. If in doubt, stop using and consult official support.**
+---
 
-## 🙏 Acknowledgments
-
-
-## 🔄 Updates
-
-This project integrates Tauri v2 Updater to automatically check, download, install and relaunch.
-
-- Backend: `tauri-plugin-updater` and `tauri-plugin-process` are registered.
-- Frontend: `@tauri-apps/plugin-updater` and `@tauri-apps/plugin-process` are installed, and the app performs a silent update check on startup.
-- Capabilities: `updater:default` and `process:default` are granted.
-
-Runtime behavior:
-
-- On startup, the app silently checks for updates. When a new version is available, the sidebar shows “Update available”. Clicking it starts download and installation, followed by auto relaunch.
-- During download, the sidebar shows a progress bar and dynamic status text:
-  - 0%: Connecting to update server…
-  - 1–99%: Downloading N%
-  - 100%: Installing / preparing to relaunch…
-- If update fails, a toast appears with a “Go to manual download” action to open the latest Releases page.
-
-## 📦 Distribution & Signature Policy
-
-- Official builds and update artifacts are published only in this repository’s [Releases](https://github.com/codeXcn/Nidalee/releases).
-- The app’s updater only trusts the official signing public key configured in `src-tauri/tauri.conf.json`. Third-party builds cannot use in-app auto updates.
-- Publishing builds or redistributing packaged artifacts outside of this repository is not allowed. Please participate via Issues/PRs and release here.
-
-## 🌐 Network & Download
-
-- Downloads use GitHub Releases and may be slow or unstable depending on network conditions.
-- If downloads are slow or fail, use the “Go to manual download” action to open the official Releases page and install manually.
-- Additional region-friendly mirrors may be provided in the future; they will be announced here and in the app if available.
-
-## 🛠️ Troubleshooting
-
-- Update failure or stuck progress: Click “Go to manual download” in the toast and install from the official Releases page.
-- Windows SmartScreen warning: Click “More info” → “Run anyway” or unblock the file from Properties.
-- Cannot connect to LCU: Ensure the League client is logged in; restart the client if needed(Run as administrator).
-- Insufficient permissions / update failure / unable to write: Run the app as Administrator (right-click → Run as administrator). If update still fails, retry in admin mode or download from Releases and install manually. Ensure the installation directory is writable.
-
-```bash
-pnpm install
-
-# Development (Tauri)
-pnpm exec tauri dev
-
-# Production build (Tauri)
-pnpm exec tauri build
-```
+Built with ❤️ using [Tauri 2.0](https://tauri.app/) + [Vue.js](https://vuejs.org/)
