@@ -55,7 +55,7 @@
   "plugins": {
     "dialog": null,
     "updater": {
-      "pubkey": "RWQraoGQhjHTGHgqKhjI0WKxWjDUNc3XWldb5RPIJWDf5+VYhY04+6Di",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE4RDMzMTg2OTA4MTZBMkIKUldRcmFvR1FoakhUR0hncUtoakkwV0t4V2pEVU5jM1hXbGRiNVJQSUpXRGY1K1ZZaFkwNCs2RGkK",
       "endpoints": ["https://github.com/codeXcn/Nidalee/releases/latest/download/latest.json"],
       "windows": {
         "installMode": "passive"
