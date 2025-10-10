@@ -15,7 +15,9 @@
 ### 🎯 如何发布新版本
 
 #### 1. 更新版本号
+
 编辑 `src-tauri/tauri.conf.json` 中的版本号：
+
 ```json
 {
   "version": "1.0.1"
@@ -23,6 +25,7 @@
 ```
 
 #### 2. 创建并推送 tag
+
 ```bash
 # 提交所有更改
 git add .
@@ -36,6 +39,7 @@ git push origin v1.0.1
 ```
 
 #### 3. 自动构建
+
 - GitHub Actions 将自动触发
 - 同时构建 4 个版本：
   - Windows x64
@@ -44,12 +48,14 @@ git push origin v1.0.1
   - Linux x64
 
 #### 4. 查看发布
-- 构建完成后，在 [GitHub Releases](../../releases) 页面查看
+
+- 构建完成后，在 [GitHub Releases](https://github.com/codeXcn/Nidalee/releases) 页面查看
 - 发布为草稿状态，可以编辑发布说明后手动发布
 
 ### 🔧 手动触发构建
 
 如果需要手动触发构建，可以在 GitHub 网页上：
+
 1. 进入 Actions 页面
 2. 选择 "Release" workflow
 3. 点击 "Run workflow"
@@ -66,12 +72,14 @@ git push origin v1.0.1
 ### 📋 构建状态
 
 可以在以下位置查看构建状态：
-- [GitHub Actions](../../actions) - 构建日志和状态
-- [GitHub Releases](../../releases) - 发布的安装包
+
+- [GitHub Actions](https://github.com/codeXcn/Nidalee/actions) - 构建日志和状态
+- [GitHub Releases](https://github.com/codeXcn/Nidalee/releases) - 发布的安装包
 
 ### 🐛 故障排除
 
 如果构建失败，常见问题：
+
 1. **依赖问题**：检查 `package.json` 和 `Cargo.toml` 依赖
 2. **权限问题**：确保仓库设置允许 Actions 写入
 3. **版本号**：确保 tag 格式正确 (`v` + 语义化版本号)
@@ -117,4 +125,4 @@ git push origin v1.0.1
 
 ---
 
-> 💡 **提示**：推荐每次发布都更新版本号，这样用户可以清楚地知道自己使用的版本。 
+> 💡 **提示**：推荐每次发布都更新版本号，这样用户可以清楚地知道自己使用的版本。

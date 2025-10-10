@@ -4,22 +4,33 @@
 
 High-performance, lightweight assistant for League of Legends.
 
-Nidalee integrates auto-accept, auto pick/ban, real‑time data insights, and customizable settings to help you climb efficiently and safely. Powered by Rust + Tauri for fast startup and low resource usage.
+Nidalee integrates auto-accept, auto pick/ban, real-time data insights, and customizable settings to help you climb efficiently and safely. Powered by Rust + Tauri for fast startup and low resource usage.
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
+![Platform](https://img.shields.io/badge/platform-macOS-blue.svg)
 ![Tauri](https://img.shields.io/badge/tauri-2.x-green.svg)
 ![Vue](https://img.shields.io/badge/vue-3.x-brightgreen.svg)
 ![Rust](https://img.shields.io/badge/rust-1.75-orange.svg)
+[![Version](https://img.shields.io/github/v/release/codeXcn/Nidalee?sort=semver&display_name=tag)](https://github.com/codeXcn/Nidalee/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/codeXcn/Nidalee/total)](https://github.com/codeXcn/Nidalee/releases)
 
 English | [简体中文](./README_ZH.md)
 
 ---
 
+## ⏱️ Quick Start
+
+1. Download the latest installer from the [Releases page](https://github.com/codeXcn/Nidalee/releases/latest)
+2. Install and launch the app; start your League client and log in
+3. The app auto-connects to the client; see the sidebar for updater status
+
+If automatic update fails at any time, click “Go to manual download” in-app or open the [Releases page](https://github.com/codeXcn/Nidalee/releases/latest).
+
 ## ✨ Features
 
 - 🤖 Automation: auto-accept, auto pick/ban
-- � Insights: real-time analysis and statistics
+- 📈 Insights: real-time analysis and statistics
 - 🎯 Personalization: flexible presets, profile backgrounds, etc.
 - 🔒 Safety: interacts only with official League Client API (LCU)
 
@@ -27,7 +38,11 @@ English | [简体中文](./README_ZH.md)
 
 ![Update flow - placeholder](docs/images/update-flow.svg)
 
+Updater UX: check → download → install, with a manual fallback link.
+
 ![Match analysis - placeholder](docs/images/match-analysis.svg)
+
+Match analysis: team stats, lane matchups, and insights.
 
 ## 💡 Why Nidalee
 
@@ -35,6 +50,11 @@ English | [简体中文](./README_ZH.md)
 - Rust + Tauri deliver fast startup and low footprint for long-running sessions.
 - Modern UI via shadcn-vue + Tailwind v4; consistent dark/light themes.
 - Clear distribution & signature policy; only official releases are trusted.
+
+### What this is (and isn’t)
+
+- This is: a desktop assistant based on the official LCU; automation limited to client-exposed interfaces; focused on pick/ban and data insights.
+- This isn’t: memory/process injection, packet tampering, scripts, or any cheat.
 
 ## System Overview
 
@@ -47,20 +67,37 @@ English | [简体中文](./README_ZH.md)
 
 ## 📦 Installation
 
-Download the latest Windows version from [Releases](https://github.com/codeXcn/Nidalee/releases):
+- Latest release: <https://github.com/codeXcn/Nidalee/releases/latest>
+- In "Assets", download the installer for your platform:
+  - Windows: `.msi`
+  - macOS: `.dmg`
 
-| Platform | File | Notes |
-|---|---|---|
-| Windows | `Nidalee_1.0.0_x64_en-US.msi` | 64‑bit installer |
+> Tip: If an in-app update fails, open the [Releases page](https://github.com/codeXcn/Nidalee/releases/latest) and install manually.
+
+System Requirements:
+
+- Windows 10/11 (x64)
+- macOS 12+ (Intel / Apple Silicon)
+- Tip: Running as Administrator (Windows) can make installation/updates smoother
+
+Platform matrix:
+
+| Platform | CPU Architectures        | Package |
+|----------|---------------------------|---------|
+| Windows  | x64                       | .msi    |
+| macOS    | Intel, Apple Silicon (M*) | .dmg    |
 
 ### Installation (Windows)
 
 1. Download the `.msi`
 2. Double‑click to install
-3. Launch the app; it will auto‑check for updates (the sidebar shows prompts and progress)
+3. Launch the app; it silently checks for updates on startup (progress shown in the sidebar)
 
-> Important: It’s recommended to run as Administrator (right‑click → Run as administrator) to ensure permissions for updates, logging, and network ports.
-> Supported systems: Windows 10/11 (x64). Other platforms may be added later.
+### Installation (macOS)
+
+1. Download the `.dmg` and open it
+2. Drag the app into the Applications folder
+3. On first launch, if blocked by Gatekeeper, right‑click the app in Applications → Open (or allow from System Settings → Privacy & Security)
 
 ## 🚀 Development
 
@@ -110,39 +147,43 @@ Nidalee/
 - [x] Settings UI
 - [ ] i18n
 
-## � Usage
+## 📖 Documentation
 
-See docs in the `docs/` folder. Chinese user guide: [docs/user-guide-zh.md](docs/user-guide-zh.md)
+For comprehensive documentation, see the [docs/](docs/) folder or visit the [Documentation Center](docs/README.md).
+
+### Quick Links
+
+- User Guides
+  - [Troubleshooting Guide](docs/troubleshooting.md)
+  - [User Guide (English)](docs/user-guide.md)
+  - [用户指南（中文）](docs/user-guide-zh.md)
+- Developer Docs
+  - [Contributing Guide](docs/contributing.md)
+  - [Release Guide](docs/release.md)
+  - [Changelog](docs/changelog.md)
+- Maintainers
+  - [Tauri Signing & Security](docs/tauri-signing.md)
 
 ## 🤝 Contributing
 
-PRs and Issues are welcome!
+We welcome contributions! Please read our [Contributing Guide](docs/contributing.md) for detailed information on:
 
-### How to Contribute
+- Development workflow
+- Code standards
+- Commit conventions (Conventional Commits)
+- Branch naming rules
+- Pull request process
+
+### Quick Start for Contributors
 
 1. Fork and clone: `git clone https://github.com/<yourname>/Nidalee.git`
-2. Create a feature branch (see naming below)
+2. Create a feature branch: `git checkout -b feature/your-feature`
 3. Install & run: `pnpm install && pnpm tauri dev`
-4. Before commit, run:
-   - Lint & types: `pnpm lint && pnpm type-check`
-   - Optional build: `pnpm tauri build`
-5. Open a PR with clear description, screenshots/GIFs for UI, and related issues
+4. Make changes and test
+5. Run checks: `pnpm lint && pnpm type-check`
+6. Submit a PR with clear description
 
-### Branch Naming
-
-- `feature/<scope>-<desc>`  e.g. `feature/updater-ui`
-- `fix/<scope>-<desc>`      e.g. `fix/lcu-auth-retry`
-- `docs/<desc>`             e.g. `docs/update-readme`
-- `refactor/<scope>-<desc>` e.g. `refactor/store-modules`
-- `perf/<scope>-<desc>`     e.g. `perf/table-render`
-- `test/<scope>-<desc>`     e.g. `test/utils-date`
-- `chore/<desc>`            e.g. `chore/ci-cache`
-
-Conventional Commits are encouraged: `type(scope): subject` (≤ 50 chars).
-
-### Release
-
-See [RELEASE.md](RELEASE.md). Tag‑driven CI builds installers and `latest.json`.
+For release process, see the [Release Guide](docs/release.md).
 
 ## 🌐 Network & Download
 
@@ -154,6 +195,7 @@ See [RELEASE.md](RELEASE.md). Tag‑driven CI builds installers and `latest.json
 
 - Update fails / stuck: use “Go to manual download” and install from Releases.
 - Windows SmartScreen: click “More info” → “Run anyway”, or unblock in file Properties.
+- macOS Gatekeeper: allow the app in System Settings → Privacy & Security, or right‑click → Open in Finder to bypass the first‑run block.
 - Cannot connect to LCU: ensure the League client is running; restart if needed; try running as Administrator; check logs.
 - Permissions / write errors: run as Administrator; if still failing, re‑install from Releases; ensure the install path is writable.
 
