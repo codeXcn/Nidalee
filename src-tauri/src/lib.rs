@@ -19,6 +19,9 @@ pub fn run() {
             // 游戏流程 / 英雄选择 / 匹配
             lcu::gameflow::commands::get_game_version,
             lcu::gameflow::commands::get_live_player_list,
+            lcu::gameflow::commands::get_live_events,
+            lcu::gameflow::commands::get_game_stats,
+            lcu::gameflow::commands::is_liveclient_available,
             lcu::champ_select::commands::get_champselect_team_players_info,
             lcu::champ_select::commands::get_champ_select_session,
             lcu::champ_select::commands::get_champ_select_session_typed,

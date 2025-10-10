@@ -1,488 +1,675 @@
 <template>
   <div class="min-h-screen">
-    <div v-if="session && shouldShowMatchAnalysis" class="w-full max-w-full mx-auto">
-      <!-- 左右分屏布局 -->
-      <div class="flex gap-3 h-screen max-h-screen overflow-hidden">
-        <!-- 左侧：我方队伍 -->
-        <div class="flex-1 flex flex-col min-w-0">
-          <div class="flex items-center justify-between mb-0">
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-              <h2 class="text-lg font-bold text-blue-600 dark:text-blue-400">我方队伍</h2>
-            </div>
-            <div class="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 text-xs"
-              >
-                {{ session.myTeam?.length || 0 }} 人
-              </Badge>
-              <!-- 类型过滤按钮 -->
-              <Button variant="outline" size="sm" @click="showFilterDialog = true" class="text-xs text-foreground">
-                <Filter class="h-3 w-3 mr-1" />
-                过滤
-              </Button>
-            </div>
-          </div>
+    <!-- 匹配中时显示匹配面板 -->
+    <div v-if="currentPhase === 'Matchmaking'" class="w-full max-w-4xl mx-auto p-6">
+      <MatchmakingPanel />
+    </div>
 
+    <!-- 对局分析页面 -->
+    <div v-else-if="shouldShowMatchAnalysis" class="w-full max-w-full mx-auto">
+      <TeamDataManager
+        :session="session"
+        :current-phase="currentPhase"
+        :summoner-stats="summonerStats"
+        :their-team-stats="theirTeamStats"
+        :has-live-client-data="hasLiveClientData"
+        :cached-champ-select-data="cachedChampSelectData"
+        @toggle-filter="showFilterDialog = true"
+        @open-summoner-details="handleSummonerDetails"
+      />
+    </div>
+
+    <!-- 默认状态显示 -->
+    <div v-else class="flex items-center justify-center h-screen bg-background">
+      <div class="text-center space-y-6 max-w-md mx-auto px-6">
+        <!-- 状态图标 -->
+        <div class="relative">
+          <div class="w-20 h-20 mx-auto rounded-full flex items-center justify-center" :class="statusIconClass">
+            <div
+              class="w-3 h-3 rounded-full"
+              :class="statusIndicatorClass"
+              :style="{ animation: statusAnimation }"
+            ></div>
+          </div>
+          <!-- 状态图标背景动画 -->
           <div
-            class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
-          >
-            <TeamCard
-              v-if="session.myTeam"
-              :team="session.myTeam"
-              team-type="ally"
-              :local-player-cell-id="session.localPlayerCellId"
-              :summoner-stats="summonerStats || []"
-              @select="openSummonerDetails"
+            v-if="currentPhase === 'InProgress'"
+            class="absolute inset-0 w-20 h-20 mx-auto rounded-full border-2 border-primary/20 animate-ping"
+          ></div>
+        </div>
+
+        <!-- 状态标题和描述 -->
+        <div class="space-y-3">
+          <h2 class="text-2xl font-bold" :class="statusTitleClass">{{ getStatusTitle }}</h2>
+          <p class="text-muted-foreground leading-relaxed">{{ getStatusDescription }}</p>
+        </div>
+
+        <!-- 状态徽章 -->
+        <div v-if="currentPhase" class="flex items-center justify-center">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border" :class="statusBadgeClass">
+            <div
+              class="w-2 h-2 rounded-full"
+              :class="statusIndicatorClass"
+              :style="{ animation: statusAnimation }"
+            ></div>
+            <span class="text-sm font-medium">{{ getStatusBadgeText }}</span>
+          </div>
+        </div>
+
+        <!-- 额外提示信息 -->
+        <div v-if="getAdditionalInfo" class="mt-4 p-4 rounded-lg border bg-card/50">
+          <p class="text-sm text-muted-foreground">{{ getAdditionalInfo }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 过滤对话框 -->
+    <!-- <MatchFilterDialog v-model:open="showFilterDialog" /> -->
+
+    <!-- 召唤师详情抽屉 -->
+    <SummonerDetailsDialog
+      v-if="selectedSummoner"
+      v-model:open="showSummonerDetails"
+      :summoner="selectedSummoner"
+      :match-history="selectedMatchHistory"
+      @close="closeSummonerDetails"
+    />
+
+    <!-- 加载状态 -->
+    <div v-if="isLoading" class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="flex flex-col items-center gap-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p class="text-sm text-muted-foreground">{{ loadingMessage }}</p>
+      </div>
+    </div>
+
+    <!-- 错误状态 -->
+    <div v-if="hasErrors" class="fixed bottom-4 right-4 z-50">
+      <div class="bg-destructive text-destructive-foreground rounded-lg p-4 max-w-sm">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd"
             />
-          </div>
+          </svg>
+          <span class="font-medium">发生错误</span>
         </div>
-
-        <!-- 分割线 -->
-        <div class="w-px bg-border/50"></div>
-
-        <!-- 右侧：敌方队伍 -->
-        <div class="flex-1 flex flex-col min-w-0">
-          <div class="flex items-center justify-between mb-0">
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-              <h2 class="text-lg font-bold text-red-600 dark:text-red-400">敌方队伍</h2>
-              <!-- 添加提示信息 -->
-              <div v-if="currentPhase === 'ChampSelect'" class="text-center text-muted-foreground mb-0">
-                <div class="flex items-center justify-center gap-2 text-xs bg-muted/50 rounded-lg p-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                  敌方队伍信息将在进入游戏后实时更新
-                </div>
-              </div>
-            </div>
-
-            <Badge variant="outline" class="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 text-xs">
-              {{ session.theirTeam?.length || 0 }} 人
-            </Badge>
-          </div>
-
-          <div
-            class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
-          >
-            <template v-if="session.theirTeam && session.theirTeam.length">
-              <TeamCard
-                :team="session.theirTeam"
-                team-type="enemy"
-                :summoner-stats="theirTeamStats || []"
-                @select="openSummonerDetails"
-              />
-            </template>
-            <template v-else>
-              <div class="text-center text-muted-foreground mt-8">
-                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                <p class="text-sm">敌方队伍将在进入游戏后显示</p>
-              </div>
-            </template>
-          </div>
-        </div>
+        <p class="text-sm mt-1">{{ recentErrors[0]?.message }}</p>
+        <button @click="clearErrors" class="text-xs underline mt-2">清除错误</button>
       </div>
     </div>
-
-    <!-- 无数据状态 -->
-    <div v-else class="flex items-center justify-center h-64">
-      <div class="text-center">
-        <Info class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 class="text-lg font-semibold mb-2 text-foreground">
-          {{ getStatusTitle() }}
-        </h3>
-        <p class="text-muted-foreground px-4">
-          {{ getStatusDescription() }}
-        </p>
-      </div>
-    </div>
-    <!-- 召唤师详情 -->
-    <Sheet v-model:open="isDetailsOpen">
-      <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
-        <div
-          class="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-6"
-        >
-          <SheetHeader>
-            <div class="flex items-center justify-between">
-              <SheetTitle class="flex items-center gap-4 text-left">
-                <div v-if="currentRestult" class="flex items-center gap-4">
-                  <!-- 使用查询到的召唤师信息 -->
-                  <div
-                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
-                  >
-                    <span class="text-lg font-bold text-primary">{{
-                      currentRestult.displayName?.charAt(0)?.toUpperCase() || '?'
-                    }}</span>
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-foreground">{{ currentRestult.displayName || '未知召唤师' }}</h3>
-                    <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
-                  </div>
-                </div>
-                <div v-else-if="selectedPlayer" class="flex items-center gap-4">
-                  <!-- 查询中或失败时显示原始玩家信息 -->
-                  <div
-                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
-                  >
-                    <span class="text-lg font-bold text-primary">{{
-                      selectedPlayer.displayName?.charAt(0)?.toUpperCase() || '?'
-                    }}</span>
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-foreground">{{ selectedPlayer.displayName || '未知召唤师' }}</h3>
-                    <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
-                  </div>
-                </div>
-              </SheetTitle>
-
-              <SheetClose
-                class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary text-muted-foreground hover:text-foreground"
-              >
-                <X class="h-4 w-4" />
-                <span class="sr-only">关闭</span>
-              </SheetClose>
-            </div>
-          </SheetHeader>
-        </div>
-
-        <div class="p-6 pt-4 space-y-6">
-          <!-- 加载状态 -->
-          <div v-if="searchLoading" class="flex items-center justify-center py-8">
-            <div class="flex items-center gap-3">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span class="text-muted-foreground">正在查询召唤师战绩...</span>
-            </div>
-          </div>
-
-          <!-- 战绩数据 -->
-          <div v-else-if="currentRestult" class="space-y-6">
-            <!-- 召唤师信息卡片 -->
-            <SummonerCard :summoner-info="currentRestult.summonerInfo" />
-
-            <!-- 游戏统计 -->
-            <GameStats :is-connected="true" :match-history-loading="false" :match-statistics="currentRestult.matches" />
-          </div>
-
-          <!-- 无数据状态 -->
-          <div v-else class="flex items-center justify-center py-8">
-            <div class="text-center">
-              <Info class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 class="text-lg font-semibold mb-2 text-foreground">暂无战绩数据</h3>
-              <p class="text-muted-foreground">未能获取到该召唤师的战绩信息</p>
-            </div>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-
-    <!-- 类型过滤对话框 -->
-    <Dialog v-model:open="showFilterDialog">
-      <DialogContent class="!max-w-[90vw] w-[60vw] max-h-[85vh]">
-        <DialogHeader>
-          <DialogTitle>游戏类型过滤</DialogTitle>
-          <DialogDescription class="text-slate-600 dark:text-slate-300">
-            选择要显示的游戏类型，过滤后的战绩将只显示选中类型的对局
-          </DialogDescription>
-        </DialogHeader>
-
-        <GameTypeSelector v-model:selected-types="selectedFilterTypes" />
-
-        <DialogFooter class="flex gap-2 text-foreground">
-          <Button variant="outline" @click="showFilterDialog = false"> 取消 </Button>
-          <Button variant="outline" @click="clearAllFilters"> 清空过滤 </Button>
-          <Button @click="applyFilters"> 应用过滤 </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useChampSelectSession } from '@/composables'
-import { useSearchMatches } from '@/composables/game/useSearchMatches'
-import { usePlayerListQuery } from '@/composables/useLolApiQuery'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/features/gameStore'
-import { appContextKey, type AppContext } from '@/types'
-import { Info, X, Filter } from 'lucide-vue-next'
-import { useGameAssets } from '@/composables/game/useGameAssets'
 import { useDataStore } from '@/stores/core/dataStore'
-import { invoke } from '@tauri-apps/api/core'
-import GameTypeSelector from '@/components/ui/GameTypeSelector.vue'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { useSettingsStore } from '@/stores/ui/settingsStore'
-import { storeToRefs } from 'pinia'
+import { fetchChampionSummary } from '@/lib/dataApi'
+import { useLiveClientManager } from '@/composables/game/useLiveClientManager'
+import { useMatchHistoryFetcher } from '@/composables/game/useMatchHistoryFetcher'
+import { useErrorHandler } from '@/composables/utils/useErrorHandler'
+import { useGameEvents } from '@/composables/utils/useEventBus'
+import { usePerformanceMonitor } from '@/composables/utils/usePerformanceMonitor'
+import TeamDataManager from '@/components/features/game/TeamDataManager.vue'
+import MatchmakingPanel from '@/components/features/game/MatchmakingPanel.vue'
+// import MatchFilterDialog from '@/components/features/match/MatchFilterDialog.vue'
+import SummonerDetailsDialog from '@/components/features/match/SummonerDetailsDialog.vue'
+// import type { EnrichedChampSelectPlayer, EnrichedLivePlayer } from '@/types/handle.d'
 
-const { isConnected } = inject(appContextKey) as AppContext
-const { enrichedSession } = useChampSelectSession()
-
-const shouldShowMatchAnalysis = ref(false)
-// 使用搜索召唤师战绩的钩子
-const {
-  summonerStats,
-  fetchSummonerInfo,
-  currentRestult,
-  loading: searchLoading,
-  getRencentMatchesByPuuid,
-  selectedQueueTypes,
-  setFilterTypes,
-  clearFilter
-} = useSearchMatches()
-
-// 过滤相关状态
-const showFilterDialog = ref(false)
-const selectedFilterTypes = ref<number[]>([])
-
-// 系统默认过滤：用于初始化当前视图的局部筛选
-const settingsStore = useSettingsStore()
-const { defaultQueueTypes, applyDefaultFilterOnSearch, defaultMatchCount } = storeToRefs(settingsStore)
-
-// 使用游戏状态 store 来监听状态变化
+// Store 和状态管理
 const gameStore = useGameStore()
-const { currentPhase } = storeToRefs(gameStore)
-const enabled = computed(() => currentPhase.value === 'InProgress')
-const { data: playerList, refetch } = usePlayerListQuery(enabled)
-const theirTeamStats = ref<MatchStatistics[] | null>(null)
-const { getChampionIconUrl } = useGameAssets()
 const dataStore = useDataStore()
 
-const session = computed<ChampSelectSession>(() => {
-  if (Array.isArray(players.value) && players.value.length > 0) {
-    const theirTeam = players.value
-    const data = { ...enrichedSession.value, theirTeam }
-    console.log('session', data)
+// Composables
+const liveClientManager = useLiveClientManager()
+const matchHistoryFetcher = useMatchHistoryFetcher()
+const errorHandler = useErrorHandler()
+const { emitGamePhaseChanged } = useGameEvents()
+const { measureAsync } = usePerformanceMonitor()
+
+// 响应式状态
+const showFilterDialog = ref(false)
+const showSummonerDetails = ref(false)
+const selectedSummoner = ref<any>(null)
+const selectedMatchHistory = ref<any>(null)
+
+// 缓存状态（内存级，用于阶段切换空窗期）
+const cachedChampSelectData = ref<{
+  myTeam: any[]
+  theirTeam: any[]
+  session: any
+} | null>(null)
+
+// 计算属性
+const currentPhase = computed(() => gameStore.currentPhase)
+const enrichedSession = computed(() => gameStore.champSelectSession)
+const isConnected = computed(() => true) // TODO: 需要从 gameStore 获取真实的连接状态
+
+// 会话数据 - 智能合并逻辑
+const session = computed(() => {
+  // 如果有 LiveClient 数据，优先使用
+  if (Array.isArray(liveClientManager.players.value) && liveClientManager.players.value.length > 0) {
+    const theirTeam = liveClientManager.players.value
+    // 在游戏阶段，需要从 LiveClient 数据中获取我方队伍信息
+    const myTeam =
+      liveClientManager.myTeamPlayers.value.length > 0
+        ? liveClientManager.myTeamPlayers.value
+        : enrichedSession.value?.myTeam || []
+    const base = enrichedSession.value ? enrichedSession.value : {}
+    const data = {
+      ...base,
+      myTeam,
+      theirTeam
+    }
+    console.log('session (LiveClient data)', data)
     return data
-  } else {
-    return enrichedSession.value || null
   }
+
+  // 如果有选人阶段数据，使用它
+  if (enrichedSession.value) {
+    // 为选人阶段数据添加 displayName 字段
+    const enrichedData = {
+      ...enrichedSession.value,
+      myTeam:
+        enrichedSession.value.myTeam?.map((p: any) => ({
+          ...p,
+          displayName: p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : p.summonerId || '未知召唤师'
+        })) || [],
+      theirTeam:
+        enrichedSession.value.theirTeam?.map((p: any) => ({
+          ...p,
+          displayName: p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : p.summonerId || '未知召唤师'
+        })) || []
+    }
+    console.log('session (ChampSelect data)', enrichedData)
+    return enrichedData
+  }
+
+  // 在游戏阶段切换时，如果 enrichedSession 被清空，使用缓存的数据
+  if (currentPhase.value === 'InProgress' && cachedChampSelectData.value) {
+    console.log('session (cached data)', cachedChampSelectData.value)
+    return cachedChampSelectData.value.session
+  }
+
+  return null
 })
 
-const players = ref<EnrichedLivePlayer[]>([])
-
-// 使用 watch 监听 playerList 变化
-watch(
-  () => playerList.value,
-  async (newPlayerList) => {
-    if (!Array.isArray(newPlayerList)) {
-      players.value = []
-      return
-    }
-
-    console.log('players', newPlayerList)
-
-    // 修复：正确识别队伍，而不是简单假设 CHAOS 是敌方
-    // 需要根据本地玩家信息来确定哪个队伍是敌方
-    let enemyTeam: LiveClientPlayer[] = []
-
-    if (enrichedSession.value?.localPlayerCellId !== undefined) {
-      // 如果有选人阶段的会话信息，使用它来确定队伍
-      const localPlayer = enrichedSession.value.myTeam?.find(
-        (p: EnrichedChampSelectPlayer) => p.cellId === enrichedSession.value.localPlayerCellId
-      )
-      if (localPlayer) {
-        // 根据本地玩家的队伍信息来确定敌方队伍
-        // 这里需要根据实际情况调整逻辑
-        const localPlayerName = localPlayer.displayName || localPlayer.summonerId
-
-        // 在实时玩家列表中查找本地玩家，确定其队伍
-        const localPlayerInGame = newPlayerList.find((p: LiveClientPlayer) => p.summonerName === localPlayerName)
-        if (localPlayerInGame) {
-          const localTeam = localPlayerInGame.team
-          // 敌方队伍就是与本地玩家不同的队伍
-          enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team !== localTeam)
-          console.log(`本地玩家 ${localPlayerName} 在队伍 ${localTeam}，敌方队伍:`, enemyTeam)
-        } else {
-          // 如果找不到本地玩家，回退到原来的逻辑
-          console.warn('无法找到本地玩家，使用回退逻辑')
-          enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
-        }
-      } else {
-        // 回退逻辑
-        enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
-      }
-    } else {
-      // 没有选人阶段信息时的回退逻辑
-      enemyTeam = newPlayerList.filter((p: LiveClientPlayer) => p.team === 'CHAOS')
-    }
-
-    const names = enemyTeam.map((p: LiveClientPlayer) => p.summonerName)
-
-    try {
-      const matches = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', {
-        names,
-        count: defaultMatchCount.value
-      })
-      theirTeamStats.value = matches.map((m) => m.matches)
-      console.log('matches', theirTeamStats.value, summonerStats.value)
-    } catch (error) {
-      console.error('获取敌方队伍战绩失败:', error)
-      theirTeamStats.value = []
-    }
-
-    // 只取敌方队伍
-    players.value = enemyTeam.map((p: LiveClientPlayer): EnrichedLivePlayer => {
-      // 从 championName 映射到 championId
-      const champion = Object.values(dataStore.champions).find((c) => c.name === p.championName)
-      const championId = champion ? parseInt(champion.key, 10) : 0
-      // 在这里进行字段的适配和转换
-      return {
-        displayName: p.summonerName,
-        championName: p.championName,
-        team: p.team,
-        isBot: p.isBot,
-        isLocal: false, // 敌方队伍
-        championIcon: getChampionIconUrl(championId)
-      }
-    })
-  }
-)
-// 召唤师详情相关 - 必须在 watchEffect 之前声明
-const isDetailsOpen = ref(false)
-// 注意：selectedPlayer 的类型现在可能需要更通用，因为它可能来自选人阶段或游戏中
-const selectedPlayer = ref<EnrichedChampSelectPlayer | EnrichedLivePlayer | null>(null)
-
-const openSummonerDetails = async (player: EnrichedChampSelectPlayer | EnrichedLivePlayer) => {
-  selectedPlayer.value = player
-  isDetailsOpen.value = true
-  if (player.displayName && player.displayName !== '未知玩家' && player.displayName !== '未知召唤师') {
-    await fetchSummonerInfo([player.displayName])
-  }
-}
-watchEffect(async () => {
+// 是否显示对局分析
+const shouldShowMatchAnalysis = computed(() => {
   const phase = currentPhase.value
-  console.log('Current game phase:', phase)
-  shouldShowMatchAnalysis.value =
-    (!!enrichedSession.value && phase === 'ChampSelect') || phase === 'GameStart' || phase === 'InProgress'
-  if (isConnected.value && !summonerStats.value && enrichedSession.value) {
-    console.log('enrichedSession', enrichedSession.value)
-    if (!Array.isArray(enrichedSession.value.myTeam)) console.log('myTeam', enrichedSession.value.myTeam)
-    const ids = enrichedSession.value.myTeam?.map((p: EnrichedLivePlayer) => p.puuid).filter(Boolean) || []
-    console.log('获取战绩的puuid列表:', ids)
-    await getRencentMatchesByPuuid(ids, defaultMatchCount.value)
-    if (summonerStats.value) {
-      console.log('Fetched summoner stats:', summonerStats.value)
-    }
-  }
-  if (phase === 'InProgress' && isConnected.value) {
-    console.log('in progress, refetching player list')
-    await refetch()
+  const isInProgressWithData =
+    phase === 'InProgress' &&
+    (liveClientManager.myTeamPlayers.value.length > 0 || liveClientManager.players.value.length > 0)
+
+  return (
+    (!!enrichedSession.value && phase === 'ChampSelect') ||
+    phase === 'GameStart' ||
+    isInProgressWithData ||
+    (phase === 'InProgress' && !!cachedChampSelectData.value)
+  )
+})
+
+// LiveClient 数据状态
+const hasLiveClientData = computed(() => liveClientManager.hasData.value)
+
+// 战绩数据
+const summonerStats = computed(() => matchHistoryFetcher.summonerStats.value)
+const theirTeamStats = computed(() => matchHistoryFetcher.theirTeamStats.value)
+
+// 状态样式计算属性
+const statusIndicatorClass = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+      return 'bg-blue-500 dark:bg-blue-400'
+    case 'ReadyCheck':
+      return 'bg-orange-500 dark:bg-orange-400'
+    case 'ChampSelect':
+      return 'bg-blue-500 dark:bg-blue-400'
+    case 'GameStart':
+      return 'bg-purple-500 dark:bg-purple-400'
+    case 'InProgress':
+      return hasLiveClientData.value ? 'bg-green-500 dark:bg-green-400' : 'bg-yellow-500 dark:bg-yellow-400'
+    case 'WaitingForStats':
+      return 'bg-indigo-500 dark:bg-indigo-400'
+    case 'EndOfGame':
+      return 'bg-gray-500 dark:bg-gray-400'
+    default:
+      return 'bg-gray-500 dark:bg-gray-400'
   }
 })
 
-// 根据游戏阶段获取状态标题
-const getStatusTitle = () => {
-  switch (currentPhase.value) {
-    case 'None':
-      return '暂无游戏活动'
+const statusIconClass = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
     case 'Lobby':
-      return '房间等待中'
-    case 'Matchmaking':
-      return '正在匹配中'
+      return 'bg-blue-50 dark:bg-blue-950/50 border-2 border-blue-200 dark:border-blue-800'
     case 'ReadyCheck':
-      return '确认对局'
+      return 'bg-orange-50 dark:bg-orange-950/50 border-2 border-orange-200 dark:border-orange-800'
     case 'ChampSelect':
-      return '正在加载选人阶段数据，请稍候...'
+      return 'bg-blue-50 dark:bg-blue-950/50 border-2 border-blue-200 dark:border-blue-800'
     case 'GameStart':
-      return '游戏即将开始'
+      return 'bg-purple-50 dark:bg-purple-950/50 border-2 border-purple-200 dark:border-purple-800'
+    case 'InProgress':
+      return hasLiveClientData.value
+        ? 'bg-green-50 dark:bg-green-950/50 border-2 border-green-200 dark:border-green-800'
+        : 'bg-yellow-50 dark:bg-yellow-950/50 border-2 border-yellow-200 dark:border-yellow-800'
+    case 'WaitingForStats':
+      return 'bg-indigo-50 dark:bg-indigo-950/50 border-2 border-indigo-200 dark:border-indigo-800'
+    case 'EndOfGame':
+      return 'bg-gray-50 dark:bg-gray-950/50 border-2 border-gray-200 dark:border-gray-800'
+    default:
+      return 'bg-gray-50 dark:bg-gray-950/50 border-2 border-gray-200 dark:border-gray-800'
+  }
+})
+
+const statusTitleClass = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+      return 'text-blue-600 dark:text-blue-400'
+    case 'ReadyCheck':
+      return 'text-orange-600 dark:text-orange-400'
+    case 'ChampSelect':
+      return 'text-blue-600 dark:text-blue-400'
+    case 'GameStart':
+      return 'text-purple-600 dark:text-purple-400'
+    case 'InProgress':
+      return hasLiveClientData.value ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
+    case 'WaitingForStats':
+      return 'text-indigo-600 dark:text-indigo-400'
+    case 'EndOfGame':
+      return 'text-gray-600 dark:text-gray-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
+})
+
+const statusBadgeClass = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+      return 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+    case 'ReadyCheck':
+      return 'bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300'
+    case 'ChampSelect':
+      return 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+    case 'GameStart':
+      return 'bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300'
+    case 'InProgress':
+      return hasLiveClientData.value
+        ? 'bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+        : 'bg-yellow-50 dark:bg-yellow-950/50 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300'
+    case 'WaitingForStats':
+      return 'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
+    case 'EndOfGame':
+      return 'bg-gray-50 dark:bg-gray-950/50 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300'
+    default:
+      return 'bg-gray-50 dark:bg-gray-950/50 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300'
+  }
+})
+
+const statusAnimation = computed(() => {
+  const phase = currentPhase.value
+  if (phase === 'InProgress' && !hasLiveClientData.value) {
+    return 'pulse 2s infinite'
+  } else if (phase === 'ReadyCheck') {
+    return 'pulse 1.5s infinite'
+  }
+  return 'pulse 3s infinite'
+})
+
+// 状态标题和描述
+const getStatusTitle = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+    case 'None':
+      return '已进入大厅'
+    case 'ReadyCheck':
+      return '对局确认中'
+    case 'ChampSelect':
+      return '正在选择英雄'
+    case 'GameStart':
+      return '游戏加载中'
+    case 'InProgress':
+      if (hasLiveClientData.value) {
+        return '游戏进行中（实时分析已连接）'
+      } else if (cachedChampSelectData.value) {
+        return '游戏进行中（正在获取实时数据）'
+      } else {
+        return '游戏进行中（正在连接）'
+      }
+    case 'WaitingForStats':
+      return '结算中（生成战报）'
+    case 'EndOfGame':
+      return '对局结束'
+    default:
+      return '等待客户端连接'
+  }
+})
+
+const getStatusDescription = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+    case 'None':
+      return '请选择游戏模式并开始匹配，进入选人后将自动显示队伍信息'
+    case 'ReadyCheck':
+      return '请在客户端中确认准备状态，以免错过对局'
+    case 'ChampSelect':
+      return '请在客户端中完成英雄与符文配置，本页将展示队伍与战绩信息'
+    case 'GameStart':
+      return '游戏正在加载，请稍候，进入游戏后将自动连接实时数据'
+    case 'InProgress':
+      if (!hasLiveClientData.value && cachedChampSelectData.value) {
+        return '已进入游戏，正在连接实时数据…'
+      } else if (!hasLiveClientData.value) {
+        return '正在检测与游戏客户端的连接，请确保游戏窗口已启动且未最小化'
+      } else {
+        return '已连接实时数据，正在更新对局分析'
+      }
+    case 'WaitingForStats':
+      return '游戏已结束，正在获取比赛统计数据'
+    case 'EndOfGame':
+      return '比赛结果已出，返回大厅后将恢复大厅视图'
+    default:
+      return '请启动并登录英雄联盟客户端；进入大厅后将自动切换到选人/对局分析'
+  }
+})
+
+const getStatusBadgeText = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
+    case 'Lobby':
+    case 'None':
+      return '房间中'
+    case 'ReadyCheck':
+      return '准备确认'
+    case 'ChampSelect':
+      return '英雄选择'
+    case 'GameStart':
+      return '游戏开始'
     case 'InProgress':
       return '游戏进行中'
     case 'WaitingForStats':
-      return '等待结算'
-    case 'PreEndOfGame':
+      return '等待统计'
     case 'EndOfGame':
       return '游戏结束'
-    case 'TerminatedInError':
-      return '游戏异常终止'
     default:
-      return '进入游戏以查看对局分析'
+      return '未连接'
   }
-}
+})
 
-// 获取状态描述
-const getStatusDescription = () => {
-  switch (currentPhase.value) {
-    case 'None':
-      return '当前没有进行任何游戏活动。开始游戏以查看对局分析。'
+const getAdditionalInfo = computed(() => {
+  const phase = currentPhase.value
+  switch (phase) {
     case 'Lobby':
-      return '正在房间中等待，准备开始匹配对手。'
-    case 'Matchmaking':
-      return '正在寻找合适的对手，找到后将进入选人界面。'
+    case 'None':
+      return '💡 提示：选择你喜欢的游戏模式，然后点击“寻找对局”开始匹配'
     case 'ReadyCheck':
-      return '找到对局！请在客户端中确认准备状态。'
+      return '⚡ 请及时确认准备状态，避免错过游戏'
     case 'ChampSelect':
-      return '正在加载选人阶段数据，请稍候...'
+      return '🎯 建议：根据队伍阵容选择合适的英雄与符文配置'
     case 'GameStart':
-      return '选人阶段结束，游戏即将加载。'
+      return '⏳ 游戏正在加载，请耐心等待'
     case 'InProgress':
-      return '游戏正在进行中，祝你好运！'
+      if (!hasLiveClientData.value) {
+        return '🔗 正在连接游戏客户端，请确保游戏正在运行且未被防火墙拦截'
+      }
+      return null
     case 'WaitingForStats':
-      return '游戏已结束，正在等待战绩统计。'
-    case 'PreEndOfGame':
+      return '📊 正在获取详细的比赛统计数据，请稍候'
     case 'EndOfGame':
-      return '游戏已结束，可以查看战绩详情。'
-    case 'TerminatedInError':
-      return '游戏因错误而终止，请重新开始匹配。'
+      return '🏆 感谢你的游戏，期待下次对局'
     default:
-      return '开始游戏匹配以查看详细的对局分析数据。'
+      return '🎮 请确保英雄联盟客户端正在运行（若已运行但未连接，可稍等片刻或在右上角尝试刷新）'
+  }
+})
+
+// 加载状态
+const isLoading = computed(() => liveClientManager.isLoading.value || matchHistoryFetcher.isLoading.value)
+const loadingMessage = computed(() => {
+  if (liveClientManager.isLoading.value) return '正在获取游戏数据...'
+  if (matchHistoryFetcher.isLoading.value) return '正在获取战绩数据...'
+  return '加载中...'
+})
+
+// 错误状态
+const hasErrors = computed(() => errorHandler.hasErrors.value)
+const recentErrors = computed(() => errorHandler.getRecentErrors(1))
+
+// 加载英雄数据
+const loadChampions = async () => {
+  if (dataStore.champions.length > 0) {
+    console.log('[MatchAnalysis] 英雄数据已存在，跳过加载')
+    return
+  }
+
+  try {
+    await measureAsync('load-champions', async () => {
+      const response = await fetchChampionSummary()
+      if (response.data) {
+        dataStore.setChampions(response.data)
+        console.log('[MatchAnalysis] 英雄数据加载完成:', response.data.length)
+      }
+    })
+  } catch (error) {
+    errorHandler.handleError(error instanceof Error ? error : String(error), '加载英雄数据')
   }
 }
 
-// 过滤相关方法
-const applyFilters = () => {
-  setFilterTypes(selectedFilterTypes.value)
-  showFilterDialog.value = false
+// 获取本地玩家名称（优先当前会话，回退缓存的选人阶段数据）
+const getLocalPlayerName = (): string | undefined => {
+  // 当前会话
+  if (enrichedSession.value?.localPlayerCellId !== undefined) {
+    const localPlayer = enrichedSession.value.myTeam?.find(
+      (p: any) => p.cellId === enrichedSession.value.localPlayerCellId
+    )
+    return localPlayer?.displayName || localPlayer?.summonerId
+  }
+  // 回退缓存（进入 InProgress 后 enrichedSession 可能为空）
+  if (cachedChampSelectData.value?.session?.localPlayerCellId !== undefined) {
+    const session = cachedChampSelectData.value.session
+    const localPlayer = session.myTeam?.find((p: any) => p.cellId === session.localPlayerCellId)
+    return (
+      localPlayer?.displayName ||
+      (localPlayer?.gameName && localPlayer?.tagLine ? `${localPlayer.gameName}#${localPlayer.tagLine}` : undefined)
+    )
+  }
+  return undefined
 }
 
-const clearAllFilters = () => {
-  selectedFilterTypes.value = []
-  clearFilter()
-  showFilterDialog.value = false
+// 处理召唤师详情
+const handleSummonerDetails = (summoner: any, matchHistory: any) => {
+  selectedSummoner.value = summoner
+  selectedMatchHistory.value = matchHistory
+  showSummonerDetails.value = true
 }
 
-// 监听当前过滤状态，同步到对话框
-watch(
-  selectedQueueTypes,
-  (newTypes) => {
-    selectedFilterTypes.value = [...newTypes]
-  },
-  { immediate: true }
-)
+// 关闭召唤师详情
+const closeSummonerDetails = () => {
+  showSummonerDetails.value = false
+  selectedSummoner.value = null
+  selectedMatchHistory.value = null
+}
 
-// 当数据准备好且当前未选择过滤时，按系统默认初始化
-watch(
-  () => [summonerStats.value, applyDefaultFilterOnSearch.value, defaultQueueTypes.value],
-  () => {
-    if (
-      applyDefaultFilterOnSearch.value &&
-      selectedFilterTypes.value.length === 0 &&
-      Array.isArray(defaultQueueTypes.value) &&
-      defaultQueueTypes.value.length > 0
-    ) {
-      selectedFilterTypes.value = [...defaultQueueTypes.value]
-      setFilterTypes(selectedFilterTypes.value)
+// 清除错误
+const clearErrors = () => {
+  errorHandler.clearErrors()
+}
+
+// 监听游戏阶段变化
+watchEffect(async () => {
+  const phase = currentPhase.value
+  console.log('Current game phase:', phase)
+
+  // 发布游戏阶段变化事件
+  emitGamePhaseChanged(phase)
+
+  // 缓存选人阶段的数据，避免阶段切换时的空窗期
+  if (phase === 'ChampSelect' && enrichedSession.value) {
+    // 为缓存数据也添加 displayName 字段
+    const enrichedData = {
+      ...enrichedSession.value,
+      myTeam:
+        enrichedSession.value.myTeam?.map((p: any) => ({
+          ...p,
+          displayName: p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : p.summonerId || '未知召唤师'
+        })) || [],
+      theirTeam:
+        enrichedSession.value.theirTeam?.map((p: any) => ({
+          ...p,
+          displayName: p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : p.summonerId || '未知召唤师'
+        })) || []
     }
-  },
-  { immediate: true }
+
+    cachedChampSelectData.value = {
+      myTeam: enrichedData.myTeam,
+      theirTeam: enrichedData.theirTeam,
+      session: enrichedData
+    }
+    console.log('[Cache] 缓存选人阶段数据:', cachedChampSelectData.value)
+  }
+
+  // 在游戏进行中时启动 LiveClient 事件监听
+  if (phase === 'InProgress') {
+    console.log('[LiveClient] 游戏进入进行中阶段，启动事件监听')
+    liveClientManager.resetState()
+    const localPlayerName = getLocalPlayerName()
+    // 刷新后首帧立即强制拉取一次，快速填充双方信息
+    await liveClientManager.getLivePlayers(localPlayerName)
+    await liveClientManager.startLiveClientAvailabilityCheck(localPlayerName)
+  } else {
+    // 不在游戏进行中时停止监听并重置状态
+    liveClientManager.resetState()
+
+    // 如果离开游戏阶段，清除缓存
+    if (phase !== 'ChampSelect' && phase !== 'GameStart') {
+      cachedChampSelectData.value = null
+      console.log('[Cache] 清除选人阶段缓存')
+    }
+  }
+
+  // 选人阶段获取战绩数据：注意不要用 `!summonerStats.value` 做判断（空数组也为 truthy）
+  if (isConnected.value && enrichedSession.value && phase === 'ChampSelect') {
+    console.log('enrichedSession', enrichedSession.value)
+    if (!Array.isArray(enrichedSession.value.myTeam)) console.log('myTeam', enrichedSession.value.myTeam)
+
+    try {
+      await errorHandler.withRetry(
+        async () => {
+          // 获取我方队伍战绩
+          const myTeamPlayers =
+            enrichedSession.value.myTeam?.map((p: any, index: number) => {
+              const qName = p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : ''
+              const isUnqueryable = p.nameVisibilityType === 'HIDDEN' || !qName
+              return {
+                summonerName: qName,
+                isBot: isUnqueryable,
+                index
+              }
+            }) || []
+
+          // 获取敌方队伍战绩
+          const theirTeamPlayers =
+            enrichedSession.value.theirTeam?.map((p: any, index: number) => {
+              const qName = p.gameName && p.tagLine ? `${p.gameName}#${p.tagLine}` : ''
+              const isUnqueryable = p.nameVisibilityType === 'HIDDEN' || !qName
+              return {
+                summonerName: qName,
+                isBot: isUnqueryable,
+                index
+              }
+            }) || []
+
+          await matchHistoryFetcher.fetchTeamMatchHistory(myTeamPlayers, theirTeamPlayers)
+        },
+        { maxRetries: 2 },
+        '获取战绩'
+      )
+    } catch (error) {
+      errorHandler.handleError(error instanceof Error ? error : String(error), '获取战绩')
+    }
+  }
+})
+
+// 监听 LiveClient 数据变化，获取战绩
+watch(
+  () => liveClientManager.hasData.value,
+  async (hasData) => {
+    if (hasData && currentPhase.value === 'InProgress') {
+      console.log('[MatchAnalysis] LiveClient 数据可用，开始获取战绩')
+
+      try {
+        await errorHandler.withRetry(
+          async () => {
+            const resolveQueryName = (name: string | undefined, team: 'my' | 'enemy'): string => {
+              if (!name) return ''
+              if (name.includes('#')) return name
+              // 从缓存的选人阶段数据推断（仅限我方，敌方通常不可见）
+              if (team === 'my' && cachedChampSelectData.value?.myTeam?.length) {
+                const found = cachedChampSelectData.value.myTeam.find((pm: any) => {
+                  const gn = pm?.gameName
+                  return typeof gn === 'string' && gn.length > 0 && gn === name
+                })
+                if (found && found.gameName && found.tagLine) {
+                  return `${found.gameName}#${found.tagLine}`
+                }
+              }
+              // 回退：直接使用原始名称尝试查询（服务器可能可解析）
+              return name
+            }
+
+            const myTeamInputs = liveClientManager.myTeamPlayers.value.map((p: any, index: number) => {
+              const qName = resolveQueryName(p.displayName, 'my')
+              return {
+                summonerName: qName,
+                isBot: p.isBot,
+                index
+              }
+            })
+
+            const enemyTeamInputs = liveClientManager.players.value.map((p: any, index: number) => {
+              const qName = resolveQueryName(p.displayName, 'enemy')
+              return {
+                summonerName: qName,
+                isBot: p.isBot,
+                index
+              }
+            })
+
+            await matchHistoryFetcher.fetchTeamMatchHistory(myTeamInputs, enemyTeamInputs)
+          },
+          { maxRetries: 2 },
+          '获取战绩'
+        )
+      } catch (error) {
+        errorHandler.handleError(error instanceof Error ? error : String(error), '获取战绩')
+      }
+    }
+  }
 )
+
+// 组件挂载
+onMounted(async () => {
+  console.log('[MatchAnalysis] 组件挂载，开始初始化')
+
+  try {
+    await loadChampions()
+    console.log('[MatchAnalysis] 初始化完成')
+  } catch (error) {
+    errorHandler.handleError(error instanceof Error ? error : String(error), '组件初始化')
+  }
+})
+
+// 组件卸载
+onUnmounted(() => {
+  console.log('[MatchAnalysis] 组件卸载，清理资源')
+  liveClientManager.resetState()
+  matchHistoryFetcher.clearCache()
+})
 </script>

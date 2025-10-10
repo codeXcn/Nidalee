@@ -146,8 +146,8 @@ pub async fn get_game_detail_logic(client: &Client, game_id: u64) -> Result<Game
     let mut best_player_champion_id = 0;
     let mut max_tank = 0;
     let mut max_tank_champion_id = 0;
-    let mut max_streak = 0;
-    let mut max_streak_champion_id = 0;
+    let max_streak = 0;
+    let max_streak_champion_id = 0;
 
     let player_map: HashMap<i32, ApiPlayer> = api_game_data
         .participant_identities
@@ -267,7 +267,8 @@ pub async fn get_recent_matches_by_puuid(
         puuid, count
     );
     let match_list_data: Value = lcu_get(client, &url).await?;
-    log::info!("match_list_data (查询到的战绩): {:#}", match_list_data); // 第3步：直接分析对局列表数据
+    // log::info!("match_list_data (查询到的战绩): {:#}", match_list_data);
+    // 第3步：直接分析对局列表数据
     let statistics = analyze_match_list_data(match_list_data, puuid)?;
     Ok(statistics)
 }
@@ -299,8 +300,8 @@ fn analyze_match_list_data(
     // 分析所有获取到的游戏
     let games_to_analyze = games.iter();
 
-    for (index, game) in games_to_analyze.enumerate() {
-        println!("\n🎮 分析第 {} 场游戏", index + 1);
+    for (_index, game) in games_to_analyze.enumerate() {
+        // println!("\n🎮 分析第 {} 场游戏", index + 1);
         total_games += 1;
 
         // 查找当前玩家的参与者信息
@@ -346,9 +347,9 @@ fn analyze_match_list_data(
                         let assists =
                             stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
 
-                        println!("🏆 英雄: {}", champion_id);
-                        println!("🎯 结果: {}", if is_win { "胜利" } else { "失败" });
-                        println!("⚔️  KDA: {}/{}/{}", kills, deaths, assists);
+                        // println!("🏆 英雄: {}", champion_id);
+                        // println!("🎯 结果: {}", if is_win { "胜利" } else { "失败" });
+                        // println!("⚔️  KDA: {}/{}/{}", kills, deaths, assists);
 
                         if is_win {
                             wins += 1;

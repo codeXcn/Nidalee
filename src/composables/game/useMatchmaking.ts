@@ -1,8 +1,45 @@
 import { invoke } from '@tauri-apps/api/core'
+import { useRouter } from 'vue-router'
+import { listen } from '@tauri-apps/api/event'
 
 export function useMatchmaking() {
-  const matchmakingState = ref<MatchmakingState | null>(null)
+  const matchmakingState = ref<any>(null)
   const matchInfo = ref<MatchInfo | null>(null)
+  const router = useRouter()
+
+  // 监听 WebSocket 原始事件，从中提取匹配状态
+  onMounted(async () => {
+    try {
+      await listen('lcu-ws', (event) => {
+        try {
+          const data = JSON.parse(event.payload as string)
+          if (Array.isArray(data) && data.length >= 3) {
+            const [messageType, eventType, payload] = data
+            if (messageType === 8 && eventType === 'OnJsonApiEvent' && payload.uri === '/lol-matchmaking/v1/search') {
+              console.log('[Matchmaking] 收到匹配状态 WebSocket 事件:', payload.data)
+              matchmakingState.value = payload.data
+            }
+          }
+        } catch {
+          // 静默处理解析错误
+        }
+      })
+      console.log('[Matchmaking] WebSocket 匹配状态监听器已注册')
+    } catch (error) {
+      console.error('[Matchmaking] 注册 WebSocket 监听器失败:', error)
+    }
+  })
+
+  // 监听匹配状态变化，自动跳转到对局分析页面
+  watch(
+    () => matchmakingState.value?.searchState,
+    (newState) => {
+      if (newState === 'Searching' && router.currentRoute.value.name !== 'match-analysis') {
+        console.log('[Matchmaking] 匹配状态变化为 Searching，自动跳转到对局分析页面')
+        router.push({ name: 'match-analysis' })
+      }
+    }
+  )
   const handleMatchmaking = async () => {
     try {
       if (matchmakingState.value?.searchState === 'Searching') {

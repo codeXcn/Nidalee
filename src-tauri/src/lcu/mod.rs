@@ -3,6 +3,7 @@ pub mod champ_select;
 pub mod connection;
 pub mod ddragon;
 pub mod gameflow;
+pub mod liveclient;
 pub mod lobby;
 pub mod matches;
 pub mod matchmaking;
@@ -13,6 +14,7 @@ pub mod request;
 pub mod summoner;
 pub mod types;
 pub mod unified_polling;
+pub mod optimized_polling;
 pub mod ws;
 
 // Re-export 常用的类型和函数，便于外部使用

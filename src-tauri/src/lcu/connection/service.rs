@@ -3,7 +3,7 @@ use crate::lcu::auth::service::{
     ensure_valid_auth_info, invalidate_auth_info, validate_auth_connection,
 };
 use crate::lcu::types::{ConnectionState, LcuAuthInfo};
-use crate::lcu::unified_polling::UnifiedPollingManager;
+use crate::lcu::optimized_polling::OptimizedPollingManager;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -38,12 +38,12 @@ impl Default for ConnectionInfo {
 pub struct ConnectionManager {
     info: Arc<RwLock<ConnectionInfo>>,
     app: AppHandle,
-    polling_manager: UnifiedPollingManager,
+    polling_manager: OptimizedPollingManager,
 }
 
 impl ConnectionManager {
     pub fn new(app: AppHandle) -> Self {
-        let polling_manager = UnifiedPollingManager::new(app.clone());
+        let polling_manager = OptimizedPollingManager::new(app.clone());
         Self {
             info: Arc::new(RwLock::new(ConnectionInfo::default())),
             app,

@@ -19,6 +19,8 @@ export default defineConfigWithVueTs(
   eslintConfigPrettier,
   {
     rules: {
+      // 允许不同平台的换行符，避免 Windows CRLF 导致的报错
+      'linebreak-style': 'off',
       '@typescript-eslint/no-empty-object-type': 0,
       '@typescript-eslint/no-unused-expressions': 0,
       '@typescript-eslint/no-unused-vars': 1, //允许未使用的变量

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { appContextKey, type AppContext } from '@/types'
-import { usePlayerListQuery } from '@/composables/useLolApiQuery'
 
 // 使用 inject 获取 App.vue 提供的状态和方法
 const appContext = inject<AppContext>(appContextKey)!
 const { isConnected } = appContext
 
-usePlayerListQuery(true)
+// 移除未使用的全局轮询，因为 MatchAnalysisView 已经处理了 LiveClient 数据
 
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
 const currentTransition = ref(transitions[0])
@@ -32,7 +31,7 @@ const currentTransition = ref(transitions[0])
         v-else
         class="flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-slate-400/50 dark:scrollbar-thumb-slate-500/50 scrollbar-track-transparent overflow-y-auto scroll-smooth"
       >
-        <div class="flex flex-col gap-6 p-6 bg-background">
+        <div class="flex flex-col gap-6 p-5 bg-background">
           <router-view v-slot="{ Component }">
             <transition :name="currentTransition" mode="out-in">
               <component :is="Component" />

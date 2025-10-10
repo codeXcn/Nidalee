@@ -157,8 +157,9 @@ impl UnifiedPollingManager {
                 self.fetch_champ_select_session().await;
             }
             Some("InProgress") => {
-                // 游戏中，暂停其他轮询
-                log::debug!("[统一轮询] 游戏进行中，跳过大厅相关轮询");
+                // 游戏中，获取 LiveClient 数据
+                log::debug!("[统一轮询] 游戏进行中，获取 LiveClient 数据");
+                self.fetch_liveclient_data().await;
             }
             _ => {
                 // 其他状态，获取大厅和匹配数据
@@ -234,20 +235,24 @@ impl UnifiedPollingManager {
 
     async fn fetch_lobby_info(&self) {
         match retry(|| get_lobby_info(&self.client), 2, 500).await {
-            Ok(_) => {
+            Ok(lobby) => {
                 let mut state = self.state.write().await;
-                if !state.in_lobby {
-                    log::debug!("[统一轮询] 进入大厅");
-                    state.in_lobby = true;
-                    let _ = self.app.emit("lobby-change", true);
+                // 仅当 lobby 信息发生变化时发送
+                let changed = state.in_lobby == false; // 简易判断：先前不在大厅
+                state.in_lobby = true;
+                if changed {
+                    log::debug!("[统一轮询] 进入大厅并发送详细信息");
+                } else {
+                    log::debug!("[统一轮询] 大厅信息更新");
                 }
+                let _ = self.app.emit("lobby-change", &Some(lobby));
             }
             Err(_) => {
                 let mut state = self.state.write().await;
                 if state.in_lobby {
                     log::debug!("[统一轮询] 离开大厅");
                     state.in_lobby = false;
-                    let _ = self.app.emit("lobby-change", false);
+                    let _ = self.app.emit("lobby-change", &None::<crate::lcu::types::LobbyInfo>);
                 }
             }
         }
@@ -368,7 +373,9 @@ impl UnifiedPollingManager {
         // 发送清理事件
         let _ = self.app.emit("summoner-change", &None::<SummonerInfo>);
         let _ = self.app.emit("gameflow-phase-change", &None::<String>);
-        let _ = self.app.emit("lobby-change", false);
+        let _ = self
+            .app
+            .emit("lobby-change", &None::<crate::lcu::types::LobbyInfo>);
 
         log::info!("[统一轮询] 所有状态已清理并通知前端");
     }
@@ -378,7 +385,7 @@ impl UnifiedPollingManager {
 
         match state.gameflow_phase.as_deref() {
             Some("ChampSelect") => Duration::from_secs(2), // 选人阶段更频繁
-            Some("InProgress") => Duration::from_secs(10), // 游戏中减少轮询
+            Some("InProgress") => Duration::from_secs(3), // 游戏中更频繁轮询 LiveClient 数据
             Some("Found") => Duration::from_secs(1),       // 找到匹配时更频繁
             _ => Duration::from_secs(4),                   // 默认间隔
         }
@@ -404,4 +411,67 @@ where
         }
     }
     Err(last_err.unwrap())
+}
+
+impl UnifiedPollingManager {
+    /// 获取 LiveClient 数据
+    async fn fetch_liveclient_data(&self) {
+        log::debug!("[LiveClient] 开始获取 LiveClient 数据");
+
+        // 检查 LiveClient 是否可用
+        if !crate::lcu::liveclient::is_liveclient_available().await {
+            log::info!("[LiveClient] 服务不可用，请确保游戏已启动并进入对局");
+            return;
+        }
+
+        log::info!("[LiveClient] 服务可用，开始获取数据");
+
+        // 获取玩家列表
+        match crate::lcu::liveclient::get_live_player_list().await {
+            Ok(players) => {
+                log::info!("[LiveClient] 获取到 {} 个玩家", players.len());
+                log::debug!("[LiveClient] 玩家数据: {:?}", players);
+
+                // 发送玩家列表事件
+                if let Err(e) = self.app.emit("liveclient-player-list", &players) {
+                    log::error!("[LiveClient] 发送玩家列表事件失败: {}", e);
+                } else {
+                    log::info!("[LiveClient] 成功发送玩家列表事件到前端");
+                }
+            }
+            Err(e) => {
+                log::warn!("[LiveClient] 获取玩家列表失败: {}", e);
+            }
+        }
+
+        // 获取游戏事件
+        match crate::lcu::liveclient::get_live_events().await {
+            Ok(events) => {
+                log::debug!("[LiveClient] 获取到 {} 个事件", events.len());
+
+                // 发送游戏事件
+                if let Err(e) = self.app.emit("liveclient-events", &events) {
+                    log::error!("[LiveClient] 发送游戏事件失败: {}", e);
+                }
+            }
+            Err(e) => {
+                log::warn!("[LiveClient] 获取游戏事件失败: {}", e);
+            }
+        }
+
+        // 获取游戏统计
+        match crate::lcu::liveclient::get_game_stats().await {
+            Ok(stats) => {
+                log::debug!("[LiveClient] 获取到游戏统计");
+
+                // 发送游戏统计事件
+                if let Err(e) = self.app.emit("liveclient-game-stats", &stats) {
+                    log::error!("[LiveClient] 发送游戏统计事件失败: {}", e);
+                }
+            }
+            Err(e) => {
+                log::warn!("[LiveClient] 获取游戏统计失败: {}", e);
+            }
+        }
+    }
 }

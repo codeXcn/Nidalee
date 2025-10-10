@@ -26,17 +26,50 @@ const route = useRoute()
 
 // 临时添加：监听后端 LCU WS 原始事件，便于联调观察
 let unlistenLcuWs: (() => void) | null = null
+let unlistenConnectionState: (() => void) | null = null
+
 onMounted(async () => {
+  console.log('[LCU-WS] 开始监听 lcu-ws 事件...')
   try {
+    // 监听 LCU WebSocket 事件
     unlistenLcuWs = await listen<string>('lcu-ws', (e) => {
-      console.log('[LCU-WS]', e.payload)
+      try {
+        const data = JSON.parse(e.payload)
+        if (Array.isArray(data) && data.length >= 3) {
+          const [messageType, eventType, payload] = data
+          if (messageType === 8 && eventType === 'OnJsonApiEvent') {
+            // 只显示重要事件的日志
+            const importantEvents = [
+              '/lol-gameflow/v1/gameflow-phase',
+              '/lol-gameflow/v1/session',
+              '/lol-champ-select/v1/session',
+              '/lol-lobby/v2/lobby',
+              '/lol-matchmaking/v1/search'
+            ]
+
+            if (importantEvents.includes(payload.uri)) {
+              console.log(`[LCU-WS] ${payload.uri}:`, payload.eventType, payload.data)
+            }
+          }
+        }
+      } catch {
+        // 静默处理解析错误
+      }
     })
+
+    // 监听连接状态变化
+    unlistenConnectionState = await listen('connection-state-changed', (e) => {
+      console.log('[LCU-WS] 连接状态变化:', e.payload)
+    })
+
+    console.log('[LCU-WS] 监听器注册成功')
   } catch (e) {
     console.error('[LCU-WS] 监听失败:', e)
   }
 })
 onUnmounted(() => {
   if (unlistenLcuWs) unlistenLcuWs()
+  if (unlistenConnectionState) unlistenConnectionState()
 })
 </script>
 

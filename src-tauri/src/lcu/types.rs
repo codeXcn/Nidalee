@@ -55,22 +55,30 @@ fn empty_rune_type() -> String {
     rename_all = "camelCase"
 )]
 pub struct LiveClientPlayer {
+    #[serde(rename = "summonerName")]
     pub summoner_name: String,
+    #[serde(rename = "championName")]
     pub champion_name: String,
+    #[serde(rename = "isBot")]
     pub is_bot: bool,
+    #[serde(rename = "isDead")]
     pub is_dead: bool,
     #[ts(type = "any")]
     pub items: Vec<Value>,
     pub level: i32,
     pub position: String,
+    #[serde(rename = "rawChampionName")]
     pub raw_champion_name: String,
+    #[serde(rename = "respawnTimer")]
     pub respawn_timer: f64,
     #[ts(type = "any")]
     pub runes: Value,
     #[ts(type = "any")]
     pub scores: Value,
+    #[serde(rename = "skinID")]
     pub skin_id: i32,
     #[ts(type = "any")]
+    #[serde(rename = "summonerSpells")]
     pub summoner_spells: Value,
     pub team: String,
 }
@@ -221,7 +229,7 @@ pub struct GameflowPhase {
     pub phase: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[ts(
     export,
     export_to = "../../src/types/generated/LobbyInfo.ts",
@@ -234,7 +242,7 @@ pub struct LobbyInfo {
     pub members: Vec<LobbyMember>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[ts(
     export,
     export_to = "../../src/types/generated/LobbyMember.ts",
@@ -496,6 +504,7 @@ pub struct MatchmakingState {
     pub errors: Vec<MatchmakingError>,
     pub low_priority_data: LowPriorityData,
     pub search_state: String,
+    pub estimated_queue_time: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]

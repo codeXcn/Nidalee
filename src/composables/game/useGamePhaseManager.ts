@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/features/gameStore'
 import { useMatchmaking } from './useMatchmaking'
 import { useSummonerAndMatchUpdater } from './useSummonerAndMatchUpdater'
 import { useAutoFunctionStore } from '@/stores'
+import { useRouter } from 'vue-router'
 
 // 专门处理游戏阶段变化的逻辑
 export function useGamePhaseManager() {
@@ -11,6 +12,7 @@ export function useGamePhaseManager() {
   const autoFunctionStore = useAutoFunctionStore()
   const { handleAcceptMatch } = useMatchmaking()
   const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
+  const router = useRouter()
 
   // 游戏阶段变更处理
   const handleGamePhaseChange = (phaseObj: GameflowPhase | null) => {
@@ -39,8 +41,17 @@ export function useGamePhaseManager() {
             activityLogger.log.info('返回客户端主界面', 'game')
             break
           case 'Lobby':
+            activityLogger.log.info('进入房间', 'game')
+            gameStore.clearChampSelect()
+            break
+          case 'Matchmaking':
             activityLogger.log.info('进入队列匹配中', 'game')
             gameStore.clearChampSelect()
+            // 自动跳转到对局分析页面
+            if (router.currentRoute.value.name !== 'match-analysis') {
+              console.log('[🎮 GamePhaseManager] 开始匹配，自动跳转到对局分析页面')
+              router.push({ name: 'match-analysis' })
+            }
             break
           case 'ReadyCheck':
             activityLogger.log.success('找到对局，等待接受', 'game')

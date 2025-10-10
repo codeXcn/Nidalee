@@ -10,7 +10,9 @@ pub static AUTH_INFO: Lazy<RwLock<Option<LcuAuthInfo>>> = Lazy::new(|| RwLock::n
 static SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
 static AUTH_TIMESTAMP: Lazy<RwLock<Option<Instant>>> = Lazy::new(|| RwLock::new(None));
 // 配置：token 最多允许缓存多久，超时自动刷新
-const AUTH_REFRESH_INTERVAL: Duration = Duration::from_secs(60);
+// 注意：LCU 的 remoting token 通常在客户端存活期内保持稳定，因此无需频繁刷新。
+// 这里将默认刷新间隔从 60s 提升到 30 分钟，显著减少无意义的刷新与日志噪音。
+const AUTH_REFRESH_INTERVAL: Duration = Duration::from_secs(30 * 60);
 
 /// 获取（并自动刷新）最新有效的 LCU AuthInfo
 pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
@@ -26,7 +28,8 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
                 );
                 return Some(a.clone());
             } else {
-                log::info!("[LCU] AuthInfo 缓存已过期，准备刷新");
+                // 仅作为调试信息打印，避免在正常空闲期间产生高频噪音
+                log::debug!("[LCU] AuthInfo 缓存已过期，准备刷新");
             }
         } else {
             log::debug!("[LCU] 当前无有效缓存，准备刷新");

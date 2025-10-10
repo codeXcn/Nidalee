@@ -1,20 +1,30 @@
 use crate::http_client;
+use crate::lcu::liveclient;
 
 #[tauri::command]
 pub async fn get_live_player_list() -> Result<String, String> {
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true) // 👈 忽略证书错误
-        .build()
-        .map_err(|e| e.to_string())?;
+    let players = liveclient::get_live_player_list().await?;
+    let json = serde_json::to_string(&players).map_err(|e| e.to_string())?;
+    Ok(json)
+}
 
-    let resp = client
-        .get("https://127.0.0.1:2999/liveclientdata/playerlist")
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+#[tauri::command]
+pub async fn get_live_events() -> Result<String, String> {
+    let events = liveclient::get_live_events().await?;
+    let json = serde_json::to_string(&events).map_err(|e| e.to_string())?;
+    Ok(json)
+}
 
-    let text = resp.text().await.map_err(|e| e.to_string())?;
-    Ok(text)
+#[tauri::command]
+pub async fn get_game_stats() -> Result<String, String> {
+    let stats = liveclient::get_game_stats().await?;
+    let json = serde_json::to_string(&stats).map_err(|e| e.to_string())?;
+    Ok(json)
+}
+
+#[tauri::command]
+pub async fn is_liveclient_available() -> bool {
+    liveclient::is_liveclient_available().await
 }
 
 #[tauri::command]

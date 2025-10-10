@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <Card class="border-none px-1 py-0">
     <!-- <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-3">
         <div :class="dotClass"></div>
@@ -9,23 +9,24 @@
     </div> -->
 
     <!-- 使用Card展示每个召唤师 -->
-    <div>
+    <div class="space-y-1">
       <div
-        v-for="(player, index) in team"
-        :key="player.summonerId + '-' + player.cellId"
-        class="w-full bg-transparent mb-1"
+        v-for="(player, index) in filteredTeam"
+        :key="(player.displayName || player.summonerId || player.puuid || index) + '-' + index"
+        class="w-full bg-transparent"
       >
         <Card
-          class="p-2 border group cursor-pointer transition-all duration-150 hover:border-primary hover:bg-primary/5"
+          class="px-1 py-2 border group cursor-pointer p-0"
+          :class="!isQueryable(player) ? 'opacity-60 grayscale' : ''"
           @click="$emit('select', player)"
         >
-          <CardContent class="p-0">
+          <CardContent class="p-1">
             <!-- 点击提示 -->
             <!-- <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <div class="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">点击查看</div>
             </div> -->
             <!-- 第一行：基本信息 -->
-            <div class="flex items-center mb-1 gap-2">
+            <div class="flex items-center gap-2">
               <!-- 左侧：头像和基本信息 -->
               <div class="flex items-center gap-2">
                 <!-- Champion Avatar -->
@@ -62,6 +63,14 @@
                     <h3 class="text-sm font-bold text-foreground truncate max-w-24">
                       {{ player.displayName || '未知召唤师' }}
                     </h3>
+                    <!-- 不可查询原因标签 -->
+                    <template v-if="!isQueryable(player)">
+                      <div
+                        class="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground border border-border/60"
+                      >
+                        {{ getUnqueryableReason(player) }}
+                      </div>
+                    </template>
                     <div
                       v-if="player.tier"
                       class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-600 border border-yellow-500/30 flex-shrink-0"
@@ -75,18 +84,21 @@
                     }}</span>
                     <Badge
                       v-if="player.assignedPosition"
-                      class="text-[10px] font-medium px-1"
+                      class="text-[11px] font-medium px-1 py-0.5"
                       :class="
                         positionColorMap[player.assignedPosition.toUpperCase()] ||
                         'bg-secondary text-secondary-foreground'
                       "
                       >{{ player.assignedPosition.toUpperCase() }}</Badge
                     >
-                    <!-- <Badge v-else class="text-[10px] bg-secondary text-secondary-foreground px-1" variant="secondary"
+                    <Badge
+                      v-else
+                      class="text-[11px] bg-secondary text-secondary-foreground px-1 py-0.5"
+                      variant="secondary"
                       >未知位置</Badge
-                    > -->
+                    >
                     <div class="flex gap-1">
-                      <template v-for="(spellId, idx) in [player.spell1Id ?? null, player.spell2Id ?? null]" :key="idx">
+                      <template v-for="spellId in [player.spell1Id ?? null, player.spell2Id ?? null]" :key="spellId">
                         <div class="w-5 h-5 rounded overflow-hidden ring-1 ring-border/60">
                           <img
                             v-if="spellId"
@@ -211,12 +223,12 @@
 
                   <!-- 对局信息 -->
                   <div class="flex-1 min-w-0">
-                    <!-- 英雄名称 -->
-                    <!-- <div class="flex items-center gap-0.5 mb-0.5">
-                      <span class="text-xs text-foreground font-medium truncate">
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                      <!-- 英雄名称 -->
+                      <!-- <span class="text-xs text-foreground font-medium truncate">
                         {{ getChampionName(match.championId) }}
-                      </span>
-                    </div> -->
+                      </span> -->
+                    </div>
 
                     <!-- KDA和游戏时长 -->
                     <div class="flex items-center gap-1">
@@ -238,7 +250,7 @@
                   <div class="flex gap-0.5">
                     <!-- 比赛类型 -->
                     <span class="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">
-                      {{ getQueueName(match.queueId) }}
+                      {{ getGameModeName(match.gameMode) }}
                     </span>
                     <!-- 胜负标识 -->
                     <div
@@ -253,7 +265,7 @@
             </div>
 
             <!-- No Stats Data -->
-            <div v-else class="text-center py-2">
+            <div v-else class="text-center py-4">
               <div class="text-muted-foreground">
                 <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -263,19 +275,20 @@
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   ></path>
                 </svg>
-                <p class="text-sm">暂无战绩数据</p>
+                <p class="text-sm">{{ isQueryable(player) ? '暂无战绩数据' : '机器人/匿名不可查询' }}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
-import { getChampionIconUrl, getChampionName, getSpellMeta, getQueueName } from '@/lib'
+import { getChampionIconUrl, getChampionName, getSpellMeta } from '@/lib'
+import { computed } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -283,30 +296,42 @@ const props = withDefaults(
     teamType: 'ally' | 'enemy'
     localPlayerCellId?: number | null
     summonerStats?: any[] // 新增：召唤师战绩数据数组
+    hideUnqueryable?: boolean // 新增：是否隐藏不可查询成员（默认显示为灰态并给出原因）
   }>(),
   {
     team: () => [],
-    summonerStats: () => []
+    summonerStats: () => [],
+    hideUnqueryable: false
   }
 )
 
 defineEmits(['select'])
 
-const isAlly = computed(() => props.teamType === 'ally')
+// 过滤后的队伍列表（当 hideUnqueryable=true 时仅显示可查询成员）
+const filteredTeam = computed(() => {
+  if (!props.hideUnqueryable) return props.team
+  return props.team.filter((p: any) => isQueryable(p))
+})
 
-const dotClass = computed(
-  () => `w-3 h-3 lg:w-4 lg:h-4 rounded-full animate-pulse ${isAlly.value ? 'bg-blue-500' : 'bg-red-500'}`
-)
-const titleClass = computed(
-  () =>
-    `text-lg lg:text-xl font-bold ${isAlly.value ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`
-)
-const badgeClass = computed(() =>
-  isAlly.value
-    ? 'text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600'
-    : 'text-red-600 dark:text-red-400 border-red-300 dark:border-red-600'
-)
-const title = computed(() => (isAlly.value ? '我方队伍' : '敌方队伍'))
+// 是否可查询：
+// - LiveClient：isBot === true 视为不可查询
+// - 匿名：nameVisibilityType === 'HIDDEN' 视为不可查询
+// - 身份：displayName（或 puuid/summonerId）任一存在即可查询
+const isQueryable = (player: any) => {
+  const notRobot = player?.isBot !== true
+  const notHidden = player?.nameVisibilityType !== 'HIDDEN'
+  const hasIdentity =
+    (typeof player?.displayName === 'string' && player.displayName.trim().length > 0) ||
+    (!!player?.puuid && typeof player.puuid === 'string' && player.puuid.length > 0) ||
+    (typeof player?.summonerId === 'number' && player.summonerId > 0)
+  return notRobot && notHidden && hasIdentity
+}
+
+const getUnqueryableReason = (player: any) => {
+  if (player?.isBot === true) return '机器人'
+  if (player?.nameVisibilityType === 'HIDDEN') return '匿名'
+  return '身份不可识别'
+}
 
 // 根据索引获取玩家战绩数据
 const getPlayerStats = (index: number) => {
@@ -344,5 +369,28 @@ const getWinRateColor = (winRate: number) => {
   return 'text-red-500'
 }
 
-// 统一使用公共的队列名称映射（基于 queueId）
+// 游戏模式名称映射
+const getGameModeName = (gameMode: string) => {
+  const modeMap: Record<string, string> = {
+    CLASSIC: '排位赛',
+    ARAM: '大乱斗',
+    URF: '无限火力',
+    PRACTICETOOL: '训练模式',
+    TUTORIAL_MODULE_1: '教程',
+    NEXUSBLITZ: '极限闪击',
+    ARENA: '斗魂竞技场',
+    FLEX: '灵活组排',
+    RANKED_FLEX_SR: '灵活组排',
+    RANKED_SOLO_5x5: '单双排',
+    RANKED_TFT: '云顶排位',
+    TFT: '云顶',
+    ONEFORALL: '一为全',
+    ASSASSINATE: '死斗',
+    CHERRY: '无限火力',
+    HEXAKILL: '六杀',
+    ODYSSEY: '奥德赛',
+    SNOWURF: '雪地无限火力'
+  }
+  return modeMap[gameMode] || gameMode
+}
 </script>
