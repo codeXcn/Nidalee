@@ -1,0 +1,48 @@
+<svg width="960" height="540" viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Match analysis placeholder</title>
+  <desc id="desc">A simple placeholder for match analysis screen</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="#0b1220"/>
+  <rect x="20" y="20" width="920" height="500" rx="16" fill="#0f172a" stroke="url(#g)"/>
+  <g fill="#e2e8f0" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="24">
+    <text x="60" y="80" font-size="32" fill="#c4b5fd">Nidalee · Match Analysis</text>
+    <text x="60" y="120" font-size="18" fill="#94a3b8">队伍强弱、对位、KDA、近期胜率、克制关系等</text>
+  </g>
+  <g>
+    <rect x="60" y="150" width="400" height="140" rx="12" fill="#111827" stroke="#334155"/>
+    <text x="80" y="190" fill="#a7f3d0" font-size="20" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">我方胜率 53%</text>
+    <rect x="80" y="210" width="320" height="16" rx="8" fill="#1f2937"/>
+    <rect x="80" y="210" width="170" height="16" rx="8" fill="#10b981"/>
+  </g>
+  <g>
+    <rect x="500" y="150" width="400" height="140" rx="12" fill="#111827" stroke="#334155"/>
+    <text x="520" y="190" fill="#fde68a" font-size="20" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">对线优势 中等</text>
+    <rect x="520" y="210" width="320" height="16" rx="8" fill="#1f2937"/>
+    <rect x="520" y="210" width="210" height="16" rx="8" fill="#f59e0b"/>
+  </g>
+  <g>
+    <rect x="60" y="320" width="840" height="160" rx="12" fill="#111827" stroke="#334155"/>
+    <text x="80" y="355" fill="#93c5fd" font-size="18" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">选手近期表现</text>
+    <g fill="#93c5fd">
+      <rect x="80" y="370" width="120" height="6"/>
+      <rect x="220" y="370" width="80" height="6"/>
+      <rect x="320" y="370" width="100" height="6"/>
+      <rect x="440" y="370" width="160" height="6"/>
+      <rect x="620" y="370" width="60" height="6"/>
+      <rect x="700" y="370" width="100" height="6"/>
+    </g>
+    <g fill="#38bdf8">
+      <rect x="80" y="400" width="100" height="6"/>
+      <rect x="200" y="400" width="160" height="6"/>
+      <rect x="380" y="400" width="90" height="6"/>
+      <rect x="490" y="400" width="120" height="6"/>
+      <rect x="630" y="400" width="140" height="6"/>
+      <rect x="790" y="400" width="90" height="6"/>
+    </g>
+  </g>
+</svg>
