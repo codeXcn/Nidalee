@@ -7,26 +7,16 @@ export function useMatchmaking() {
   const matchInfo = ref<MatchInfo | null>(null)
   const router = useRouter()
 
-  // 监听 WebSocket 原始事件，从中提取匹配状态
+  // 监听标准化匹配状态事件
   onMounted(async () => {
     try {
-      await listen('lcu-ws', (event) => {
-        try {
-          const data = JSON.parse(event.payload as string)
-          if (Array.isArray(data) && data.length >= 3) {
-            const [messageType, eventType, payload] = data
-            if (messageType === 8 && eventType === 'OnJsonApiEvent' && payload.uri === '/lol-matchmaking/v1/search') {
-              console.log('[Matchmaking] 收到匹配状态 WebSocket 事件:', payload.data)
-              matchmakingState.value = payload.data
-            }
-          }
-        } catch {
-          // 静默处理解析错误
-        }
+      await listen('matchmaking-state-changed', (event) => {
+        console.log('[Matchmaking] 收到匹配状态变化:', event.payload)
+        matchmakingState.value = event.payload
       })
-      console.log('[Matchmaking] WebSocket 匹配状态监听器已注册')
+      console.log('[Matchmaking] 匹配状态监听器已注册')
     } catch (error) {
-      console.error('[Matchmaking] 注册 WebSocket 监听器失败:', error)
+      console.error('[Matchmaking] 注册匹配状态监听器失败:', error)
     }
   })
 

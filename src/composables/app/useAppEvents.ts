@@ -23,14 +23,15 @@ export function useAppEvents() {
   // 事件源去重：优先使用后端标准化事件，短时间内忽略从 lcu-ws 转发的同类事件
   // 避免重复更新或状态抖动
   const RECENT_NORMALIZED_GRACE_MS = 600
-  const recentNormalizedAt: Record<'phase' | 'lobby' | 'champ', number> = {
+  const recentNormalizedAt: Record<'phase' | 'lobby' | 'champ' | 'matchmaking', number> = {
     phase: 0,
     lobby: 0,
-    champ: 0
+    champ: 0,
+    matchmaking: 0
   }
-  const isWithinGrace = (key: 'phase' | 'lobby' | 'champ') =>
+  const isWithinGrace = (key: 'phase' | 'lobby' | 'champ' | 'matchmaking') =>
     Date.now() - recentNormalizedAt[key] < RECENT_NORMALIZED_GRACE_MS
-  const markNormalized = (key: 'phase' | 'lobby' | 'champ') => {
+  const markNormalized = (key: 'phase' | 'lobby' | 'champ' | 'matchmaking') => {
     recentNormalizedAt[key] = Date.now()
   }
 
@@ -56,6 +57,13 @@ export function useAppEvents() {
     markNormalized('champ')
   }
 
+  const handleMatchmakingStateChanged = (event: any) => {
+    console.log('[AppEvents] 匹配状态变化:', event.payload)
+    // 这里可以根据需要处理匹配状态
+    // 目前主要由 useMatchmaking.ts 处理，这里只记录
+    markNormalized('matchmaking')
+  }
+
   const handleConnectionStateChange = async (event: any) => {
     console.log('[AppEvents-handleConnectionStateChange] 连接状态变化:', event.payload)
     const state = event.payload as ConnectedState
@@ -77,56 +85,64 @@ export function useAppEvents() {
       await listen('gameflow-phase-change', handleGameFlowPhaseChange)
       await listen('lobby-change', handleLobbyChangeEvent)
       await listen('champ-select-session-changed', handleChampSelectSessionChanged)
+      await listen('matchmaking-state-changed', handleMatchmakingStateChanged)
       await listen('connection-state-changed', handleConnectionStateChangeDebounced)
       await listen('game-finished', handleGameFinished)
       // 新增：直接消费 lcu-ws，避免完全依赖后端转发事件
-      await listen<string>('lcu-ws', (e) => {
-        try {
-          const data = JSON.parse(e.payload)
-          if (!Array.isArray(data) || data.length < 3) return
-          const [msgType, evtName, payload] = data
-          if (msgType !== 8 || evtName !== 'OnJsonApiEvent' || !payload) return
-          const uri = payload.uri as string
-          const eventType = payload.eventType as string
-          const body = payload.data
+      // await listen<string>('lcu-ws', (e) => {
+      //   try {
+      //     const data = JSON.parse(e.payload)
+      //     if (!Array.isArray(data) || data.length < 3) return
+      //     const [msgType, evtName, payload] = data
+      //     if (msgType !== 8 || evtName !== 'OnJsonApiEvent' || !payload) return
+      //     const uri = payload.uri as string
+      //     const eventType = payload.eventType as string
+      //     const body = payload.data
 
-          switch (uri) {
-            case '/lol-gameflow/v1/gameflow-phase': {
-              // 直接驱动阶段变化
-              // 若刚刚收到过同类的标准化事件，则跳过 lcu-ws 派生事件，避免重复
-              if (!isWithinGrace('phase')) {
-                handleGameFlowPhaseChange({ payload: body })
-              }
-              break
-            }
-            case '/lol-gameflow/v1/session': {
-              // 兼容：从 session.phase 推阶段
-              if (body?.phase && !isWithinGrace('phase')) {
-                handleGameFlowPhaseChange({ payload: body.phase })
-              }
-              break
-            }
-            case '/lol-champ-select/v1/session': {
-              // 直接驱动选人会话
-              if (!isWithinGrace('champ')) {
-                handleChampSelectSessionChanged({ payload: eventType === 'Delete' ? null : body })
-              }
-              break
-            }
-            case '/lol-lobby/v2/lobby': {
-              // 直接驱动大厅变化（存在/不存在即可）
-              if (!isWithinGrace('lobby')) {
-                handleLobbyChangeEvent({ payload: eventType === 'Delete' ? null : body })
-              }
-              break
-            }
-            default:
-              break
-          }
-        } catch {
-          // 静默解析错误
-        }
-      })
+      //     switch (uri) {
+      //       case '/lol-gameflow/v1/gameflow-phase': {
+      //         // 直接驱动阶段变化
+      //         // 若刚刚收到过同类的标准化事件，则跳过 lcu-ws 派生事件，避免重复
+      //         if (!isWithinGrace('phase')) {
+      //           handleGameFlowPhaseChange({ payload: body })
+      //         }
+      //         break
+      //       }
+      //       case '/lol-gameflow/v1/session': {
+      //         // 兼容：从 session.phase 推阶段
+      //         if (body?.phase && !isWithinGrace('phase')) {
+      //           handleGameFlowPhaseChange({ payload: body.phase })
+      //         }
+      //         break
+      //       }
+      //       case '/lol-champ-select/v1/session': {
+      //         // 直接驱动选人会话
+      //         if (!isWithinGrace('champ')) {
+      //           handleChampSelectSessionChanged({ payload: eventType === 'Delete' ? null : body })
+      //         }
+      //         break
+      //       }
+      //       case '/lol-lobby/v2/lobby': {
+      //         // 直接驱动大厅变化（存在/不存在即可）
+      //         if (!isWithinGrace('lobby')) {
+      //           handleLobbyChangeEvent({ payload: eventType === 'Delete' ? null : body })
+      //         }
+      //         break
+      //       }
+      //       case '/lol-matchmaking/v1/search': {
+      //         // 直接驱动匹配状态变化
+      //         if (!isWithinGrace('matchmaking')) {
+      //           handleMatchmakingStateChanged({ payload: eventType === 'Delete' ? null : body })
+      //         }
+      //         break
+      //       }
+      //       default:
+      //         break
+      //     }
+      //   } catch {
+      //     // 静默解析错误
+      //   }
+      // })
       console.log('[AppEvents] 全局事件监听已启动')
     } catch (error) {
       console.error('[AppEvents] 启动全局事件监听失败:', error)

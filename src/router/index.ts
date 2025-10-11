@@ -21,7 +21,7 @@ const router = createRouter({
     {
       path: '/match-analysis',
       name: 'match-analysis',
-      component: () => import('../views/MatchAnalysisView.vue')
+      component: () => import('../views/MatchAnalysisViewV2.vue')
     },
     {
       path: '/match-search',

@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import type { SummonerWithMatches } from '@/types/generated/SummonerWithMatches'
 
 /**
  * 战绩获取组合式函数

@@ -1,92 +1,108 @@
 <template>
-  <Dialog v-model:open="open">
-    <DialogContent class="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle>召唤师详情</DialogTitle>
-        <DialogDescription v-if="summoner">
-          {{ summoner.displayName }} 的详细信息
-        </DialogDescription>
-      </DialogHeader>
-
-      <div v-if="summoner" class="space-y-6">
-        <!-- 基本信息 -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <Label>召唤师名称</Label>
-            <p class="text-sm font-medium">{{ summoner.displayName }}</p>
-          </div>
-          <div class="space-y-2" v-if="summoner.championName">
-            <Label>当前英雄</Label>
-            <p class="text-sm font-medium">{{ summoner.championName }}</p>
-          </div>
-          <div class="space-y-2" v-if="summoner.assignedPosition">
-            <Label>位置</Label>
-            <p class="text-sm font-medium">{{ summoner.assignedPosition }}</p>
-          </div>
-          <div class="space-y-2" v-if="summoner.tier">
-            <Label>段位</Label>
-            <p class="text-sm font-medium">{{ summoner.tier }}</p>
-          </div>
-        </div>
-
-        <!-- 战绩信息 -->
-        <div v-if="matchHistory && matchHistory.length > 0" class="space-y-4">
-          <h3 class="text-lg font-semibold">最近战绩</h3>
-          <div class="space-y-2 max-h-60 overflow-y-auto">
-            <div
-              v-for="(match, index) in matchHistory.slice(0, 10)"
-              :key="index"
-              class="flex items-center justify-between p-3 border rounded-lg"
-            >
-              <div class="flex items-center gap-3">
+  <Sheet v-model:open="open">
+    <SheetContent class="w-[500px] sm:w-[700px] lg:w-[900px] xl:w-[1000px] overflow-y-auto p-0">
+      <div
+        class="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-6"
+      >
+        <SheetHeader>
+          <div class="flex items-center justify-between">
+            <SheetTitle class="flex items-center gap-4 text-left">
+              <div v-if="summonerResult" class="flex items-center gap-4">
+                <!-- 使用查询到的召唤师信息 -->
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                  :class="match.win ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
+                  class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
                 >
-                  {{ match.win ? 'W' : 'L' }}
+                  <span class="text-lg font-bold text-primary">{{
+                    summonerResult.displayName?.charAt(0)?.toUpperCase() || '?'
+                  }}</span>
                 </div>
                 <div>
-                  <p class="text-sm font-medium">{{ match.championName }}</p>
-                  <p class="text-xs text-muted-foreground">{{ formatDate(match.gameCreation) }}</p>
+                  <h3 class="text-xl font-bold text-foreground">{{ summonerResult.displayName || '未知召唤师' }}</h3>
+                  <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
                 </div>
               </div>
-              <div class="text-right">
-                <p class="text-sm font-medium">{{ match.kills }}/{{ match.deaths }}/{{ match.assists }}</p>
-                <p class="text-xs text-muted-foreground">KDA</p>
+              <div v-else-if="summoner" class="flex items-center gap-4">
+                <!-- 查询中或失败时显示原始玩家信息 -->
+                <div
+                  class="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-2 ring-primary/20"
+                >
+                  <span class="text-lg font-bold text-primary">{{
+                    summoner.displayName?.charAt(0)?.toUpperCase() || '?'
+                  }}</span>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-foreground">{{ summoner.displayName || '未知召唤师' }}</h3>
+                  <p class="text-sm text-muted-foreground">召唤师详情与战绩分析</p>
+                </div>
               </div>
-            </div>
+            </SheetTitle>
+
+            <SheetClose
+              class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary text-muted-foreground hover:text-foreground"
+            >
+              <X class="h-4 w-4" />
+              <span class="sr-only">关闭</span>
+            </SheetClose>
+          </div>
+        </SheetHeader>
+      </div>
+
+      <div class="p-6 pt-4 space-y-6">
+        <!-- 加载状态 -->
+        <div v-if="loading" class="flex items-center justify-center py-8">
+          <div class="flex items-center gap-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <span class="text-muted-foreground">正在查询召唤师战绩...</span>
           </div>
         </div>
 
-        <div v-else class="text-center py-8 text-muted-foreground">
-          <p>暂无战绩数据</p>
+        <!-- 战绩数据 -->
+        <div v-else-if="summonerResult" class="space-y-6">
+          <!-- 召唤师信息卡片 -->
+          <SummonerCard v-if="summonerResult.summonerInfo" :summoner-info="summonerResult.summonerInfo" />
+
+          <!-- 游戏统计 -->
+          <GameStats
+            v-if="summonerResult.matches"
+            :is-connected="true"
+            :match-history-loading="false"
+            :match-statistics="summonerResult.matches"
+          />
+        </div>
+
+        <!-- 无数据状态 -->
+        <div v-else class="flex items-center justify-center py-8">
+          <div class="text-center">
+            <Info class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 class="text-lg font-semibold mb-2 text-foreground">暂无战绩数据</h3>
+            <p class="text-muted-foreground">未能获取到该召唤师的战绩信息</p>
+          </div>
         </div>
       </div>
-
-      <DialogFooter>
-        <Button variant="outline" @click="open = false">关闭</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+    </SheetContent>
+  </Sheet>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet'
+import { SummonerCard, GameStats } from '@/components/features/dashboard'
+import { Info, X } from 'lucide-vue-next'
 
 interface Props {
   open: boolean
   summoner?: any
-  matchHistory?: any[]
+  summonerResult?: any // 查询结果数据
+  loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  loading: false
+})
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  'close': []
+  close: []
 }>()
 
 const open = computed({
@@ -98,22 +114,4 @@ const open = computed({
     }
   }
 })
-
-const formatDate = (timestamp: number) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) {
-    return '今天'
-  } else if (diffDays === 1) {
-    return '昨天'
-  } else if (diffDays < 7) {
-    return `${diffDays}天前`
-  } else {
-    return date.toLocaleDateString()
-  }
-}
 </script>
-

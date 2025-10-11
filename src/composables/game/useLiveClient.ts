@@ -1,9 +1,8 @@
 import { ref } from 'vue'
 import { listen } from '@tauri-apps/api/event'
-import type { LiveClientPlayer } from '@/types/generated/LiveClientPlayer'
 
 export function useLiveClient() {
-  const playerList = ref<LiveClientPlayer[]>([])
+  const playerList = ref<any[]>([])
   const gameEvents = ref<any[]>([])
   const gameStats = ref<any>(null)
   const isAvailable = ref(false)

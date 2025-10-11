@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useLiveClient } from './useLiveClient'
 import { getChampionIdByName, getChampionIconUrl } from '@/lib'
-import type { LiveClientPlayer } from '@/types/generated/LiveClientPlayer'
 // import type { EnrichedLivePlayer } from '@/types/handle.d'
 
 /**
