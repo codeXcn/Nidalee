@@ -43,8 +43,8 @@ export function useDataFetcher() {
   // 缓存
   const summonerCache = ref<Map<string, SummonerWithMatches>>(new Map())
   const teamStatsCache = ref<{
-    summonerStats: EnrichedMatchStatistics[]
-    theirTeamStats: EnrichedMatchStatistics[]
+    summonerStats: (EnrichedMatchStatistics | null)[]
+    theirTeamStats: (EnrichedMatchStatistics | null)[]
   }>({
     summonerStats: [],
     theirTeamStats: []
@@ -209,8 +209,9 @@ export function useDataFetcher() {
       }
 
       // 获取新数据
-      const results = await invoke<SummonerWithMatches[]>('search_summoners_with_matches', {
-        summonerNames: names
+      const results = await invoke<SummonerWithMatches[]>('get_summoners_and_histories', {
+        names: names,
+        count: 20
       })
 
       if (results && results.length > 0) {
@@ -266,26 +267,53 @@ export function useDataFetcher() {
       if (!results) return
 
       // 处理我方队伍统计
-      const myTeamStats: EnrichedMatchStatistics[] = []
+      // 🔧 关键修复: 必须按 teamData.players 的索引顺序构建数组,保持索引对应关系
+      const myTeamStatsMap: Map<number, EnrichedMatchStatistics> = new Map()
+      console.log(
+        '[DataFetcher] 处理我方队伍统计, 玩家数:',
+        myTeamPlayers.length,
+        myTeamPlayers.map((p) => ({ index: p.index, name: p.summonerName }))
+      )
+
       myTeamPlayers.forEach((player) => {
         const result = results.find(
           (r) => r.summonerInfo?.displayName.toLowerCase() === player.summonerName.toLowerCase()
+        )
+
+        console.log(
+          `[DataFetcher] 玩家 ${player.summonerName} (index=${player.index}):`,
+          result ? '找到战绩' : '未找到战绩'
         )
 
         if (result?.matches) {
           // 计算统计数据
           const matches = result.matches
           const stats = calculatePlayerStats(matches)
-          myTeamStats[player.index] = {
+          myTeamStatsMap.set(player.index, {
             displayName: result.summonerInfo!.displayName,
             ...stats,
             recentPerformance: matches.recentPerformance || []
-          }
+          })
         }
       })
 
+      // 🔧 构建完整数组: 保持索引位置,null 表示该位置玩家无战绩数据
+      const maxIndex = Math.max(...myTeamPlayers.map((p) => p.index), -1)
+      const myTeamStats: (EnrichedMatchStatistics | null)[] = Array.from(
+        { length: maxIndex + 1 },
+        (_, i) => myTeamStatsMap.get(i) || null
+      )
+
+      console.log('[DataFetcher] myTeamStats 最终结果:', {
+        length: myTeamStats.length,
+        mapSize: myTeamStatsMap.size,
+        filledCount: myTeamStats.filter((s) => s !== null).length,
+        data: myTeamStats,
+        map: Array.from(myTeamStatsMap.entries())
+      })
+
       // 处理敌方队伍统计
-      const enemyTeamStats: EnrichedMatchStatistics[] = []
+      const enemyTeamStatsMap: Map<number, EnrichedMatchStatistics> = new Map()
       enemyTeamPlayers.forEach((player) => {
         const result = results.find(
           (r) => r.summonerInfo?.displayName.toLowerCase() === player.summonerName.toLowerCase()
@@ -295,13 +323,20 @@ export function useDataFetcher() {
           // 计算统计数据
           const matches = result.matches
           const stats = calculatePlayerStats(matches)
-          enemyTeamStats[player.index] = {
+          enemyTeamStatsMap.set(player.index, {
             displayName: result.summonerInfo!.displayName,
             ...stats,
             recentPerformance: matches.recentPerformance || []
-          }
+          })
         }
       })
+
+      // 🔧 构建完整数组: 保持索引位置,null 表示该位置玩家无战绩数据
+      const maxEnemyIndex = Math.max(...enemyTeamPlayers.map((p) => p.index), -1)
+      const enemyTeamStats: (EnrichedMatchStatistics | null)[] = Array.from(
+        { length: maxEnemyIndex + 1 },
+        (_, i) => enemyTeamStatsMap.get(i) || null
+      )
 
       // 更新缓存
       teamStatsCache.value = {
@@ -310,8 +345,10 @@ export function useDataFetcher() {
       }
 
       console.log('[DataFetcher] 团队战绩获取完成', {
-        myTeam: myTeamStats.length,
-        enemyTeam: enemyTeamStats.length
+        myTeam: myTeamStats.filter((s) => s !== null).length,
+        myTeamLength: myTeamStats.length,
+        enemyTeam: enemyTeamStats.filter((s) => s !== null).length,
+        enemyTeamLength: enemyTeamStats.length
       })
     } catch (error) {
       console.error('[DataFetcher] 获取团队战绩失败:', error)

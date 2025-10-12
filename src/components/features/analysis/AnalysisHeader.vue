@@ -1,26 +1,40 @@
 <template>
   <div
-    class="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border/50 bg-background/80 backdrop-blur"
+    class="sticky top-0 z-10 flex items-center justify-between gap-2 px-3 py-2 border-b border-border/50 bg-background/80 backdrop-blur"
   >
     <!-- 左侧：队伍信息 -->
-    <div class="flex items-center gap-3 min-w-0">
+    <div class="flex items-center gap-2 min-w-0">
       <!-- 队伍标识 -->
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium" :class="teamTypeClass">
-        <div class="w-2 h-2 rounded-full" :class="teamIndicatorClass" />
+      <div class="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium" :class="teamTypeClass">
+        <div class="w-1.5 h-1.5 rounded-full" :class="teamIndicatorClass" />
         <span>{{ teamTypeName }}</span>
       </div>
 
       <!-- 分隔线 -->
-      <div class="h-4 w-px bg-border/60" />
+      <div class="h-3 w-px bg-border/60" />
 
       <!-- 阶段信息 -->
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-muted-foreground">阶段</span>
-        <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium" :class="phaseClass">
-          <div class="w-1.5 h-1.5 rounded-full" :class="phaseIndicatorClass" />
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground">阶段</span>
+        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium" :class="phaseClass">
+          <div class="w-1 h-1 rounded-full" :class="phaseIndicatorClass" />
           <span>{{ phaseDisplayName }}</span>
         </div>
       </div>
+
+      <!-- 对局类型 (双方队伍都显示) -->
+      <template v-if="queueTypeLabel">
+        <!-- 分隔线 -->
+        <div class="h-3 w-px bg-border/60" />
+
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-muted-foreground">对局</span>
+          <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium" :class="queueClass">
+            <span>{{ queueTypeIcon }}</span>
+            <span>{{ queueTypeLabel }}</span>
+          </div>
+        </div>
+      </template>
 
       <!-- 分隔线 -->
       <div class="h-4 w-px bg-border/60" />
@@ -70,6 +84,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { GamePhase } from '@/types/match-analysis'
+import { useMatchAnalysisStore } from '@/stores/features/matchAnalysisStore'
 
 interface Props {
   teamType: 'ally' | 'enemy'
@@ -84,6 +99,13 @@ const props = defineProps<Props>()
 defineEmits<{
   refresh: []
 }>()
+
+const matchAnalysisStore = useMatchAnalysisStore()
+
+// 对局类型信息
+const queueTypeLabel = computed(() => matchAnalysisStore.queueTypeLabel)
+const queueTypeIcon = computed(() => matchAnalysisStore.queueTypeIcon)
+const isRankedGame = computed(() => matchAnalysisStore.isRankedGame)
 
 // 队伍类型相关
 const teamTypeName = computed(() => {
@@ -162,5 +184,13 @@ const dataIndicatorClass = computed(() => {
   if (props.loading) return 'bg-yellow-500 animate-pulse'
   if (props.hasData) return 'bg-green-500'
   return 'bg-gray-500'
+})
+
+// 对局类型样式
+const queueClass = computed(() => {
+  if (isRankedGame.value) {
+    return 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-800'
+  }
+  return 'bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 ring-1 ring-cyan-200 dark:ring-cyan-800'
 })
 </script>

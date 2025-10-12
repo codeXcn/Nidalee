@@ -7,7 +7,7 @@
 
     <!-- 对局分析主界面 -->
     <div v-else-if="shouldShowAnalysis" class="w-full max-w-full mx-auto">
-      <div class="flex gap-3 h-screen max-h-screen overflow-hidden">
+      <div class="flex gap-1 h-screen max-h-screen overflow-hidden">
         <!-- 左侧：我方队伍 -->
         <div class="flex-1 flex flex-col min-w-0">
           <AnalysisHeader
@@ -39,21 +39,21 @@
             :phase="currentPhase"
             :team-count="getEnemyTeamCount()"
             :has-data="hasEnemyTeamData"
-            :loading="isLoading"
+            :loading="isEnemyTeamLoading"
           />
 
           <div class="flex-1 overflow-y-auto">
-            <!-- ChampSelect 阶段：显示英雄选择 -->
-            <EnemyChampionPicks v-if="currentPhase === 'ChampSelect'" :champion-picks="enemyChampionPicks" />
-
-            <!-- InProgress 阶段：显示完整队伍信息 -->
+            <!-- 统一使用 TeamAnalysisCard 组件 -->
             <TeamAnalysisCard
-              v-else-if="hasEnemyTeamData"
+              v-if="hasEnemyTeamData"
               :team-data="enemyTeamData!"
               :team-stats="enemyTeamStats"
               team-type="enemy"
               @select-player="handlePlayerDetails"
             />
+
+            <!-- 如果没有敌方队伍数据，显示简单的英雄选择列表作为降级方案 -->
+            <!-- <EnemyChampionPicks v-else-if="currentPhase === 'ChampSelect'" :champion-picks="enemyChampionPicks" /> -->
           </div>
         </div>
       </div>
@@ -103,10 +103,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useMatchAnalysisManager } from '@/composables/game/core/useMatchAnalysisManager'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useMatchAnalysisStore } from '@/stores/features/matchAnalysisStore'
 import { useSearchMatches } from '@/composables/game/useSearchMatches'
 import MatchmakingPanel from '@/components/features/game/MatchmakingPanel.vue'
+
+console.log('[MatchAnalysisViewV2] 🎬 组件正在创建...')
 
 // 子组件
 import AnalysisHeader from '@/components/features/analysis/AnalysisHeader.vue'
@@ -115,10 +118,12 @@ import EnemyChampionPicks from '@/components/features/analysis/EnemyChampionPick
 import GameStateIndicator from '@/components/features/analysis/GameStateIndicator.vue'
 import SummonerDetailsDialog from '@/components/features/match/SummonerDetailsDialog.vue'
 
-// 使用新的对局分析管理器
+// 使用 Pinia Store
+const matchAnalysisStore = useMatchAnalysisStore()
 const {
   currentPhase,
   isLoading,
+  isEnemyTeamLoading,
   myTeamData,
   myTeamStats,
   enemyTeamData,
@@ -127,7 +132,22 @@ const {
   shouldShowAnalysis,
   hasMyTeamData,
   hasEnemyTeamData
-} = useMatchAnalysisManager()
+} = storeToRefs(matchAnalysisStore)
+
+// 🎯 完全依赖后端缓存和实时推送
+
+// 🎯 简化：只启动对局分析系统，移除复杂的缓存逻辑
+import { useMatchAnalysisInit } from '@/composables/game/core/useMatchAnalysisInit'
+
+useMatchAnalysisInit() // 启动分析系统
+
+onMounted(() => {
+  console.log('[MatchAnalysisViewV2] ✅ 组件已挂载')
+})
+
+onBeforeUnmount(() => {
+  console.log('[MatchAnalysisViewV2] 🔴 组件即将卸载')
+})
 
 // 使用召唤师详情查询
 const { fetchSummonerInfo, currentRestult, loading: summonerLoading } = useSearchMatches()

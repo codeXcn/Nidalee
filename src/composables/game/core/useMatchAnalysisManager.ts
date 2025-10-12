@@ -1,44 +1,60 @@
 import { computed } from 'vue'
-import { useMatchAnalysis } from './useMatchAnalysis'
+import { storeToRefs } from 'pinia'
+import { useMatchAnalysisStore } from '@/stores/features/matchAnalysisStore'
 import { usePhaseHandler } from './usePhaseHandler'
 
 /**
- * 对局分析管理器 - 重构版本
+ * 对局分析管理器 - Store 版本
  *
  * 主要改进：
- * 1. 拆分为独立的核心模块，提高可维护性
- * 2. 单一职责原则，每个模块专注特定功能
- * 3. 更清晰的依赖关系和更好的可测试性
+ * 1. 使用 Pinia Store 管理状态，自动实现状态共享
+ * 2. 避免了手动管理单例的复杂性
+ * 3. 支持 Vue DevTools 调试
  * 4. 保持与原版本相同的 API 接口
  */
 export function useMatchAnalysisManager() {
-  // 使用拆分后的核心模块
-  const matchAnalysis = useMatchAnalysis()
+  // 使用 Store 和 Phase Handler
+  const matchAnalysisStore = useMatchAnalysisStore()
   const phaseHandler = usePhaseHandler()
+
+  // 使用 storeToRefs 将 Store 状态转为响应式 refs
+  const {
+    currentPhase,
+    isConnected,
+    isLoading,
+    myTeamData,
+    myTeamStats,
+    enemyTeamData,
+    enemyTeamStats,
+    enemyChampionPicks,
+    shouldShowAnalysis,
+    hasMyTeamData,
+    hasEnemyTeamData
+  } = storeToRefs(matchAnalysisStore)
 
   // 保持与原版本相同的 API
   return {
-    // 状态 - 直接从 matchAnalysis 暴露
-    currentPhase: matchAnalysis.currentPhase,
-    isConnected: matchAnalysis.isConnected,
-    isLoading: matchAnalysis.isLoading,
+    // 状态
+    currentPhase,
+    isConnected,
+    isLoading,
 
-    // 数据 - 直接从 matchAnalysis 暴露
-    myTeamData: matchAnalysis.myTeamData,
-    myTeamStats: matchAnalysis.myTeamStats,
-    enemyTeamData: matchAnalysis.enemyTeamData,
-    enemyTeamStats: matchAnalysis.enemyTeamStats,
-    enemyChampionPicks: matchAnalysis.enemyChampionPicks,
+    // 数据
+    myTeamData,
+    myTeamStats,
+    enemyTeamData,
+    enemyTeamStats,
+    enemyChampionPicks,
 
-    // 计算属性 - 直接从 matchAnalysis 暴露
-    shouldShowAnalysis: matchAnalysis.shouldShowAnalysis,
-    hasMyTeamData: matchAnalysis.hasMyTeamData,
-    hasEnemyTeamData: matchAnalysis.hasEnemyTeamData,
+    // 计算属性
+    shouldShowAnalysis,
+    hasMyTeamData,
+    hasEnemyTeamData,
 
-    // 方法 - 从 phaseHandler 暴露
+    // 方法
     retry: phaseHandler.retry,
 
-    // 调试信息 - 从 phaseHandler 暴露
+    // 调试信息
     debugInfo: computed(() => phaseHandler.debugInfo())
   }
 }

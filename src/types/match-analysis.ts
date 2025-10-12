@@ -1,65 +1,56 @@
-// 对局分析模块专用类型定义
+/**
+ * 对局分析模块专用类型定义
+ * 🎉 简化版：大部分类型已通过 ts-rs 自动生成，这里只保留 UI 特定的类型
+ */
 
 export type GamePhase = 'None' | 'Lobby' | 'Matchmaking' | 'ChampSelect' | 'InProgress' | 'EndOfGame'
 
-export interface PlayerData {
-  cellId: number
-  displayName: string
-  championId: number | null
-  championName: string | null
-  position: string | null
-  puuid: string | null
-  summonerId: string | null
-  isLocal: boolean
-  isBot: boolean
-  spells: [number | null, number | null]
-  tier: string | null
+/**
+ * UI 专用的玩家数据扩展
+ * 基于全局的 PlayerAnalysisData，添加 UI 便利属性
+ */
+export interface UIPlayerData extends PlayerAnalysisData {
+  // UI 便利属性
+  spells: [number, number] // 召唤师技能数组 [spell1Id, spell2Id]
 }
 
-export interface TeamData {
-  players: PlayerData[]
-  localPlayerCellId: number
-}
-
-// PlayerAnalysisData 已移除，使用全局类型 MatchStatistics 替代
-// EnrichedPlayerAnalysisData 重命名为 EnrichedMatchStatistics 保持一致性
-export interface EnrichedMatchStatistics extends MatchStatistics {
+/**
+ * 带 displayName 的战绩统计（用于 UI 显示）
+ */
+export interface EnrichedPlayerMatchStats extends PlayerMatchStats {
   displayName: string
 }
 
-export interface ChampionStats {
-  championId: number
-  gamesPlayed: number
-  wins: number
-  winRate: number
-}
-
-export interface RecentGame {
-  gameId: number
-  championId: number
-  queueId: number
-  gameMode: string
-  win: boolean
-  kills: number
-  deaths: number
-  assists: number
-  gameDuration: number
-  gameCreation: number
-  performanceRating: string
-}
-
+/**
+ * 敌方英雄选择信息（用于 UI 显示）
+ */
 export interface EnemyChampionPick {
   cellId: number
   championId: number | null
+  championPickIntent?: number | null
 }
 
+/**
+ * UI 中的团队数据格式（简化版，用于 Store 和组件）
+ */
+export interface TeamData {
+  players: UIPlayerData[]
+  localPlayerCellId: number
+}
+
+/**
+ * 对局分析状态（使用全局类型）
+ */
 export interface MatchAnalysisState {
   phase: GamePhase
   isConnected: boolean
   isLoading: boolean
-  myTeam: TeamData | null
-  myTeamStats: EnrichedMatchStatistics[]
-  enemyTeam: TeamData | null
-  enemyTeamStats: EnrichedMatchStatistics[]
+
+  // 🔥 直接使用后端的 TeamAnalysisData
+  teamAnalysisData: TeamAnalysisData | null
+
+  // UI 专用数据
+  myTeamStats: EnrichedPlayerMatchStats[]
+  enemyTeamStats: EnrichedPlayerMatchStats[]
   enemyChampionPicks: EnemyChampionPick[]
 }

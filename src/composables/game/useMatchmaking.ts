@@ -1,38 +1,25 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useRouter } from 'vue-router'
-import { listen } from '@tauri-apps/api/event'
+import { useMatchmakingStore } from '@/stores'
+import { computed } from 'vue'
 
+/**
+ * 匹配管理 Composable
+ * 职责：提供匹配相关的操作方法和状态访问
+ * 数据来源：matchmakingStore（由 useAppEvents 统一监听更新）
+ */
 export function useMatchmaking() {
-  const matchmakingState = ref<any>(null)
+  const matchmakingStore = useMatchmakingStore()
   const matchInfo = ref<MatchInfo | null>(null)
-  const router = useRouter()
 
-  // 监听标准化匹配状态事件
-  onMounted(async () => {
-    try {
-      await listen('matchmaking-state-changed', (event) => {
-        console.log('[Matchmaking] 收到匹配状态变化:', event.payload)
-        matchmakingState.value = event.payload
-      })
-      console.log('[Matchmaking] 匹配状态监听器已注册')
-    } catch (error) {
-      console.error('[Matchmaking] 注册匹配状态监听器失败:', error)
-    }
-  })
+  // 从 store 获取响应式状态
+  const matchmakingState = computed(() => matchmakingStore.state)
+  const searchState = computed(() => matchmakingStore.searchState)
 
-  // 监听匹配状态变化，自动跳转到对局分析页面
-  watch(
-    () => matchmakingState.value?.searchState,
-    (newState) => {
-      if (newState === 'Searching' && router.currentRoute.value.name !== 'match-analysis') {
-        console.log('[Matchmaking] 匹配状态变化为 Searching，自动跳转到对局分析页面')
-        router.push({ name: 'match-analysis' })
-      }
-    }
-  )
+  // 注意：不在这里处理自动跳转，统一由 useGamePhaseManager 处理游戏阶段变化
+  // 避免重复跳转（matchmaking-state-changed 和 gameflow-phase-change 都会触发）
   const handleMatchmaking = async () => {
     try {
-      if (matchmakingState.value?.searchState === 'Searching') {
+      if (searchState.value === 'Searching') {
         await invoke('stop_matchmaking')
       } else {
         await invoke('start_matchmaking')

@@ -100,7 +100,12 @@ pub async fn get_rank_info(client: &Client, puuid: &str) -> Result<RankInfo, Str
 // 获取指定ID的召唤师
 pub async fn get_summoner_by_id(client: &Client, summoner_id: u64) -> Result<SummonerInfo, String> {
     let path = &format!("/lol-summoner/v1/summoners/{}", summoner_id);
-    lcu_get(client, path).await
+    let mut summoner_info: SummonerInfo = lcu_get(client, path).await?;
+
+    // 获取段位信息
+    fill_summoner_extra_info(client, &mut summoner_info).await;
+
+    Ok(summoner_info)
 }
 
 // 批量获取召唤师信息

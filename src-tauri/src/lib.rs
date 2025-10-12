@@ -58,6 +58,8 @@ pub fn run() {
             // LCU WS 测试命令
             lcu::ws::commands::start_lcu_ws,
             lcu::ws::commands::stop_lcu_ws,
+            // 分析数据命令
+            lcu::analysis_data::commands::get_cached_analysis_data,
             common::commands::machine::get_machine_hash,
             common::commands::builds::get_champions_list,
             common::commands::builds::get_champion_builds,

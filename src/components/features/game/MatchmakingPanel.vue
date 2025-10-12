@@ -96,11 +96,27 @@
         </div>
 
         <!-- 匹配成功状态 -->
-        <div v-else-if="matchmakingState?.searchState === 'Found'" class="text-center space-y-4">
+        <div
+          v-else-if="matchmakingState?.searchState === 'Found' && !gameStore.isReadyCheck"
+          class="text-center space-y-4"
+        >
           <div class="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
             <CheckCircle class="h-12 w-12 text-green-500 mx-auto mb-3" />
             <h4 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-2">匹配成功！</h4>
             <p class="text-sm text-green-600 dark:text-green-400">已为您找到合适的对手，请确认是否接受对局</p>
+          </div>
+        </div>
+
+        <!-- ReadyCheck 阶段（根据 currentPhase 判断） -->
+        <div v-else-if="gameStore.currentPhase === 'ReadyCheck'" class="text-center space-y-4">
+          <div
+            class="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl"
+          >
+            <Loader2 class="h-12 w-12 text-yellow-500 animate-spin mx-auto mb-3" />
+            <h4 class="text-lg font-semibold text-yellow-700 dark:text-yellow-300 mb-2">等待所有玩家确认...</h4>
+            <p class="text-sm text-yellow-600 dark:text-yellow-400">
+              您已接受对局，正在等待其他玩家确认，确认后将进入英雄选择
+            </p>
           </div>
         </div>
 
@@ -156,7 +172,9 @@
 <script setup lang="ts">
 import { Search, Clock, Timer, Loader2, CheckCircle, Check, X } from 'lucide-vue-next'
 import { useMatchmaking } from '@/composables'
+import { useGameStore } from '@/stores/features/gameStore'
 
+const gameStore = useGameStore()
 const { matchmakingState, handleMatchmaking, handleAcceptMatch, handleDeclineMatch } = useMatchmaking()
 console.log('[MatchmakingPanel] matchmakingState', matchmakingState.value)
 
@@ -196,6 +214,7 @@ const waitProgress = computed(() => {
 
 // 获取状态文本
 const getStatusText = () => {
+  if (gameStore.isReadyCheck) return '等待确认'
   switch (matchmakingState.value?.searchState) {
     case 'Searching':
       return '匹配中'
@@ -208,6 +227,7 @@ const getStatusText = () => {
 
 // 获取按钮文本
 const getButtonText = () => {
+  if (gameStore.isReadyCheck) return '等待其他玩家确认...'
   switch (matchmakingState.value?.searchState) {
     case 'Searching':
       return '取消匹配'

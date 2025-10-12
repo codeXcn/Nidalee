@@ -44,6 +44,59 @@ where
     deserializer.deserialize_any(StringOrNumberVisitor)
 }
 
+/// 兼容数字和字符串的 Option<String> 反序列化 helper
+pub fn option_string_or_number<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct OptionStringOrNumberVisitor;
+
+    impl<'de> de::Visitor<'de> for OptionStringOrNumberVisitor {
+        type Value = Option<String>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("null, string or number")
+        }
+
+        fn visit_none<E>(self) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(None)
+        }
+
+        fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            string_or_number(deserializer).map(Some)
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_owned()))
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_string()))
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(Some(value.to_string()))
+        }
+    }
+
+    deserializer.deserialize_option(OptionStringOrNumberVisitor)
+}
+
 fn empty_rune_type() -> String {
     "rune".to_string()
 }
@@ -250,6 +303,7 @@ pub struct LobbyInfo {
 )]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyMember {
+    #[ts(type = "string")]
     #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
     pub summoner_id: String,
     pub display_name: String,
@@ -272,8 +326,10 @@ pub struct SummonerInfo {
     #[ts(type = "number")]
     pub profile_icon_id: i64,
     pub puuid: String,
+    #[ts(type = "string")]
     #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
     pub account_id: String,
+    #[ts(type = "string")]
     #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
     pub summoner_id: String,
 
@@ -387,7 +443,9 @@ pub struct ChampSelectAction {
 pub struct ChampSelectPlayer {
     pub cell_id: i32,
     pub puuid: Option<String>, // 使用 String 类型来兼容数字和字符串
-    pub summoner_id: Option<String>,
+    #[ts(type = "string | null")]
+    #[serde(deserialize_with = "option_string_or_number")]
+    pub summoner_id: Option<String>, // 支持整数和字符串两种格式
     pub champion_id: Option<f64>,
     pub champion_pick_intent: Option<f64>,
     pub selected_skin_id: Option<f64>,
@@ -704,6 +762,22 @@ pub struct ChampionStats {
     pub games_played: i32,
     pub wins: i32,
     pub win_rate: f32,
+}
+
+/// 分析用英雄统计数据（包含英雄名称）
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/AnalysisChampionStats.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct AnalysisChampionStats {
+    pub champion_id: i32,
+    pub champion_name: String,
+    pub games: u32,
+    pub wins: u32,
+    pub win_rate: f64,
 }
 
 /// 最近游戏信息
@@ -1041,4 +1115,118 @@ pub struct Perk {
     pub style_id: i64,
     pub style_id_name: String,
     pub tooltip: String,
+}
+
+// === 队伍分析相关类型 ===
+
+/// 玩家完整分析数据（包含战绩）
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/PlayerAnalysisData.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayerAnalysisData {
+    // 基础信息
+    pub cell_id: i32,
+    pub display_name: String,
+    pub summoner_id: Option<String>,
+    pub puuid: Option<String>,
+    pub is_local: bool,
+    pub is_bot: bool,
+
+    // 英雄信息
+    pub champion_id: Option<i32>,
+    pub champion_name: Option<String>,
+    pub champion_pick_intent: Option<i32>,
+    pub position: Option<String>,
+
+    // 召唤师信息
+    pub tier: Option<String>,
+    pub profile_icon_id: Option<i32>,
+    pub tag_line: Option<String>,
+    pub spell1_id: Option<i32>,
+    pub spell2_id: Option<i32>,
+
+    // 战绩数据（只有真实玩家才有）
+    pub match_stats: Option<PlayerMatchStats>,
+}
+
+/// 玩家战绩统计
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/PlayerMatchStats.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayerMatchStats {
+    pub total_games: u32,
+    pub wins: u32,
+    pub losses: u32,
+    pub win_rate: f64,
+
+    // KDA统计
+    pub avg_kills: f64,
+    pub avg_deaths: f64,
+    pub avg_assists: f64,
+    pub avg_kda: f64,
+
+    // 常用英雄
+    pub favorite_champions: Vec<AnalysisChampionStats>,
+
+    // 最近战绩
+    pub recent_performance: Vec<MatchPerformance>,
+}
+
+/// 单场比赛表现
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/MatchPerformance.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct MatchPerformance {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_id: Option<u64>,
+    pub win: bool,
+    pub champion_id: i32,
+    pub champion_name: String,
+    pub kills: i32,
+    pub deaths: i32,
+    pub assists: i32,
+    pub kda: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_duration: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub queue_id: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_mode: Option<String>,
+}
+
+/// 队伍分析数据
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/TeamAnalysisData.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamAnalysisData {
+    pub my_team: Vec<PlayerAnalysisData>,
+    pub enemy_team: Vec<PlayerAnalysisData>,
+    pub local_player_cell_id: i32,
+    pub game_phase: String,
+    pub queue_id: i64, // 队列类型ID：420=单排, 440=灵活排位, 450=大乱斗等
+    pub is_custom_game: bool, // 是否自定义游戏
+
+    // 🔥 新增：选人流程相关字段
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actions: Option<Vec<Vec<ChampSelectAction>>>, // 选人/ban 动作序列
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bans: Option<ChampSelectBans>, // ban 位信息
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timer: Option<ChampSelectTimer>, // 计时器信息
 }

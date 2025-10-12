@@ -226,21 +226,24 @@
               <!-- KDA和游戏时长 -->
               <div class="flex items-center gap-2">
                 <div class="flex items-center gap-1">
-                  <span class="text-xs text-green-500">{{ match.kills }}</span>
+                  <span class="text-xs text-green-500">{{ match.kills || 0 }}</span>
                   <span class="text-xs text-muted-foreground">/</span>
-                  <span class="text-xs text-red-500">{{ match.deaths }}</span>
+                  <span class="text-xs text-red-500">{{ match.deaths || 0 }}</span>
                   <span class="text-xs text-muted-foreground">/</span>
-                  <span class="text-xs text-blue-500">{{ match.assists }}</span>
+                  <span class="text-xs text-blue-500">{{ match.assists || 0 }}</span>
                 </div>
 
-                <span class="text-xs text-muted-foreground">
+                <span v-if="match.gameDuration" class="text-xs text-muted-foreground">
                   {{ Math.floor(match.gameDuration / 60) }}分{{ match.gameDuration % 60 }}秒
                 </span>
               </div>
             </div>
 
             <!-- 游戏模式 -->
-            <div class="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
+            <div
+              v-if="match.queueId"
+              class="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0"
+            >
               {{ getQueueName(match.queueId) }}
             </div>
           </div>

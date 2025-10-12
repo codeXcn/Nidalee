@@ -1,5 +1,21 @@
 use serde_json::Value;
 use crate::lcu::auth::service::ensure_valid_auth_info;
+use crate::lcu::types::{TeamAnalysisData, PlayerAnalysisData};
+
+/// 复用缓存，仅更新敌方队伍
+pub async fn update_enemy_team_in_cache(
+    cache: &mut TeamAnalysisData,
+    local_summoner_name: &str
+) -> Result<(), String> {
+    let live_team = get_live_team_analysis(local_summoner_name).await?;
+    // 只更新 enemy_team 字段，其余字段保持原缓存
+    cache.enemy_team = live_team.enemy_team;
+    cache.local_player_cell_id = live_team.local_player_cell_id;
+    cache.game_phase = "InProgress".to_string();
+    // 其他字段如 actions、bans、timer、queue_id、is_custom_game 保持原缓存
+    Ok(())
+}
+
 
 /// 动态检测 LiveClient 端口
 /// 通常 LiveClient 使用固定端口 2999，但某些情况下可能会变化
@@ -138,4 +154,68 @@ pub async fn get_game_stats() -> Result<Value, String> {
 /// 检查 LiveClient 是否可用
 pub async fn is_liveclient_available() -> bool {
     detect_liveclient_port().await.is_some()
+}
+
+/// 实时获取 TeamAnalysisData 结构，保证与分析数据一致
+pub async fn get_live_team_analysis(local_summoner_name: &str) -> Result<TeamAnalysisData, String> {
+    let players = get_live_player_list().await?;
+    // 分组 my_team/enemy_team
+    let mut my_team = Vec::new();
+    let mut enemy_team = Vec::new();
+    let mut local_player_cell_id = 0;
+    let mut found_local = false;
+    let mut my_team_name = String::new();
+
+    // 先确定本地玩家所在队伍
+    for p in &players {
+        if p.summoner_name == local_summoner_name {
+            my_team_name = p.team.clone();
+            found_local = true;
+            break;
+        }
+    }
+    if !found_local {
+        return Err("未找到本地玩家，请确认召唤师名是否正确".to_string());
+    }
+
+    for (idx, p) in players.iter().enumerate() {
+        let mut pa = PlayerAnalysisData {
+            cell_id: idx as i32,
+            display_name: p.summoner_name.clone(),
+            summoner_id: None,
+            puuid: None,
+            is_local: p.summoner_name == local_summoner_name,
+            is_bot: p.is_bot,
+            champion_id: None,
+            champion_name: Some(p.champion_name.clone()),
+            champion_pick_intent: None,
+            position: Some(p.position.clone()),
+            tier: None,
+            profile_icon_id: None,
+            tag_line: None,
+            spell1_id: None,
+            spell2_id: None,
+            match_stats: None,
+        };
+        if pa.is_local {
+            local_player_cell_id = pa.cell_id;
+        }
+        if p.team == my_team_name {
+            my_team.push(pa);
+        } else {
+            enemy_team.push(pa);
+        }
+    }
+
+    Ok(TeamAnalysisData {
+        my_team,
+        enemy_team,
+        local_player_cell_id,
+        game_phase: "InProgress".to_string(),
+        queue_id: 0,
+        is_custom_game: false,
+        actions: None,
+        bans: None,
+        timer: None,
+    })
 }

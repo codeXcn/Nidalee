@@ -1,3 +1,4 @@
+pub mod analysis_data;
 pub mod auth;
 pub mod champ_select;
 pub mod connection;

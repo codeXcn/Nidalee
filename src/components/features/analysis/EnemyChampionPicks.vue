@@ -19,13 +19,23 @@
         </div>
 
         <!-- 英雄头像 -->
-        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-border mr-3 flex-shrink-0">
+        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-border mr-3 flex-shrink-0 relative">
+          <!-- 已选择的英雄 -->
           <img
             v-if="pick.championId"
             :src="getChampionIconUrl(pick.championId)"
             :alt="getChampionName(pick.championId)"
             class="w-full h-full object-cover"
           />
+          <!-- 预选英雄（半透明显示） -->
+          <img
+            v-else-if="pick.championPickIntent"
+            :src="getChampionIconUrl(pick.championPickIntent)"
+            :alt="getChampionName(pick.championPickIntent)"
+            class="w-full h-full object-cover opacity-50"
+            :title="`预选: ${getChampionName(pick.championPickIntent)}`"
+          />
+          <!-- 未选择 -->
           <div v-else class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -36,12 +46,25 @@
               />
             </svg>
           </div>
+          <!-- 预选指示器 -->
+          <div
+            v-if="!pick.championId && pick.championPickIntent"
+            class="absolute inset-0 flex items-center justify-center bg-black/40"
+          >
+            <span class="text-xs text-white font-bold">预选</span>
+          </div>
         </div>
 
         <!-- 英雄信息 -->
         <div class="flex-1">
           <div class="font-medium text-foreground">
-            {{ pick.championId ? getChampionName(pick.championId) : '未选择' }}
+            {{
+              pick.championId
+                ? getChampionName(pick.championId)
+                : pick.championPickIntent
+                  ? `预选: ${getChampionName(pick.championPickIntent)}`
+                  : '未选择'
+            }}
           </div>
           <div class="text-sm text-muted-foreground">
             {{ getPositionName(index) }}
@@ -55,6 +78,12 @@
             class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
           >
             已选择
+          </div>
+          <div
+            v-else-if="pick.championPickIntent"
+            class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 animate-pulse"
+          >
+            预选中
           </div>
           <div
             v-else
@@ -94,6 +123,7 @@ import { getChampionIconUrl, getChampionName } from '@/lib'
 interface EnemyChampionPick {
   cellId: number
   championId: number | null
+  championPickIntent?: number | null // 预选英雄
 }
 
 interface Props {

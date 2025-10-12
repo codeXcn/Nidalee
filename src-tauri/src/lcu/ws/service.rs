@@ -17,6 +17,14 @@ static WS_RUNNING: AtomicBool = AtomicBool::new(false);
 static WS_TASK: OnceCell<tokio::task::JoinHandle<()>> = OnceCell::new();
 static WS_SENDER: OnceCell<Arc<Mutex<Option<tokio_tungstenite::tungstenite::protocol::WebSocket<tokio_tungstenite::MaybeTlsStream<TcpStream>>>>>> = OnceCell::new();
 
+// 🔥 全局存储事件处理器，用于访问缓存
+static WS_EVENT_HANDLER: OnceCell<Arc<WsEventHandler>> = OnceCell::new();
+
+/// 🔥 获取全局事件处理器（用于访问缓存）
+pub fn get_event_handler() -> Option<Arc<WsEventHandler>> {
+    WS_EVENT_HANDLER.get().cloned()
+}
+
 // 辅助函数：确保订阅某个路径（幂等）
 async fn ensure_subscribed(
     ws_stream: &mut tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>,
@@ -150,7 +158,10 @@ async fn connect_and_run_ws(app: &tauri::AppHandle, auth: &crate::lcu::types::Lc
     ensure_subscribed(&mut ws_stream, "/lol-gameflow/v1/session", &mut subscribed).await;
 
     // 创建事件处理器
-    let event_handler = WsEventHandler::new(app.clone());
+    let event_handler = Arc::new(WsEventHandler::new(app.clone()));
+
+    // 🔥 保存到全局变量，供 Command 访问
+    let _ = WS_EVENT_HANDLER.set(event_handler.clone());
 
     // 接收循环：处理 WebSocket 事件
     while WS_RUNNING.load(Ordering::SeqCst) {
@@ -170,6 +181,13 @@ async fn connect_and_run_ws(app: &tauri::AppHandle, auth: &crate::lcu::types::Lc
                             ) {
                                 // 动态订阅：根据阶段按需补充订阅主题
                                 if let Some(uri) = payload.get("uri").and_then(|v| v.as_str()) {
+                                    // 调试模式下打印 session 相关的原始数据
+                                    #[cfg(debug_assertions)]
+                                    if uri == "/lol-gameflow/v1/session" {
+                                        log::debug!("[LCU-WS] 收到 gameflow session 原始消息");
+                                        log::trace!("[LCU-WS] 完整数据: {}", text);
+                                    }
+
                                     // 如果是阶段事件，尝试解析新阶段
                                     if uri == "/lol-gameflow/v1/gameflow-phase" {
                                         if let Some(phase_str) = payload.get("data").and_then(|v| v.as_str()) {

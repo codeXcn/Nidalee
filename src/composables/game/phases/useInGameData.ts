@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { getChampionIdByName } from '@/lib'
+import { useChampionSummaryQuery } from '@/composables/useLolApiQuery'
 
 /**
  * 统一的游戏内数据管理器
@@ -45,6 +45,20 @@ export function useInGameData() {
 
   // 事件监听管理
   let eventListeners: (() => void)[] = []
+
+  // 🚨 获取英雄数据（用于名称 -> ID 的映射）
+  const { data: championSummaryData } = useChampionSummaryQuery()
+
+  // 根据英雄名称获取 ID
+  const getChampionIdByName = (championName: string | null): number => {
+    if (!championName || !championSummaryData.value) return 0
+
+    const champion = championSummaryData.value.find(
+      (champ) => champ.name === championName || champ.alias.toLowerCase() === championName.toLowerCase()
+    )
+
+    return champion?.id || 0
+  }
 
   // === 计算属性 ===
   const hasData = computed(() => processedPlayers.value.length > 0)
@@ -122,23 +136,53 @@ export function useInGameData() {
   /**
    * 处理游戏数据
    */
-  const processGameData = async (newPlayerList: LiveClientPlayer[], localPlayerName?: string) => {
-    if (!Array.isArray(newPlayerList) || newPlayerList.length === 0) {
-      console.log('[InGameData] 玩家列表为空')
+  const processGameData = async (newPlayerList: LiveClientPlayer[] | any, localPlayerName?: string) => {
+    console.log('[InGameData] processGameData 被调用:', {
+      isArray: Array.isArray(newPlayerList),
+      length: newPlayerList?.length,
+      type: typeof newPlayerList,
+      isString: typeof newPlayerList === 'string'
+    })
+
+    // 🚨 关键修复：处理后端返回的 JSON 字符串
+    let parsedPlayerList = newPlayerList
+    if (typeof newPlayerList === 'string') {
+      try {
+        console.log('[InGameData] 🔄 检测到字符串数据，尝试解析 JSON...')
+        parsedPlayerList = JSON.parse(newPlayerList)
+        console.log('[InGameData] ✅ JSON 解析成功，玩家数量:', parsedPlayerList.length)
+      } catch (e) {
+        console.error('[InGameData] ❌ JSON 解析失败:', e)
+        return
+      }
+    }
+
+    if (!Array.isArray(parsedPlayerList) || parsedPlayerList.length === 0) {
+      console.log('[InGameData] ❌ 玩家列表为空或无效')
       return
     }
 
-    console.log('[InGameData] 处理游戏数据:', newPlayerList)
+    console.log('[InGameData] ✅ 开始处理游戏数据，玩家数量:', parsedPlayerList.length)
 
     // 更新原始数据
-    playerList.value = newPlayerList
+    playerList.value = parsedPlayerList
 
     // 处理玩家数据
     const processed: ProcessedPlayer[] = []
-    for (const player of newPlayerList) {
+    for (const player of parsedPlayerList) {
+      const championId = getChampionIdByName(player.championName) || 0
+
+      console.log('[InGameData] 处理玩家:', {
+        summonerName: player.summonerName,
+        championName: player.championName,
+        rawChampionName: player.rawChampionName,
+        championId,
+        team: player.team
+      })
+
       const processedPlayer: ProcessedPlayer = {
         displayName: player.summonerName || '未知玩家',
-        championId: getChampionIdByName(player.championName) || 0,
+        championId,
         championName: player.championName || '',
         assignedPosition: player.position,
         summonerId: player.summonerName || '',
@@ -153,7 +197,7 @@ export function useInGameData() {
     processedPlayers.value = processed
 
     // 识别队伍
-    const teams = identifyTeams(newPlayerList, localPlayerName)
+    const teams = identifyTeams(parsedPlayerList, localPlayerName)
     myTeamPlayers.value = teams.myTeam.map(mapToProcessedPlayer)
     enemyTeamPlayers.value = teams.enemyTeam.map(mapToProcessedPlayer)
 
@@ -192,6 +236,15 @@ export function useInGameData() {
       myTeam = players.filter((p) => p.team === 'ORDER')
       enemyTeam = players.filter((p) => p.team === 'CHAOS')
     }
+
+    console.log('[InGameData] 队伍识别结果:', {
+      localPlayerName,
+      totalPlayers: players.length,
+      myTeamCount: myTeam.length,
+      enemyTeamCount: enemyTeam.length,
+      myTeamNames: myTeam.map((p) => `${p.summonerName}(${p.team})`),
+      enemyTeamNames: enemyTeam.map((p) => `${p.summonerName}(${p.team})`)
+    })
 
     return { myTeam, enemyTeam }
   }
