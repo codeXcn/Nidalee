@@ -162,6 +162,40 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
     isDestroyed.value = destroyed
   }
 
+  // === 单独设置方法（用于 InProgress 阶段的增量更新） ===
+  const setMyTeamData = (data: TeamData | null) => {
+    console.log('[MatchAnalysisStore] setMyTeamData:', data)
+    myTeamData.value = data
+  }
+
+  const setMyTeamStats = (stats: (EnrichedMatchStatistics | null)[]) => {
+    console.log('[MatchAnalysisStore] setMyTeamStats:', stats?.length)
+    myTeamStats.value = stats
+  }
+
+  const setEnemyTeamData = (data: TeamData | null) => {
+    console.log('[MatchAnalysisStore] setEnemyTeamData:', data)
+    enemyTeamData.value = data
+  }
+
+  const setEnemyTeamStats = (stats: (EnrichedMatchStatistics | null)[]) => {
+    console.log('[MatchAnalysisStore] setEnemyTeamStats:', stats?.length)
+    enemyTeamStats.value = stats
+  }
+
+  const setEnemyChampionPicks = (
+    picks: Array<{ cellId: number; championId: number | null; championPickIntent?: number | null }>
+  ) => {
+    console.log('[MatchAnalysisStore] setEnemyChampionPicks:', picks)
+    enemyChampionPicks.value = picks
+  }
+
+  const setQueueInfo = (queue: number, isCustom: boolean) => {
+    console.log('[MatchAnalysisStore] setQueueInfo:', queue, isCustom)
+    queueId.value = queue
+    isCustomGame.value = isCustom
+  }
+
   // === 清理方法 ===
   const clearAllData = () => {
     console.log('[MatchAnalysisStore] 清理所有数据')
@@ -212,6 +246,7 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
     isRankedGame,
 
     // Actions
+    setTeamAnalysisData,
     setMyTeamData,
     setMyTeamStats,
     setEnemyTeamData,

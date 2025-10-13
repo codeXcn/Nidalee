@@ -2,6 +2,7 @@
 use crate::lcu::analysis_data; // 使用模块化的 analysis_data
 use crate::lcu::summoner::service::get_summoner_by_id;
 use crate::lcu::types::{ChampSelectSession, LobbyInfo, MatchmakingState, SummonerInfo};
+use crate::lcu::champion_data; // 引入英雄数据模块
 use reqwest::Client;
 use serde_json::Value;
 use std::sync::Arc;
@@ -152,19 +153,30 @@ impl WsEventHandler {
         data: &Value,
         event_type: &str,
     ) -> Result<(), String> {
+        log::info!("[WS-Event] 游戏阶段变化 ({}): {}", event_type, data);
         if event_type == "Create" || event_type == "Update" {
             if let Some(phase) = data.as_str() {
                 let mut cache = self.cache.write().await;
                 if cache.gameflow_phase.as_ref() != Some(&phase.to_string()) {
-                    log::info!("[WS-Event] 游戏阶段变化 ({}): {}", event_type, phase);
 
                     // 🔥 核心修改：当进入 InProgress 阶段时，不再清理缓存，而是触发回填逻辑
                     if phase == "InProgress" {
                         if cache.team_analysis_data.is_some() {
                             log::info!("[WS-Event] 🚀 InProgress 阶段，触发敌方数据回填");
-                            let handler_clone = Arc::new(self.clone());
+                            // 克隆所需的字段以满足 'static 生命周期要求
+                            let app_clone = self.app.clone();
+                            let cache_clone = Arc::clone(&self.cache);
+                            let client_clone = self.client.clone();
+
                             tokio::spawn(async move {
-                                if let Err(e) = handler_clone.backfill_enemy_team_data().await {
+                                // 在新任务中重新构建 handler（避免生命周期问题）
+                                let temp_handler = WsEventHandler {
+                                    app: app_clone,
+                                    cache: cache_clone,
+                                    client: client_clone,
+                                };
+
+                                if let Err(e) = temp_handler.backfill_enemy_team_data().await {
                                     log::error!("[WS-Event-Backfill] ❌ 敌方数据回填失败: {}", e);
                                 }
                             });
@@ -172,6 +184,7 @@ impl WsEventHandler {
                     } else if phase != "ChampSelect"
                         && phase != "ReadyCheck"
                         && phase != "Matchmaking"
+                        && phase != "GameStart"
                     {
                         // 对于其他阶段切换（如返回大厅），清理所有缓存
                         if !cache.match_stats_cache.is_empty() {
@@ -203,7 +216,6 @@ impl WsEventHandler {
         Ok(())
     }
 
-    // ... (其他 handle 函数保持不变) ...
 
     /// 🔥 新增：在 InProgress 阶段回填敌方队伍的详细战绩
     async fn backfill_enemy_team_data(&self) -> Result<(), String> {
@@ -213,22 +225,32 @@ impl WsEventHandler {
         // 增加重试逻辑，因为 LiveClient API 可能在游戏刚开始时还未完全就绪
         let live_players = {
             let mut attempts = 0;
-            let max_attempts = 5;
-            let mut last_error = "".to_string();
+            let max_attempts = 30; // 增加到30次，总共等待约1分钟
             loop {
                 attempts += 1;
                 match crate::lcu::liveclient::service::get_live_player_list().await {
-                    Ok(players) => break players,
+                    Ok(players) if !players.is_empty() => {
+                        log::info!("[WS-Event-Backfill] ✅ 成功获取 LiveClient 玩家列表");
+                        break players;
+                    }
+                    Ok(_) => {
+                        if attempts >= max_attempts {
+                            return Err(
+                                "多次尝试后仍无法获取 LiveClient 玩家列表: 返回了空玩家列表 (游戏加载中)".to_string()
+                            );
+                        }
+                        log::warn!("[WS-Event-Backfill] ⚠️ LiveClient 返回空列表 (游戏加载中)，尝试 {}/{}...", attempts, max_attempts);
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    }
                     Err(e) => {
-                        last_error = e.to_string();
                         if attempts >= max_attempts {
                             return Err(format!(
                                 "多次尝试后仍无法获取 LiveClient 玩家列表: {}",
-                                last_error
+                                e
                             ));
                         }
-                        log::warn!("[WS-Event-Backfill] ⚠️ 获取 LiveClient 玩家列表失败 (尝试 {}/{})，1秒后重试...", attempts, max_attempts);
-                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        log::warn!("[WS-Event-Backfill] ⚠️ 获取 LiveClient 玩家列表失败 (尝试 {}/{})，2秒后重试: {}", attempts, max_attempts, e);
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                     }
                 }
             }
@@ -239,6 +261,7 @@ impl WsEventHandler {
             live_players.len()
         );
 
+        // 2. 获取缓存的分析数据
         let mut cache = self.cache.write().await;
         let team_analysis = match cache.team_analysis_data.as_mut() {
             Some(data) => data,
@@ -248,89 +271,172 @@ impl WsEventHandler {
             }
         };
 
-        // 2. 识别需要更新的敌方玩家
-        let mut players_to_update = Vec::new();
-        for enemy_player in team_analysis.enemy_team.iter_mut() {
-            // 如果已经有战绩，或者在 ChampSelect 阶段就确定是机器人，则跳过
-            if enemy_player.match_stats.is_some() || enemy_player.is_bot {
-                continue;
-            }
+        // 3. 识别敌方玩家（CHAOS队伍）
+        let enemy_live_players: Vec<_> = live_players
+            .into_iter()
+            .filter(|p| p.team == "CHAOS" && !p.is_bot && !p.summoner_name.is_empty())
+            .collect();
 
-            // 从 LiveClient 列表中找到对应的玩家，以补全 puuid
-            if let Some(live_info) = live_players
-                .iter()
-                .find(|p| p.champion_name == enemy_player.champion_name.clone().unwrap_or_default())
-            {
-                if !live_info.summoner_name.is_empty() && !live_info.is_bot {
-                    enemy_player.display_name = live_info.summoner_name.clone();
-                    // 假设 live_info 中有 puuid，但标准 LiveClientAPI 没有，这里需要通过 summonerName 再次查询
-                    // 我们直接将需要更新的 PlayerAnalysisData 推入列表
-                    players_to_update.push(enemy_player);
-                }
-            }
-        }
-
-        if players_to_update.is_empty() {
-            log::info!("[WS-Event-Backfill] ✅ 无需更新敌方玩家战绩");
+        if enemy_live_players.is_empty() {
+            log::info!("[WS-Event-Backfill] ✅ LiveClient 数据中没有需要处理的敌方玩家");
             return Ok(());
         }
 
         log::info!(
-            "[WS-Event-Backfill] 🎯 找到 {} 名需要更新战绩的敌方玩家",
-            players_to_update.len()
+            "[WS-Event-Backfill] 🎯 找到 {} 名真实的敌方玩家，开始回填数据...",
+            enemy_live_players.len()
         );
 
-        // 3. 复用 analysis_data 服务获取战绩
-        // 注意：fetch_all_players_match_stats 需要可变借用，且在异步块中，处理起来比较复杂
-        // 我们直接在这里实现类似的逻辑
-        let player_names: Vec<String> = players_to_update
+        // 4. 批量获取召唤师信息
+        let player_names: Vec<String> = enemy_live_players
             .iter()
-            .map(|p| p.display_name.clone())
+            .map(|p| p.summoner_name.clone())
             .collect();
-        match crate::lcu::summoner::service::get_summoners_by_names(&self.client, player_names)
-            .await
+
+        let summoners_info = match crate::lcu::summoner::service::get_summoners_by_names(
+            &self.client,
+            player_names.clone(),
+        )
+        .await
         {
-            Ok(summoners_info) => {
+            Ok(info) => {
                 log::info!(
                     "[WS-Event-Backfill] ✅ 成功获取 {} 名敌方召唤师的详细信息",
-                    summoners_info.len()
+                    info.len()
                 );
-                for player in players_to_update {
-                    if let Some(info) = summoners_info.iter().find(|s| {
-                        s.display_name.to_lowercase() == player.display_name.to_lowercase()
-                    }) {
-                        match crate::lcu::matches::service::get_recent_matches_by_puuid(
-                            &self.client,
-                            &info.puuid,
-                            20,
-                        )
-                        .await
-                        {
-                            Ok(match_stats) => {
-                                // 注意：这里的 queue_id 来自于缓存的对局信息
-                                let queue_id = team_analysis.queue_id;
-                                let player_stats = analysis_data::service::convert_match_statistics_to_player_stats(match_stats, &player.display_name, queue_id);
-                                player.match_stats = Some(player_stats);
-                                log::info!(
-                                    "[WS-Event-Backfill] ✅ 成功回填玩家 {} 的战绩",
-                                    player.display_name
-                                );
-                            }
-                            Err(e) => log::warn!(
-                                "[WS-Event-Backfill] ⚠️ 获取玩家 {} 战绩失败: {}",
-                                player.display_name,
-                                e
-                            ),
-                        }
+                info
+            }
+            Err(e) => {
+                log::error!(
+                    "[WS-Event-Backfill] ❌ 批量获取敌方召唤师信息失败: {}",
+                    e
+                );
+                return Ok(()); // 不中断流程，返回 OK
+            }
+        };
+
+        // 5. 遍历 LiveClient 的敌方玩家，更新 team_analysis.enemy_team
+        // 为了避免可变借用冲突，我们先收集需要缓存的战绩数据
+        let mut stats_to_cache = Vec::new();
+
+        for live_player in enemy_live_players {
+            // 5.1 通过中文名查找英雄ID
+            let champion_id = champion_data::get_champion_id_by_name(&live_player.champion_name);
+            if champion_id.is_none() {
+                log::warn!(
+                    "[WS-Event-Backfill] ⚠️ 无法找到英雄 '{}' 的ID，跳过该玩家",
+                    live_player.champion_name
+                );
+                continue;
+            }
+            let champion_id = champion_id.unwrap();
+
+            // 5.2 在 team_analysis.enemy_team 中查找对应的玩家
+            // 匹配规则：通过 championId 或 displayName
+            let enemy_player = team_analysis.enemy_team.iter_mut().find(|p| {
+                // 优先通过英雄ID匹配（最可靠）
+                if let Some(p_champ_id) = p.champion_id {
+                    if p_champ_id == champion_id {
+                        return true;
                     }
                 }
+                // 备选：通过召唤师名称匹配
+                p.display_name.to_lowercase() == live_player.summoner_name.to_lowercase()
+            });
+
+            let enemy_player = match enemy_player {
+                Some(player) => player,
+                None => {
+                    log::warn!(
+                        "[WS-Event-Backfill] ⚠️ 在缓存的敌方队伍中找不到玩家 '{}' (英雄: {})，跳过",
+                        live_player.summoner_name,
+                        live_player.champion_name
+                    );
+                    continue;
+                }
+            };
+
+            // 5.3 更新玩家基础信息
+            enemy_player.display_name = live_player.summoner_name.clone();
+            enemy_player.champion_id = Some(champion_id);
+            enemy_player.champion_name = Some(live_player.champion_name.clone());
+
+            // 5.4 查找对应的召唤师信息
+            let summoner_info = summoners_info.iter().find(|s| {
+                let full_name = if let (Some(game_name), Some(tag_line)) =
+                    (&s.game_name, &s.tag_line)
+                {
+                    format!("{}#{}", game_name, tag_line)
+                } else {
+                    s.display_name.clone()
+                };
+                full_name.to_lowercase() == live_player.summoner_name.to_lowercase()
+            });
+
+            if let Some(info) = summoner_info {
+                // 5.5 更新段位、头像等信息
+                enemy_player.puuid = Some(info.puuid.clone());
+                enemy_player.tier = info.solo_rank_tier.clone();
+                enemy_player.profile_icon_id = Some(info.profile_icon_id as i32);
+                enemy_player.tag_line = info.tag_line.clone();
+
+                // 5.6 获取战绩数据
+                match crate::lcu::matches::service::get_recent_matches_by_puuid(
+                    &self.client,
+                    &info.puuid,
+                    20,
+                )
+                .await
+                {
+                    Ok(match_stats) => {
+                        let queue_id = team_analysis.queue_id;
+                        let player_stats =
+                            analysis_data::service::convert_match_statistics_to_player_stats(
+                                match_stats,
+                                &live_player.summoner_name,
+                                queue_id,
+                            );
+
+                        // 先保存到临时列表，稍后批量插入缓存
+                        stats_to_cache.push((live_player.summoner_name.clone(), player_stats.clone()));
+
+                        enemy_player.match_stats = Some(player_stats);
+                        log::info!(
+                            "[WS-Event-Backfill] ✅ 成功回填玩家 '{}' 的完整数据",
+                            live_player.summoner_name
+                        );
+                    }
+                    Err(e) => {
+                        log::warn!(
+                            "[WS-Event-Backfill] ⚠️ 获取玩家 '{}' 战绩失败: {}",
+                            live_player.summoner_name,
+                            e
+                        );
+                    }
+                }
+            } else {
+                log::warn!(
+                    "[WS-Event-Backfill] ⚠️ 未找到召唤师 '{}' 的详细信息",
+                    live_player.summoner_name
+                );
             }
-            Err(e) => log::error!("[WS-Event-Backfill] ❌ 批量获取敌方召唤师信息失败: {}", e),
         }
 
-        // 4. 发送更新后的完整数据到前端
+        // 5.7 克隆更新后的数据（在释放 team_analysis 借用之前）
+        let updated_data = team_analysis.clone();
+
+        // 5.8 批量插入战绩缓存（现在可以安全地借用 cache 了）
+        for (summoner_name, stats) in stats_to_cache {
+            cache.match_stats_cache.insert(summoner_name, stats);
+        }
+
+        // 释放锁
+        drop(cache);
+
+        // 6. 发送更新后的完整数据到前端
         log::info!("[WS-Event-Backfill] 📡 发送已回填的完整对局分析数据到前端");
-        let _ = self.app.emit("team-analysis-data", &team_analysis.clone());
+        let _ = self.app.emit("team-analysis-data", &updated_data);
+        log::info!("[WS-Event-Backfill] ✅ 回填任务完成");
 
         Ok(())
     }
@@ -472,20 +578,17 @@ impl WsEventHandler {
                 }
             }
         } else if event_type == "Delete" {
-            log::info!("[WS-Event] 🗑️ 选人会话清除");
+            log::info!("[WS-Event] 🗑️ 选人会话清除，但保留分析数据用于回填");
 
             // 🔥 清理缓存
             let mut cache = self.cache.write().await;
             cache.champ_select_session = None;
-            cache.team_analysis_data = None;
-            log::info!("[WS-Event] 🗑️ 分析数据缓存已清除");
+            // 移除此行: cache.team_analysis_data = None;
+            // 理由: 当阶段变为 InProgress 时，需要此数据来回填敌方战绩。
+            // 清理工作由 handle_gameflow_phase_change 在游戏完全结束后负责。
             drop(cache);
 
-            // 发送空的分析数据
-            let _ = self.app.emit(
-                "team-analysis-data",
-                &None::<crate::lcu::types::TeamAnalysisData>,
-            );
+            // 注意：不再向前端发送空的分析数据，因为我们期望 InProgress 阶段能使用它
         }
         Ok(())
     }

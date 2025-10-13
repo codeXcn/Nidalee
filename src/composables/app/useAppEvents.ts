@@ -4,7 +4,6 @@ import { useSummonerAndMatchUpdater } from '@/composables/game/useSummonerAndMat
 import { useConnectionStore, useMatchmakingStore, useMatchAnalysisStore } from '@/stores'
 import { listen } from '@tauri-apps/api/event'
 import { debounce, isObject } from 'radash'
-import type { TeamAnalysisData, EnrichedPlayerMatchStats, EnemyChampionPick } from '@/types/match-analysis'
 
 // 创建一个模块级别的状态，用于跟踪监听器
 let unlisteners: (() => void)[] = []
@@ -28,8 +27,8 @@ export function useAppEvents() {
   // 事件处理函数
   const handleGameFlowPhaseChange = (event: any) => {
     console.log('[AppEvents] 游戏阶段变化:', event.payload)
-    const phase = event.payload as string | null
-    matchAnalysisStore.setPhase(phase || 'None')
+    const phase = event.payload as string
+    handleGamePhaseChange(phase)
   }
 
   const handleGameflowSessionChanged = (event: any) => {

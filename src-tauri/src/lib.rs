@@ -60,6 +60,16 @@ pub fn run() {
             lcu::ws::commands::stop_lcu_ws,
             // 分析数据命令
             lcu::analysis_data::commands::get_cached_analysis_data,
+
+            // 英雄数据命令
+            lcu::champion_data::commands::init_champion_data,
+            lcu::champion_data::commands::get_all_champion_data,
+            lcu::champion_data::commands::get_champion_by_id,
+            lcu::champion_data::commands::get_champion_by_alias,
+            lcu::champion_data::commands::get_champion_by_name,
+            lcu::champion_data::commands::is_champion_data_loaded,
+            lcu::champion_data::commands::get_champion_count_cmd,
+
             common::commands::machine::get_machine_hash,
             common::commands::builds::get_champions_list,
             common::commands::builds::get_champion_builds,

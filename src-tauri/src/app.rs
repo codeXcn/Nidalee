@@ -37,6 +37,17 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
+    // 🌐 初始化英雄数据（异步加载，不阻塞应用启动）
+    {
+        tokio::spawn(async move {
+            log::info!("[应用] 开始加载英雄数据...");
+            match lcu::champion_data::load_champion_data().await {
+                Ok(_) => log::info!("[应用] ✅ 英雄数据加载成功"),
+                Err(e) => log::error!("[应用] ❌ 英雄数据加载失败: {}", e),
+            }
+        });
+    }
+
     Ok(())
 }
 

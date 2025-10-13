@@ -34,11 +34,7 @@
               <Progress :model-value="waitProgress" />
             </div>
             <div class="pt-4 border-t border-border/50">
-              <Button
-                class="w-full h-12 text-base font-semibold"
-                variant="destructive"
-                @click="handleMatchmaking"
-              >
+              <Button class="w-full h-12 text-base font-semibold" variant="destructive" @click="handleMatchmaking">
                 <Loader2 class="h-4 w-4 mr-2 animate-spin" />
                 取消匹配
               </Button>
@@ -52,9 +48,7 @@
         <div class="flex flex-col items-center justify-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-6"></div>
           <h2 class="text-2xl font-semibold text-foreground">正在分析对局...</h2>
-          <p class="text-muted-foreground mt-2 max-w-sm text-center">
-            正在获取双方玩家的战绩与英雄数据，请稍候。
-          </p>
+          <p class="text-muted-foreground mt-2 max-w-sm text-center">正在获取双方玩家的战绩与英雄数据，请稍候。</p>
         </div>
       </div>
 
@@ -86,7 +80,7 @@ import { storeToRefs } from 'pinia'
 const matchmakingStore = useMatchmakingStore()
 const matchAnalysisStore = useMatchAnalysisStore()
 
-const { matchmakingState } = storeToRefs(matchmakingStore)
+const { state: matchmakingState } = storeToRefs(matchmakingStore)
 const { currentPhase } = storeToRefs(matchAnalysisStore)
 
 const { handleMatchmaking } = useMatchmaking()
@@ -156,8 +150,18 @@ const statusDescription = ref('')
 watch(
   currentPhase,
   (phase) => {
+    console.log('[GameStatusHub]👍 当前阶段:', phase)
     switch (phase) {
       case 'Lobby':
+        statusIcon.value = Users
+        statusTitle.value = '房间中'
+        statusDescription.value = '请开始匹配，进入选人后将自动显示队伍信息。'
+        break
+      case 'Reconnect':
+        statusIcon.value = Users
+        statusTitle.value = '重新连接'
+        statusDescription.value = '已断开，请重新连接游戏。'
+        break
       case 'None':
         statusIcon.value = Users
         statusTitle.value = '正在大厅'

@@ -3,7 +3,15 @@
  * 🎉 简化版：大部分类型已通过 ts-rs 自动生成，这里只保留 UI 特定的类型
  */
 
-export type GamePhase = 'None' | 'Lobby' | 'Matchmaking' | 'ChampSelect' | 'InProgress' | 'EndOfGame'
+export type GamePhase =
+  | 'None'
+  | 'Lobby'
+  | 'Matchmaking'
+  | 'ChampSelect'
+  | 'InProgress'
+  | 'EndOfGame'
+  | 'ReadyCheck'
+  | 'Reconnect'
 
 /**
  * UI 专用的玩家数据扩展

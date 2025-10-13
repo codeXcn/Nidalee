@@ -15,9 +15,9 @@ export function useGamePhaseManager() {
   const router = useRouter()
 
   // 游戏阶段变更处理
-  const handleGamePhaseChange = (phaseObj: GameflowPhase | null) => {
-    const phase = phaseObj?.phase
+  const handleGamePhaseChange = (phase: string) => {
     const previousPhase = gameStore.currentPhase
+    gameStore.updateGamePhase(phase || 'None')
     // 过滤掉重复的阶段变更事件
     if (previousPhase === phase) {
       return
@@ -26,8 +26,6 @@ export function useGamePhaseManager() {
     console.log('[🎮 GamePhaseManager] 上一个阶段:', previousPhase)
     console.log('[🎮 GamePhaseManager] 当前阶段:', phase)
     console.log('[🎮 GamePhaseManager] 阶段变更时间:', new Date().toLocaleTimeString())
-
-    gameStore.updateGamePhase(phase || 'None')
 
     if (phase) {
       // 只处理接受对局，选人/禁用由 gameStore 处理

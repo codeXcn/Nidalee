@@ -432,7 +432,7 @@ async fn fetch_all_players_match_stats(
 }
 
 /// 将 LCU API 的 MatchStatistics 转换为我们的 PlayerMatchStats
-fn convert_match_statistics_to_player_stats(
+pub fn convert_match_statistics_to_player_stats(
     lcu_stats: crate::lcu::types::MatchStatistics,
     player_name: &str,
     current_queue_id: i64,

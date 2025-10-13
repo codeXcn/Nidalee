@@ -12,7 +12,7 @@ export function usePhaseHandler() {
   const gameStore = useGameStore()
   const errorHandler = useErrorHandler()
   const matchAnalysis = useMatchAnalysis()
-  const teamDataManager = useTeamDataManager(matchAnalysis)
+  // const teamDataManager = useTeamDataManager(matchAnalysis)
 
   // 控制状态
   const currentOperation = ref<AbortController | null>(null)
@@ -77,7 +77,7 @@ export function usePhaseHandler() {
       if (controller.signal.aborted) return
 
       // 处理我方队伍数据
-      await teamDataManager.processMyTeamData(session, controller.signal)
+      // await teamDataManager.processMyTeamData(session, controller.signal)
 
       // 初始化敌方英雄选择监听
       if (!controller.signal.aborted) {
@@ -100,64 +100,64 @@ export function usePhaseHandler() {
   /**
    * InProgress 阶段处理（带重试机制）
    */
-  const handleInProgressPhase = async () => {
-    // 防止重复执行
-    if (matchAnalysis.isLoading.value && matchAnalysis.phase.value === 'InProgress') {
-      console.log('[PhaseHandler] InProgress 处理中，跳过')
-      return
-    }
+  // const handleInProgressPhase = async () => {
+  //   // 防止重复执行
+  //   if (matchAnalysis.isLoading.value && matchAnalysis.phase.value === 'InProgress') {
+  //     console.log('[PhaseHandler] InProgress 处理中，跳过')
+  //     return
+  //   }
 
-    console.log('[PhaseHandler] 进入 InProgress 阶段')
+  //   console.log('[PhaseHandler] 进入 InProgress 阶段')
 
-    // 取消之前的操作
-    currentOperation.value?.abort()
-    const controller = new AbortController()
-    currentOperation.value = controller
+  //   // 取消之前的操作
+  //   currentOperation.value?.abort()
+  //   const controller = new AbortController()
+  //   currentOperation.value = controller
 
-    const executeWithRetry = async (): Promise<void> => {
-      while (retryCount.value < maxRetries && !controller.signal.aborted && !matchAnalysis.isDestroyed.value) {
-        try {
-          matchAnalysis.setLoading(true)
-          matchAnalysis.setPhase('InProgress')
+  //   const executeWithRetry = async (): Promise<void> => {
+  //     while (retryCount.value < maxRetries && !controller.signal.aborted && !matchAnalysis.isDestroyed.value) {
+  //       try {
+  //         matchAnalysis.setLoading(true)
+  //         matchAnalysis.setPhase('InProgress')
 
-          // 等待 LiveClient 数据
-          const hasData = await waitForLiveClientData(controller.signal)
-          if (!hasData) {
-            throw new Error('LiveClient 数据获取超时')
-          }
+  //         // 等待 LiveClient 数据
+  //         const hasData = await waitForLiveClientData(controller.signal)
+  //         if (!hasData) {
+  //           throw new Error('LiveClient 数据获取超时')
+  //         }
 
-          // 处理敌方队伍数据
-          await teamDataManager.processEnemyTeamData(controller.signal)
+  //         // 处理敌方队伍数据
+  //         // await teamDataManager.processEnemyTeamData(controller.signal)
 
-          console.log('[PhaseHandler] InProgress 处理完成')
-          return // 成功，退出重试循环
-        } catch (error) {
-          retryCount.value++
-          console.error(`[PhaseHandler] InProgress 处理失败 (第${retryCount.value}次):`, error)
+  //         console.log('[PhaseHandler] InProgress 处理完成')
+  //         return // 成功，退出重试循环
+  //       } catch (error) {
+  //         retryCount.value++
+  //         console.error(`[PhaseHandler] InProgress 处理失败 (第${retryCount.value}次):`, error)
 
-          if (retryCount.value >= maxRetries) {
-            errorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'InProgress 阶段处理')
-            return
-          }
+  //         if (retryCount.value >= maxRetries) {
+  //           errorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'InProgress 阶段处理')
+  //           return
+  //         }
 
-          // 等待后重试
-          await new Promise((resolve) => {
-            const timer = setTimeout(resolve, Math.pow(2, retryCount.value) * 1000) // 指数退避
-            controller.signal.addEventListener('abort', () => {
-              clearTimeout(timer)
-              resolve(undefined)
-            })
-          })
-        }
-      }
-    }
+  //         // 等待后重试
+  //         await new Promise((resolve) => {
+  //           const timer = setTimeout(resolve, Math.pow(2, retryCount.value) * 1000) // 指数退避
+  //           controller.signal.addEventListener('abort', () => {
+  //             clearTimeout(timer)
+  //             resolve(undefined)
+  //           })
+  //         })
+  //       }
+  //     }
+  //   }
 
-    try {
-      await executeWithRetry()
-    } finally {
-      matchAnalysis.setLoading(false)
-    }
-  }
+  //   try {
+  //     await executeWithRetry()
+  //   } finally {
+  //     matchAnalysis.setLoading(false)
+  //   }
+  // }
 
   /**
    * 清理阶段
@@ -197,7 +197,7 @@ export function usePhaseHandler() {
           handleChampSelectPhase()
           break
         case 'InProgress':
-          handleInProgressPhase()
+          // handleInProgressPhase()
           break
         case 'None':
         case 'Lobby':
@@ -244,7 +244,7 @@ export function usePhaseHandler() {
       if (currentPhaseValue === 'ChampSelect') {
         handleChampSelectPhase()
       } else if (currentPhaseValue === 'InProgress') {
-        handleInProgressPhase()
+        // handleInProgressPhase()
       }
     },
 
