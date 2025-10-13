@@ -106,43 +106,44 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
   })
 
   // === Actions（数据操作方法） ===
-  const setMyTeamData = (data: TeamData | null) => {
-    console.log('[MatchAnalysisStore] 🎯 setMyTeamData 被调用', {
-      isNull: data === null,
-      playersCount: data?.players.length,
-      players: data?.players
-    })
-    myTeamData.value = data
-    console.log('[MatchAnalysisStore] ✅ myTeamData 已更新，当前值:', {
-      isNull: myTeamData.value === null,
-      playersCount: myTeamData.value?.players.length
-    })
-  }
+  const setTeamAnalysisData = (data: TeamAnalysisData | null) => {
+    if (data) {
+      console.log('[MatchAnalysisStore] ⚛️ 原子更新开始... data:', data)
 
-  const setMyTeamStats = (stats: (EnrichedMatchStatistics | null)[]) => {
-    console.log('[matchAnalysisStore] 🎯 setMyTeamStats 被调用:', {
-      statsLength: stats.length,
-      filledCount: stats.filter((s) => s !== null).length,
-      stats: stats,
-      sample: stats.find((s) => s !== null) // 打印第一个非 null 数据作为示例
-    })
-    myTeamStats.value = stats
-  }
+      // 1. 转换并更新队伍数据和战绩统计
+      myTeamData.value = {
+        players: data.myTeam.map((p) => ({ ...p, spells: [p.spell1Id || 0, p.spell2Id || 0] as [number, number] })),
+        localPlayerCellId: data.localPlayerCellId
+      }
+      enemyTeamData.value = {
+        players: data.enemyTeam.map((p) => ({ ...p, spells: [p.spell1Id || 0, p.spell2Id || 0] as [number, number] })),
+        localPlayerCellId: -1
+      }
 
-  const setEnemyTeamData = (data: TeamData | null) => {
-    enemyTeamData.value = data
-  }
+      myTeamStats.value = data.myTeam
+        .map((p) => (p.matchStats ? { displayName: p.displayName, ...p.matchStats } : null))
+        .filter(Boolean) as EnrichedPlayerMatchStats[]
 
-  const setEnemyTeamStats = (stats: (EnrichedMatchStatistics | null)[]) => {
-    enemyTeamStats.value = stats
-  }
+      enemyTeamStats.value = data.enemyTeam
+        .map((p) => (p.matchStats ? { displayName: p.displayName, ...p.matchStats } : null))
+        .filter(Boolean) as EnrichedPlayerMatchStats[]
 
-  const setEnemyChampionPicks = (
-    picks: Array<{ cellId: number; championId: number | null; championPickIntent?: number | null }>
-  ) => {
-    console.log('[MatchAnalysisStore] setEnemyChampionPicks 被调用，picks:', picks)
-    enemyChampionPicks.value = picks
-    console.log('[MatchAnalysisStore] enemyChampionPicks 已更新')
+      // 2. 更新敌方英雄选择
+      enemyChampionPicks.value = data.enemyTeam.map((p) => ({
+        cellId: p.cellId,
+        championId: p.championId,
+        championPickIntent: p.championPickIntent
+      }))
+
+      // 3. 更新队列信息
+      queueId.value = Number(data.queueId)
+      isCustomGame.value = data.isCustomGame
+
+      console.log('[MatchAnalysisStore] ✅ 原子更新完成')
+    } else {
+      // 如果数据为 null，则清空所有数据
+      clearAllData()
+    }
   }
 
   const setPhase = (newPhase: GamePhase) => {
@@ -159,12 +160,6 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
 
   const setDestroyed = (destroyed: boolean) => {
     isDestroyed.value = destroyed
-  }
-
-  const setQueueInfo = (queue: number, custom: boolean) => {
-    console.log('[MatchAnalysisStore] 🎮 设置队列信息:', { queueId: queue, isCustomGame: custom })
-    queueId.value = queue
-    isCustomGame.value = custom
   }
 
   // === 清理方法 ===

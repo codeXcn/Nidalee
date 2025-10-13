@@ -58,21 +58,21 @@ const playerStatsMap = computed(() => {
   props.teamData.players.forEach((player, index) => {
     if (!player) return
 
-    // 通过 displayName、puuid 或 cellId 匹配战绩
+    // 通过 puuid, displayName 或 cellId 匹配战绩
     const matchedStats = props.teamStats!.find((stats) => {
       if (!stats) return false
 
-      // 优先通过 displayName 匹配
+      // 1. 优先通过 puuid 匹配 (最可靠)
+      if (player.puuid && (stats as any).puuid) {
+        return player.puuid === (stats as any).puuid
+      }
+
+      // 2. 备选：通过 displayName 匹配 (兼容旧数据或 puuid 缺失的情况)
       if (stats.displayName && player.displayName) {
         return stats.displayName.toLowerCase() === player.displayName.toLowerCase()
       }
 
-      // 备选：通过 puuid 匹配
-      if ((stats as any).puuid && player.puuid) {
-        return (stats as any).puuid === player.puuid
-      }
-
-      // 备选：通过 cellId 匹配
+      // 3. 备选：通过 cellId 匹配 (仅限当前对局)
       if ((stats as any).cellId !== undefined && player.cellId !== undefined) {
         return (stats as any).cellId === player.cellId
       }
