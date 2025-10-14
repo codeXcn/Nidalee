@@ -1,6 +1,6 @@
 use super::service;
-use crate::lcu::types::TeamAnalysisData;
 use crate::http_client;
+use crate::lcu::types::TeamAnalysisData;
 
 /// 测试新的队伍分析数据生成功能
 ///
@@ -74,7 +74,7 @@ pub async fn get_cached_analysis_data() -> Result<Option<TeamAnalysisData>, Stri
         Some(handler) => {
             log::info!("[AnalysisCommands] ✅ WebSocket 事件处理器已获取");
             handler
-        },
+        }
         None => {
             log::warn!("[AnalysisCommands] ❌ WebSocket 事件处理器未初始化");
             return Ok(None);
@@ -85,8 +85,11 @@ pub async fn get_cached_analysis_data() -> Result<Option<TeamAnalysisData>, Stri
     match event_handler.get_cached_team_analysis_data().await {
         Some(data) => {
             log::info!("[AnalysisCommands] ✅ 成功从缓存获取分析数据");
-            log::info!("[AnalysisCommands] 📊 数据摘要: 我方{}人, 敌方{}人",
-                data.my_team.len(), data.enemy_team.len());
+            log::info!(
+                "[AnalysisCommands] 📊 数据摘要: 我方{}人, 敌方{}人",
+                data.my_team.len(),
+                data.enemy_team.len()
+            );
 
             // 🔥 详细打印数据内容用于调试
             if log::log_enabled!(log::Level::Debug) {

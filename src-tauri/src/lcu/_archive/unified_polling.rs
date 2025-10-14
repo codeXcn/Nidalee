@@ -163,10 +163,7 @@ impl UnifiedPollingManager {
             }
             _ => {
                 // 其他状态，获取大厅和匹配数据
-                log::debug!(
-                    "[统一轮询] 其他状态({:?})，获取大厅和匹配数据",
-                    current_phase
-                );
+                log::debug!("[统一轮询] 其他状态({:?})，获取大厅和匹配数据", current_phase);
                 let _lobby_result = self.fetch_lobby_info().await;
                 let _matchmaking_result = self.fetch_matchmaking_state().await;
             }
@@ -202,11 +199,7 @@ impl UnifiedPollingManager {
             Ok(phase) => {
                 let mut state = self.state.write().await;
                 if state.gameflow_phase.as_ref() != Some(&phase) {
-                    log::info!(
-                        "[统一轮询] 游戏阶段变化: {:?} -> {}",
-                        state.gameflow_phase,
-                        phase
-                    );
+                    log::info!("[统一轮询] 游戏阶段变化: {:?} -> {}", state.gameflow_phase, phase);
 
                     // 检测游戏结束
                     let was_in_progress = state.gameflow_phase.as_deref() == Some("InProgress");
@@ -263,18 +256,13 @@ impl UnifiedPollingManager {
             Ok(matchmaking_state) => {
                 let mut state = self.state.write().await;
                 if state.matchmaking_state.as_ref() != Some(&matchmaking_state) {
-                    log::info!(
-                        "[统一轮询] 匹配状态更新: {:?}",
-                        matchmaking_state.search_state
-                    );
+                    log::info!("[统一轮询] 匹配状态更新: {:?}", matchmaking_state.search_state);
 
                     // 检查是否找到匹配（在移动值之前）
                     let found_match = matchmaking_state.search_state == "Found";
 
                     state.matchmaking_state = Some(matchmaking_state.clone());
-                    let _ = self
-                        .app
-                        .emit("matchmaking-state-changed", matchmaking_state);
+                    let _ = self.app.emit("matchmaking-state-changed", matchmaking_state);
 
                     // 找到匹配时获取匹配详情
                     if found_match {
@@ -323,10 +311,7 @@ impl UnifiedPollingManager {
 
                     match self.app.emit("champ-select-session-changed", &session) {
                         Ok(_) => log::info!("[统一轮询] champ-select-session-changed 事件发送成功"),
-                        Err(e) => log::error!(
-                            "[统一轮询] champ-select-session-changed 事件发送失败: {}",
-                            e
-                        ),
+                        Err(e) => log::error!("[统一轮询] champ-select-session-changed 事件发送失败: {}", e),
                     }
                 } else {
                     log::info!("[统一轮询] 选人阶段会话无变化，跳过事件发送");
@@ -338,10 +323,9 @@ impl UnifiedPollingManager {
                 if state.champ_select_session.is_some() {
                     log::debug!("[统一轮询] 选人阶段会话获取失败，清除状态");
                     state.champ_select_session = None;
-                    let _ = self.app.emit(
-                        "champ-select-session-changed",
-                        Option::<ChampSelectSession>::None,
-                    );
+                    let _ = self
+                        .app
+                        .emit("champ-select-session-changed", Option::<ChampSelectSession>::None);
                 }
             }
         }
@@ -373,9 +357,7 @@ impl UnifiedPollingManager {
         // 发送清理事件
         let _ = self.app.emit("summoner-change", &None::<SummonerInfo>);
         let _ = self.app.emit("gameflow-phase-change", &None::<String>);
-        let _ = self
-            .app
-            .emit("lobby-change", &None::<crate::lcu::types::LobbyInfo>);
+        let _ = self.app.emit("lobby-change", &None::<crate::lcu::types::LobbyInfo>);
 
         log::info!("[统一轮询] 所有状态已清理并通知前端");
     }
@@ -385,7 +367,7 @@ impl UnifiedPollingManager {
 
         match state.gameflow_phase.as_deref() {
             Some("ChampSelect") => Duration::from_secs(2), // 选人阶段更频繁
-            Some("InProgress") => Duration::from_secs(3), // 游戏中更频繁轮询 LiveClient 数据
+            Some("InProgress") => Duration::from_secs(3),  // 游戏中更频繁轮询 LiveClient 数据
             Some("Found") => Duration::from_secs(1),       // 找到匹配时更频繁
             _ => Duration::from_secs(4),                   // 默认间隔
         }

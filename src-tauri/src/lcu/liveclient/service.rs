@@ -1,12 +1,9 @@
-use serde_json::Value;
 use crate::lcu::auth::service::ensure_valid_auth_info;
-use crate::lcu::types::{TeamAnalysisData, PlayerAnalysisData};
+use crate::lcu::types::{PlayerAnalysisData, TeamAnalysisData};
+use serde_json::Value;
 
 /// 复用缓存，仅更新敌方队伍
-pub async fn update_enemy_team_in_cache(
-    cache: &mut TeamAnalysisData,
-    local_summoner_name: &str
-) -> Result<(), String> {
+pub async fn update_enemy_team_in_cache(cache: &mut TeamAnalysisData, local_summoner_name: &str) -> Result<(), String> {
     let live_team = get_live_team_analysis(local_summoner_name).await?;
     // 只更新 enemy_team 字段，其余字段保持原缓存
     cache.enemy_team = live_team.enemy_team;
@@ -15,7 +12,6 @@ pub async fn update_enemy_team_in_cache(
     // 其他字段如 actions、bans、timer、queue_id、is_custom_game 保持原缓存
     Ok(())
 }
-
 
 /// 动态检测 LiveClient 端口
 /// 通常 LiveClient 使用固定端口 2999，但某些情况下可能会变化
@@ -58,8 +54,7 @@ async fn test_liveclient_port(port: u16) -> bool {
 /// 获取游戏内玩家列表
 pub async fn get_live_player_list() -> Result<Vec<crate::lcu::types::LiveClientPlayer>, String> {
     // 确保 LCU 认证信息可用（虽然 LiveClient 不需要认证，但确保游戏正在运行）
-    let _auth = ensure_valid_auth_info()
-        .ok_or("无法获取 LCU 认证信息，请确保游戏正在运行")?;
+    let _auth = ensure_valid_auth_info().ok_or("无法获取 LCU 认证信息，请确保游戏正在运行")?;
 
     // LiveClient 通常使用固定端口 2999，但我们可以尝试动态检测
     let liveclient_port = detect_liveclient_port().await.unwrap_or(2999);
@@ -71,17 +66,16 @@ pub async fn get_live_player_list() -> Result<Vec<crate::lcu::types::LiveClientP
         .map_err(|e| e.to_string())?;
 
     let url = format!("https://127.0.0.1:{}/liveclientdata/playerlist", liveclient_port);
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| {
-            if e.to_string().contains("tcp connect error") {
-                format!("LiveClient 服务不可用 (端口 {}), 请确保游戏已启动并进入对局", liveclient_port)
-            } else {
-                format!("请求失败: {}", e)
-            }
-        })?;
+    let resp = client.get(&url).send().await.map_err(|e| {
+        if e.to_string().contains("tcp connect error") {
+            format!(
+                "LiveClient 服务不可用 (端口 {}), 请确保游戏已启动并进入对局",
+                liveclient_port
+            )
+        } else {
+            format!("请求失败: {}", e)
+        }
+    })?;
 
     if !resp.status().is_success() {
         return Err(format!("LiveClient API 返回错误状态: {}", resp.status()));
@@ -93,10 +87,12 @@ pub async fn get_live_player_list() -> Result<Vec<crate::lcu::types::LiveClientP
     log::debug!("[LiveClient] 原始 API 响应: {}", text);
 
     // 尝试解析为 JSON 值来查看实际结构
-    let json_value: serde_json::Value = serde_json::from_str(&text)
-        .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+    let json_value: serde_json::Value = serde_json::from_str(&text).map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
-    log::debug!("[LiveClient] 解析后的 JSON: {}", serde_json::to_string_pretty(&json_value).unwrap_or_default());
+    log::debug!(
+        "[LiveClient] 解析后的 JSON: {}",
+        serde_json::to_string_pretty(&json_value).unwrap_or_default()
+    );
 
     // 尝试解析为我们的结构
     let players: Vec<crate::lcu::types::LiveClientPlayer> =
@@ -116,11 +112,7 @@ pub async fn get_live_events() -> Result<Vec<Value>, String> {
         .map_err(|e| e.to_string())?;
 
     let url = format!("https://127.0.0.1:{}/liveclientdata/eventdata", liveclient_port);
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    let resp = client.get(&url).send().await.map_err(|e| e.to_string())?;
 
     let text = resp.text().await.map_err(|e| e.to_string())?;
     let events: Vec<Value> = serde_json::from_str(&text).map_err(|e| e.to_string())?;
@@ -139,11 +131,7 @@ pub async fn get_game_stats() -> Result<Value, String> {
         .map_err(|e| e.to_string())?;
 
     let url = format!("https://127.0.0.1:{}/liveclientdata/gamestats", liveclient_port);
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    let resp = client.get(&url).send().await.map_err(|e| e.to_string())?;
 
     let text = resp.text().await.map_err(|e| e.to_string())?;
     let stats: Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;

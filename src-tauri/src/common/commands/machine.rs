@@ -10,7 +10,6 @@ pub async fn get_machine_hash() -> Result<String, String> {
             .ok()?;
         String::from_utf8(output.stdout)
             .ok()?
-
             .lines()
             .nth(1)
             .map(|s| s.trim().to_string())
@@ -25,10 +24,7 @@ pub async fn get_machine_hash() -> Result<String, String> {
     }
     #[cfg(target_os = "macos")]
     fn get_board_sn() -> Option<String> {
-        let output = Command::new("ioreg")
-            .args(&["-l"])
-            .output()
-            .ok()?;
+        let output = Command::new("ioreg").args(&["-l"]).output().ok()?;
         let out = String::from_utf8_lossy(&output.stdout);
         out.lines()
             .find(|line| line.contains("IOPlatformSerialNumber"))
@@ -54,4 +50,3 @@ pub async fn get_machine_hash() -> Result<String, String> {
     let hash_hex = format!("{:x}", hash);
     Ok(hash_hex)
 }
-

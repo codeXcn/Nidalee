@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { GamePhase } from '@/types/match-analysis'
-import { useMatchAnalysisStore } from '@/stores/features/matchAnalysisStore'
+import { useMatchAnalysisStore } from '@/features/match-analysis/store'
 
 interface Props {
   teamType: 'ally' | 'enemy'

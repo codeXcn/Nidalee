@@ -1,7 +1,10 @@
 use crate::{http_client, lcu};
 
 #[tauri::command]
-pub async fn get_recent_matches_by_puuid(puuid: String, count: Option<usize>) -> Result<lcu::types::MatchStatistics, String> {
+pub async fn get_recent_matches_by_puuid(
+    puuid: String,
+    count: Option<usize>,
+) -> Result<lcu::types::MatchStatistics, String> {
     let client = http_client::get_lcu_client();
     let count = count.unwrap_or(20);
     lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count).await
@@ -43,8 +46,7 @@ pub async fn get_summoners_and_histories(
         let puuid = summoner.puuid.clone();
         if !puuid.is_empty() {
             fill_summoner_extra_info(client, summoner).await;
-            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, count.unwrap_or(20)).await
-            {
+            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, count.unwrap_or(20)).await {
                 Ok(matches) => {
                     result.push(lcu::types::SummonerWithMatches {
                         display_name: summoner.display_name.clone(),
@@ -90,6 +92,5 @@ pub async fn set_summoner_chat_profile(
     division: Option<String>,
 ) -> Result<(), String> {
     let client = http_client::get_lcu_client();
-    lcu::summoner::service::set_summoner_chat_profile(client, status_message, queue, tier, division)
-        .await
+    lcu::summoner::service::set_summoner_chat_profile(client, status_message, queue, tier, division).await
 }

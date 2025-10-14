@@ -7,9 +7,7 @@ pub fn parse_champion_build(data: Value, position: &str) -> Result<OpggChampionB
 
     // summary
     let summary_obj = content.get("summary").ok_or("缺少summary")?;
-    let average_stats = summary_obj
-        .get("average_stats")
-        .ok_or("缺少average_stats")?;
+    let average_stats = summary_obj.get("average_stats").ok_or("缺少average_stats")?;
     let name = summary_obj
         .get("name")
         .and_then(|v| v.as_str())
@@ -22,10 +20,7 @@ pub fn parse_champion_build(data: Value, position: &str) -> Result<OpggChampionB
     let ban_rate = average_stats.get("ban_rate").and_then(|v| v.as_f64());
     let kda = average_stats.get("kda").and_then(|v| v.as_f64());
     let tier = average_stats.get("tier").map(|v| v.to_string());
-    let rank = average_stats
-        .get("rank")
-        .and_then(|v| v.as_i64())
-        .map(|v| v as i32);
+    let rank = average_stats.get("rank").and_then(|v| v.as_i64()).map(|v| v as i32);
     let summary = OpggChampionSummary {
         name,
         champion_id,
@@ -74,18 +69,11 @@ fn parse_summoner_spells(content: &Value) -> Result<Vec<OpggSummonerSpell>, Stri
         let ids: Vec<i32> = spell_data
             .get("ids")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_i64().map(|i| i as i32))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
             .unwrap_or_default();
         let win = spell_data.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let play = spell_data.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-        let pick_rate = spell_data
-            .get("pick_rate")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        let pick_rate = spell_data.get("pick_rate").and_then(|v| v.as_f64()).unwrap_or(0.0);
         // 取第一个id为主id
         let spell_id = ids.get(0).copied().unwrap_or(0);
         spells.push(OpggSummonerSpell {
@@ -114,29 +102,19 @@ fn parse_items(content: &Value) -> Result<OpggItems, String> {
 
 fn parse_item_category(content: &Value, category: &str) -> Result<Vec<OpggItem>, String> {
     let binding = vec![];
-    let category_data = content
-        .get(category)
-        .and_then(|v| v.as_array())
-        .unwrap_or(&binding);
+    let category_data = content.get(category).and_then(|v| v.as_array()).unwrap_or(&binding);
     let mut items = Vec::new();
     for item_data in category_data.iter() {
         let ids: Vec<i32> = item_data
             .get("ids")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_i64().map(|i| i as i32))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
             .unwrap_or_default();
         let id = ids.get(0).copied().unwrap_or(0);
         let icons = Vec::new(); // OP.GG未直接提供icon
         let win = item_data.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let play = item_data.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-        let pick_rate = item_data
-            .get("pick_rate")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        let pick_rate = item_data.get("pick_rate").and_then(|v| v.as_f64()).unwrap_or(0.0);
         items.push(OpggItem {
             id,
             ids: ids.clone(),
@@ -151,35 +129,19 @@ fn parse_item_category(content: &Value, category: &str) -> Result<Vec<OpggItem>,
 
 fn parse_counters(content: &Value) -> Result<OpggCounters, String> {
     let binding = vec![];
-    let counters_data = content
-        .get("counters")
-        .and_then(|v| v.as_array())
-        .unwrap_or(&binding);
+    let counters_data = content.get("counters").and_then(|v| v.as_array()).unwrap_or(&binding);
     let mut strong_against = Vec::new();
     let mut weak_against = Vec::new();
     for counter in counters_data.iter() {
-        let champion_id = counter
-            .get("champion_id")
-            .and_then(|v| v.as_i64())
-            .unwrap_or(0) as i32;
+        let champion_id = counter.get("champion_id").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let play = counter.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let win = counter.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-        let win_rate = if play > 0 {
-            win as f64 / play as f64
-        } else {
-            0.0
-        };
+        let win_rate = if play > 0 { win as f64 / play as f64 } else { 0.0 };
         // 这里简单分配，实际可根据业务调整
         if win_rate > 0.5 {
-            strong_against.push(OpggCounter {
-                champion_id,
-                win_rate,
-            });
+            strong_against.push(OpggCounter { champion_id, win_rate });
         } else {
-            weak_against.push(OpggCounter {
-                champion_id,
-                win_rate,
-            });
+            weak_against.push(OpggCounter { champion_id, win_rate });
         }
     }
     Ok(OpggCounters {
@@ -190,46 +152,25 @@ fn parse_counters(content: &Value) -> Result<OpggCounters, String> {
 
 fn parse_perks(content: &Value) -> Result<Vec<OpggPerk>, String> {
     let binding = vec![];
-    let runes_array = content
-        .get("runes")
-        .and_then(|v| v.as_array())
-        .unwrap_or(&binding);
+    let runes_array = content.get("runes").and_then(|v| v.as_array()).unwrap_or(&binding);
     let mut perks = Vec::new();
     for rune in runes_array.iter() {
-        let primary_id = rune
-            .get("primary_page_id")
-            .and_then(|v| v.as_i64())
-            .unwrap_or(0) as i32;
-        let secondary_id = rune
-            .get("secondary_page_id")
-            .and_then(|v| v.as_i64())
-            .unwrap_or(0) as i32;
+        let primary_id = rune.get("primary_page_id").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+        let secondary_id = rune.get("secondary_page_id").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let primary_rune_ids: Vec<i32> = rune
             .get("primary_rune_ids")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_i64().map(|i| i as i32))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
             .unwrap_or_default();
         let secondary_rune_ids: Vec<i32> = rune
             .get("secondary_rune_ids")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_i64().map(|i| i as i32))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
             .unwrap_or_default();
         let stat_mod_ids: Vec<i32> = rune
             .get("stat_mod_ids")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_i64().map(|i| i as i32))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
             .unwrap_or_default();
         // 按主系4+副系2+属性3顺序拼接
         let mut perks_list = Vec::new();
@@ -238,10 +179,7 @@ fn parse_perks(content: &Value) -> Result<Vec<OpggPerk>, String> {
         perks_list.extend(stat_mod_ids.iter().take(3));
         let win = rune.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         let play = rune.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-        let pick_rate = rune
-            .get("pick_rate")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        let pick_rate = rune.get("pick_rate").and_then(|v| v.as_f64()).unwrap_or(0.0);
         perks.push(OpggPerk {
             primary_id,
             secondary_id,
@@ -261,29 +199,18 @@ fn parse_champion_skills(content: &Value) -> Result<OpggSkills, String> {
             let masteries = main
                 .get("ids")
                 .and_then(|v| v.as_array())
-                .map(|arr| {
-                    arr.iter()
-                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                        .collect()
-                })
+                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
                 .unwrap_or_default();
             let play = main.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
             let win = main.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-            let pick_rate = main
-                .get("pick_rate")
-                .and_then(|v| v.as_f64())
-                .unwrap_or(0.0);
+            let pick_rate = main.get("pick_rate").and_then(|v| v.as_f64()).unwrap_or(0.0);
             let order = main
                 .get("builds")
                 .and_then(|v| v.as_array())
                 .and_then(|arr| arr.get(0))
                 .and_then(|build| build.get("order"))
                 .and_then(|v| v.as_array())
-                .map(|arr| {
-                    arr.iter()
-                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                        .collect()
-                })
+                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
                 .unwrap_or_default();
             return Ok(OpggSkills {
                 masteries,
@@ -296,10 +223,7 @@ fn parse_champion_skills(content: &Value) -> Result<OpggSkills, String> {
     }
     // fallback: 兼容旧数据
     let binding = vec![];
-    let skills_array = content
-        .get("skills")
-        .and_then(|v| v.as_array())
-        .unwrap_or(&binding);
+    let skills_array = content.get("skills").and_then(|v| v.as_array()).unwrap_or(&binding);
     let mut order = Vec::new();
     let masteries = Vec::new();
     let mut play = 0;
@@ -309,18 +233,11 @@ fn parse_champion_skills(content: &Value) -> Result<OpggSkills, String> {
         order = skill
             .get("order")
             .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
             .unwrap_or_default();
         play = skill.get("play").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
         win = skill.get("win").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-        pick_rate = skill
-            .get("pick_rate")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        pick_rate = skill.get("pick_rate").and_then(|v| v.as_f64()).unwrap_or(0.0);
     }
     Ok(OpggSkills {
         masteries,

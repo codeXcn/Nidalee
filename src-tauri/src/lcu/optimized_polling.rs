@@ -138,7 +138,9 @@ impl OptimizedPollingManager {
         let should_check = {
             let state = self.state.read().await;
             state.current_summoner.is_none()
-                || state.last_summoner_check.map_or(true, |last| now.duration_since(last) > Duration::from_secs(60))
+                || state
+                    .last_summoner_check
+                    .map_or(true, |last| now.duration_since(last) > Duration::from_secs(60))
         };
 
         if should_check {

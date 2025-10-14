@@ -1,7 +1,6 @@
 use crate::lcu::request::{lcu_get, lcu_request_json};
 use crate::lcu::types::{
-    ChampionStats, GameDetail, MatchStatistics, ParticipantInfo, ParticipantStats, RecentGame,
-    TeamInfo, TeamStats,
+    ChampionStats, GameDetail, MatchStatistics, ParticipantInfo, ParticipantStats, RecentGame, TeamInfo, TeamStats,
 };
 use reqwest::{Client, Method};
 use serde::Deserialize;
@@ -110,7 +109,10 @@ pub async fn get_match_history(client: &Client, end_count: usize) -> Result<Matc
     let safe_end = if end_count == 0 { 20 } else { end_count.min(100) };
     // LCU API 的 endIndex 是包含的，所以需要减1
     let actual_end_index = if safe_end > 0 { safe_end - 1 } else { 0 };
-    println!("🔢 请求的对局数量: end_count={}, safe_end={}, actual_end_index={}", end_count, safe_end, actual_end_index);
+    println!(
+        "🔢 请求的对局数量: end_count={}, safe_end={}, actual_end_index={}",
+        end_count, safe_end, actual_end_index
+    );
     let match_list_url = format!(
         "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
         puuid, actual_end_index
@@ -155,8 +157,7 @@ pub async fn get_game_detail_logic(client: &Client, game_id: u64) -> Result<Game
         .map(|p| (p.participant_id, p.player))
         .collect();
 
-    let mut participants: Vec<ParticipantInfo> =
-        Vec::with_capacity(api_game_data.participants.len());
+    let mut participants: Vec<ParticipantInfo> = Vec::with_capacity(api_game_data.participants.len());
     for p in api_game_data.participants {
         let stats = p.stats; // No need to clone anymore
         let kills = stats.kills.unwrap_or(0);
@@ -273,10 +274,7 @@ pub async fn get_recent_matches_by_puuid(
     Ok(statistics)
 }
 
-fn analyze_match_list_data(
-    match_list_data: Value,
-    current_puuid: &str,
-) -> Result<MatchStatistics, String> {
+fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Result<MatchStatistics, String> {
     println!("📊 开始分析对局列表数据");
     println!("👤 目标玩家PUUID: {}", current_puuid);
 
@@ -305,10 +303,7 @@ fn analyze_match_list_data(
         total_games += 1;
 
         // 查找当前玩家的参与者信息
-        if let Some(participant_identities) = game
-            .get("participantIdentities")
-            .and_then(|pi| pi.as_array())
-        {
+        if let Some(participant_identities) = game.get("participantIdentities").and_then(|pi| pi.as_array()) {
             // 在participantIdentities中找到匹配PUUID的玩家
             let current_identity = participant_identities.iter().find(|identity| {
                 let player_puuid = identity
@@ -319,33 +314,22 @@ fn analyze_match_list_data(
             });
 
             if let Some(identity) = current_identity {
-                let participant_id = identity
-                    .get("participantId")
-                    .and_then(|id| id.as_u64())
-                    .unwrap_or(0);
+                let participant_id = identity.get("participantId").and_then(|id| id.as_u64()).unwrap_or(0);
 
                 // 在participants中找到对应participantId的参与者
                 if let Some(participants) = game.get("participants").and_then(|p| p.as_array()) {
                     let current_participant = participants.iter().find(|p| {
-                        let p_id = p
-                            .get("participantId")
-                            .and_then(|id| id.as_u64())
-                            .unwrap_or(0);
+                        let p_id = p.get("participantId").and_then(|id| id.as_u64()).unwrap_or(0);
                         p_id == participant_id
                     });
 
                     if let Some(participant) = current_participant {
                         let stats = &participant["stats"];
-                        let champion_id = participant
-                            .get("championId")
-                            .and_then(|id| id.as_u64())
-                            .unwrap_or(0);
+                        let champion_id = participant.get("championId").and_then(|id| id.as_u64()).unwrap_or(0);
                         let is_win = stats.get("win").and_then(|w| w.as_bool()).unwrap_or(false);
                         let kills = stats.get("kills").and_then(|k| k.as_i64()).unwrap_or(0) as i32;
-                        let deaths =
-                            stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                        let assists =
-                            stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
+                        let deaths = stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
+                        let assists = stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
 
                         // println!("🏆 英雄: {}", champion_id);
                         // println!("🎯 结果: {}", if is_win { "胜利" } else { "失败" });
@@ -360,30 +344,17 @@ fn analyze_match_list_data(
                         total_assists += assists;
 
                         // 统计英雄数据
-                        let entry = champion_stats
-                            .entry(champion_id.to_string())
-                            .or_insert((0, 0));
+                        let entry = champion_stats.entry(champion_id.to_string()).or_insert((0, 0));
                         entry.0 += 1; // 游戏数
                         if is_win {
                             entry.1 += 1; // 胜场数
                         }
 
                         // 添加到最近游戏
-                        let penta_kills = stats
-                            .get("pentaKills")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0) as i32;
-                        let quadra_kills = stats
-                            .get("quadraKills")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0) as i32;
-                        let performance_rating = get_performance_rating(
-                            kills,
-                            deaths,
-                            assists,
-                            penta_kills,
-                            quadra_kills,
-                        );
+                        let penta_kills = stats.get("pentaKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                        let quadra_kills = stats.get("quadraKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+                        let performance_rating =
+                            get_performance_rating(kills, deaths, assists, penta_kills, quadra_kills);
                         recent_performance.push(RecentGame {
                             game_id: game.get("gameId").and_then(|id| id.as_u64()).unwrap_or(0),
                             champion_id: champion_id as i32,
@@ -397,14 +368,8 @@ fn analyze_match_list_data(
                             kills,
                             deaths,
                             assists,
-                            game_duration: game
-                                .get("gameDuration")
-                                .and_then(|gd| gd.as_i64())
-                                .unwrap_or(0) as i32,
-                            game_creation: game
-                                .get("gameCreation")
-                                .and_then(|gc| gc.as_i64())
-                                .unwrap_or(0),
+                            game_duration: game.get("gameDuration").and_then(|gd| gd.as_i64()).unwrap_or(0) as i32,
+                            game_creation: game.get("gameCreation").and_then(|gc| gc.as_i64()).unwrap_or(0),
                             performance_rating: performance_rating.clone(),
                         });
                     }
@@ -473,13 +438,7 @@ fn analyze_match_list_data(
     })
 }
 
-fn get_performance_rating(
-    kills: i32,
-    deaths: i32,
-    assists: i32,
-    penta_kills: i32,
-    quadra_kills: i32,
-) -> String {
+fn get_performance_rating(kills: i32, deaths: i32, assists: i32, penta_kills: i32, quadra_kills: i32) -> String {
     let kda = (kills + assists) as f32 / deaths.max(1) as f32;
     if penta_kills > 0 {
         return "五杀超神！".to_string();

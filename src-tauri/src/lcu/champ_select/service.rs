@@ -1,4 +1,3 @@
-
 use crate::lcu::matches::service::get_recent_matches_by_puuid;
 use crate::lcu::request::{lcu_get, lcu_patch_no_content};
 use crate::lcu::summoner::service::get_summoner_by_id;
@@ -13,12 +12,7 @@ pub async fn get_champ_select_session_raw(client: &Client) -> Result<Value, Stri
 }
 
 // 选择/禁用英雄的通用函数
-pub async fn champion_action(
-    client: &Client,
-    action_id: u64,
-    champion_id: u64,
-    completed: bool,
-) -> Result<(), String> {
+pub async fn champion_action(client: &Client, action_id: u64, champion_id: u64, completed: bool) -> Result<(), String> {
     let url = format!("/lol-champ-select/v1/session/actions/{}", action_id);
     let body = serde_json::json!({
         "championId": champion_id,
@@ -29,12 +23,7 @@ pub async fn champion_action(
 }
 
 // 选择英雄 (hover 或 lock)
-pub async fn pick_champion(
-    client: &Client,
-    action_id: u64,
-    champion_id: u64,
-    completed: bool,
-) -> Result<(), String> {
+pub async fn pick_champion(client: &Client, action_id: u64, champion_id: u64, completed: bool) -> Result<(), String> {
     champion_action(client, action_id, champion_id, completed).await
 }
 
@@ -120,10 +109,7 @@ async fn enrich_champ_select_session(client: &Client, session: &mut ChampSelectS
     }
 }
 
-fn enrich_player(
-    player: &mut ChampSelectPlayer,
-    info_map: &std::collections::HashMap<String, SummonerInfo>,
-) {
+fn enrich_player(player: &mut ChampSelectPlayer, info_map: &std::collections::HashMap<String, SummonerInfo>) {
     if let Some(sid) = &player.summoner_id {
         if sid == "0" {
             player.display_name = Some("机器人".to_string());
@@ -132,12 +118,11 @@ fn enrich_player(
             player.tier = None;
         } else if let Some(info) = info_map.get(sid) {
             // 优先用 game_name + tag_line
-            let display_name =
-                if let (Some(game_name), Some(tag_line)) = (&info.game_name, &info.tag_line) {
-                    format!("{}#{}", game_name, tag_line)
-                } else {
-                    info.display_name.clone()
-                };
+            let display_name = if let (Some(game_name), Some(tag_line)) = (&info.game_name, &info.tag_line) {
+                format!("{}#{}", game_name, tag_line)
+            } else {
+                info.display_name.clone()
+            };
             player.display_name = Some(display_name);
             player.tag_line = info.tag_line.clone();
             player.profile_icon_id = Some(info.profile_icon_id);
@@ -171,17 +156,15 @@ pub async fn get_champ_select_session(client: &Client) -> Result<ChampSelectSess
     }
     log::info!("[get_champ_select_session] 原始 session JSON");
     // 反序列化为结构体
-    let mut session = serde_json::from_value::<ChampSelectSession>(json)
-        .map_err(|e| format!("解析 session 响应失败: {}", e))?;
+    let mut session =
+        serde_json::from_value::<ChampSelectSession>(json).map_err(|e| format!("解析 session 响应失败: {}", e))?;
     // enrich
     enrich_champ_select_session(client, &mut session).await;
     Ok(session)
 }
 
 // 主函数：批量获取队友和对手信息（无缓存，简洁版）
-pub async fn get_champselect_team_players_info(
-    client: &Client,
-) -> Result<HashMap<String, MatchStatistics>, String> {
+pub async fn get_champselect_team_players_info(client: &Client) -> Result<HashMap<String, MatchStatistics>, String> {
     // 1. 获取当前选人会话
     let session: serde_json::Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
     let my_team = session
@@ -201,16 +184,8 @@ pub async fn get_champselect_team_players_info(
             .unwrap_or(0)
             .to_string()
     };
-    let my_ids: Vec<String> = my_team
-        .iter()
-        .map(extract_id)
-        .filter(|id| id != "0")
-        .collect();
-    let their_ids: Vec<String> = their_team
-        .iter()
-        .map(extract_id)
-        .filter(|id| id != "0")
-        .collect();
+    let my_ids: Vec<String> = my_team.iter().map(extract_id).filter(|id| id != "0").collect();
+    let their_ids: Vec<String> = their_team.iter().map(extract_id).filter(|id| id != "0").collect();
 
     // 3. 批量查SummonerInfo
     let mut all_ids = my_ids.clone();

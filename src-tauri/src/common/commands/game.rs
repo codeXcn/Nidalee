@@ -1,5 +1,5 @@
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
 #[tauri::command]
 pub async fn launch_game(custom_path: Option<String>) -> Result<bool, String> {
@@ -8,12 +8,10 @@ pub async fn launch_game(custom_path: Option<String>) -> Result<bool, String> {
     } else {
         match get_saved_game_path().await {
             Ok(saved_path) if !saved_path.is_empty() => saved_path,
-            _ => {
-                match detect_game_path().await {
-                    Ok(detected_path) if !detected_path.is_empty() => detected_path,
-                    _ => return Err("未找到游戏路径，请手动配置".to_string()),
-                }
-            }
+            _ => match detect_game_path().await {
+                Ok(detected_path) if !detected_path.is_empty() => detected_path,
+                _ => return Err("未找到游戏路径，请手动配置".to_string()),
+            },
         }
     };
     if !Path::new(&game_path).exists() {
@@ -27,8 +25,8 @@ pub async fn launch_game(custom_path: Option<String>) -> Result<bool, String> {
 
 #[tauri::command]
 pub async fn detect_game_path() -> Result<String, String> {
-    use std::path::{Path, PathBuf};
     use std::fs;
+    use std::path::{Path, PathBuf};
     let wegame_paths = vec![
         "C:\\WeGameApps\\英雄联盟\\Launcher\\client.exe",
         "D:\\WeGameApps\\英雄联盟\\Launcher\\client.exe",
@@ -106,9 +104,9 @@ fn find_client_exe(base: &std::path::Path, exe_names: &[&str]) -> Option<String>
 
 #[cfg(target_os = "windows")]
 fn get_game_path_from_registry() -> Result<String, String> {
+    use std::path::Path;
     use winreg::enums::*;
     use winreg::RegKey;
-    use std::path::Path;
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
     let registry_paths = vec![
         "SOFTWARE\\Riot Games\\League of Legends",
@@ -130,7 +128,7 @@ fn get_game_path_from_registry() -> Result<String, String> {
 
 #[tauri::command]
 pub async fn select_game_path(window: tauri::Window) -> Result<String, String> {
-    use tauri_plugin_dialog::{FileDialogBuilder, DialogExt};
+    use tauri_plugin_dialog::{DialogExt, FileDialogBuilder};
     let (tx, rx) = tokio::sync::oneshot::channel();
     let dialog = window.dialog().clone();
     FileDialogBuilder::new(dialog)
@@ -140,11 +138,9 @@ pub async fn select_game_path(window: tauri::Window) -> Result<String, String> {
             let _ = tx.send(file);
         });
     match rx.await {
-        Ok(Some(path)) => {
-            match path.as_path() {
-                Some(p) => Ok(p.to_string_lossy().to_string()),
-                None => Err("文件路径无效".to_string()),
-            }
+        Ok(Some(path)) => match path.as_path() {
+            Some(p) => Ok(p.to_string_lossy().to_string()),
+            None => Err("文件路径无效".to_string()),
         },
         Ok(None) => Err("未选择文件".to_string()),
         Err(_) => Err("文件选择失败".to_string()),
@@ -153,11 +149,9 @@ pub async fn select_game_path(window: tauri::Window) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn save_game_path(path: String) -> Result<(), String> {
-    use std::fs;
     use serde_json::json;
-    let config_dir = dirs::config_dir()
-        .ok_or("无法获取配置目录")?
-        .join("nidalee");
+    use std::fs;
+    let config_dir = dirs::config_dir().ok_or("无法获取配置目录")?.join("nidalee");
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).map_err(|e| format!("创建配置目录失败: {}", e))?;
     }
@@ -165,28 +159,20 @@ pub async fn save_game_path(path: String) -> Result<(), String> {
     let config = json!({
         "game_path": path
     });
-    fs::write(&config_file, config.to_string())
-        .map_err(|e| format!("保存配置失败: {}", e))?;
+    fs::write(&config_file, config.to_string()).map_err(|e| format!("保存配置失败: {}", e))?;
     Ok(())
 }
 
 #[tauri::command]
 pub async fn get_saved_game_path() -> Result<String, String> {
-    use std::fs;
     use serde_json::Value;
-    let config_dir = dirs::config_dir()
-        .ok_or("无法获取配置目录")?
-        .join("nidalee");
+    use std::fs;
+    let config_dir = dirs::config_dir().ok_or("无法获取配置目录")?.join("nidalee");
     let config_file = config_dir.join("game_config.json");
     if !config_file.exists() {
         return Ok(String::new());
     }
-    let config_content = fs::read_to_string(&config_file)
-        .map_err(|e| format!("读取配置失败: {}", e))?;
-    let config: Value = serde_json::from_str(&config_content)
-        .map_err(|e| format!("解析配置失败: {}", e))?;
-    Ok(config["game_path"]
-        .as_str()
-        .unwrap_or("")
-        .to_string())
+    let config_content = fs::read_to_string(&config_file).map_err(|e| format!("读取配置失败: {}", e))?;
+    let config: Value = serde_json::from_str(&config_content).map_err(|e| format!("解析配置失败: {}", e))?;
+    Ok(config["game_path"].as_str().unwrap_or("").to_string())
 }

@@ -1,9 +1,9 @@
 // 应用库 - 提供应用运行的核心功能
 mod app;
+mod common;
 mod http_client;
 mod lcu;
 mod tray;
-mod common;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -15,7 +15,6 @@ pub fn run() {
             lcu::connection::commands::get_connection_state,
             lcu::connection::commands::force_refresh_connection,
             lcu::connection::commands::check_connection_state_command,
-
             // 游戏流程 / 英雄选择 / 匹配
             lcu::gameflow::commands::get_game_version,
             lcu::gameflow::commands::get_live_player_list,
@@ -31,11 +30,9 @@ pub fn run() {
             lcu::matchmaking::commands::stop_matchmaking,
             lcu::matchmaking::commands::accept_match,
             lcu::matchmaking::commands::decline_match,
-
             // 比赛记录
             lcu::matches::commands::get_match_history,
             lcu::matches::commands::get_game_detail,
-
             // 召唤师
             lcu::summoner::commands::get_current_summoner,
             lcu::summoner::commands::get_summoner_by_id,
@@ -43,12 +40,10 @@ pub fn run() {
             lcu::summoner::commands::get_summoners_and_histories,
             lcu::summoner::commands::set_summoner_chat_profile,
             lcu::summoner::commands::set_summoner_background_skin,
-
             // 召唤师符文
             lcu::perks::commands::get_lcu_rune_styles,
             lcu::perks::commands::get_lcu_perks,
             lcu::perks::commands::get_lcu_perk_icon,
-
             // OPGG 相关
             lcu::opgg::commands::get_opgg_champion_build,
             lcu::opgg::commands::get_opgg_champion_build_raw,
@@ -60,7 +55,6 @@ pub fn run() {
             lcu::ws::commands::stop_lcu_ws,
             // 分析数据命令
             lcu::analysis_data::commands::get_cached_analysis_data,
-
             // 英雄数据命令
             lcu::champion_data::commands::init_champion_data,
             lcu::champion_data::commands::get_all_champion_data,
@@ -69,7 +63,6 @@ pub fn run() {
             lcu::champion_data::commands::get_champion_by_name,
             lcu::champion_data::commands::is_champion_data_loaded,
             lcu::champion_data::commands::get_champion_count_cmd,
-
             common::commands::machine::get_machine_hash,
             common::commands::builds::get_champions_list,
             common::commands::builds::get_champion_builds,

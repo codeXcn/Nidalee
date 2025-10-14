@@ -1,9 +1,6 @@
 use serde_json;
 
-async fn invoke_command_internal(
-    command: &str,
-    params: Vec<(String, String)>,
-) -> Result<serde_json::Value, String> {
+async fn invoke_command_internal(command: &str, params: Vec<(String, String)>) -> Result<serde_json::Value, String> {
     match command {
         "get_champion_builds" => {
             let source = params
@@ -21,5 +18,3 @@ async fn invoke_command_internal(
         _ => Err("未知命令".to_string()),
     }
 }
-
-

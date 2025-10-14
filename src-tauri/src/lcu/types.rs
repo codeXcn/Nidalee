@@ -202,11 +202,7 @@ pub struct TeamInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/BanInfo.ts",
-    rename_all = "camelCase"
-)]
+#[ts(export, export_to = "../../src/types/generated/BanInfo.ts", rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub struct BanInfo {
     #[serde(default)]
@@ -669,11 +665,7 @@ pub struct CreateRunePageRequest {
 
 /// 装备推荐套装数据结构
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/ItemSet.ts",
-    rename_all = "camelCase"
-)]
+#[ts(export, export_to = "../../src/types/generated/ItemSet.ts", rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub struct ItemSet {
     pub title: String,
@@ -941,11 +933,7 @@ pub struct ItemInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/RuneSet.ts",
-    rename_all = "camelCase"
-)]
+#[ts(export, export_to = "../../src/types/generated/RuneSet.ts", rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub struct RuneSet {
     pub alias: String,
@@ -1073,11 +1061,7 @@ pub struct RuneStyle {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/Slot.ts",
-    rename_all = "camelCase"
-)]
+#[ts(export, export_to = "../../src/types/generated/Slot.ts", rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub struct Slot {
     pub perks: Vec<i64>,
@@ -1098,11 +1082,7 @@ pub struct SubStyleBonus {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/Perk.ts",
-    rename_all = "camelCase"
-)]
+#[ts(export, export_to = "../../src/types/generated/Perk.ts", rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub struct Perk {
     pub icon_path: String,
@@ -1219,7 +1199,7 @@ pub struct TeamAnalysisData {
     pub enemy_team: Vec<PlayerAnalysisData>,
     pub local_player_cell_id: i32,
     pub game_phase: String,
-    pub queue_id: i64, // 队列类型ID：420=单排, 440=灵活排位, 450=大乱斗等
+    pub queue_id: i64,        // 队列类型ID：420=单排, 440=灵活排位, 450=大乱斗等
     pub is_custom_game: bool, // 是否自定义游戏
 
     // 🔥 新增：选人流程相关字段

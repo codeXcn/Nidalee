@@ -6,11 +6,7 @@ pub async fn get_all_runes(client: &Client) -> Result<crate::lcu::types::AllRune
     forin_request_json(client, Method::GET, path, None).await
 }
 
-pub async fn get_builds_by_alias(
-    client: &Client,
-    source: &str,
-    champion: &str,
-) -> Result<serde_json::Value, String> {
+pub async fn get_builds_by_alias(client: &Client, source: &str, champion: &str) -> Result<serde_json::Value, String> {
     let path = format!("/api/source/{}/champion-alias/{}", source, champion);
     forin_request_json(client, Method::GET, &path, None).await
 }

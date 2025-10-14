@@ -1,6 +1,6 @@
+use crate::http_client;
 use crate::lcu::opgg::service;
 use crate::lcu::opgg::types::*;
-use crate::http_client;
 use crate::lcu::perks::service as perks_service;
 use serde_json::Value;
 
@@ -27,11 +27,7 @@ pub async fn get_opgg_champion_build(
 }
 
 #[tauri::command]
-pub async fn get_opgg_tier_list(
-    region: String,
-    mode: String,
-    tier: String,
-) -> Result<OpggTierList, String> {
+pub async fn get_opgg_tier_list(region: String, mode: String, tier: String) -> Result<OpggTierList, String> {
     service::get_tier_list(&region, &mode, &tier).await
 }
 

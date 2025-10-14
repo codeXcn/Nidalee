@@ -1,31 +1,37 @@
+use crate::lcu::auth::service::ensure_valid_auth_info;
+use crate::lcu::ws::event_handler::WsEventHandler;
 use base64::{engine::general_purpose, Engine};
 use futures_util::{SinkExt, StreamExt};
 use once_cell::sync::OnceCell;
 use serde_json::json;
+use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::collections::HashSet;
 use std::time::Duration;
+use tauri::Emitter;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_tungstenite::{connect_async_tls_with_config, tungstenite::client::IntoClientRequest};
-use crate::lcu::auth::service::ensure_valid_auth_info;
-use crate::lcu::ws::event_handler::WsEventHandler;
-use tauri::Emitter;
 
 static WS_RUNNING: AtomicBool = AtomicBool::new(false);
 static WS_TASK: OnceCell<tokio::task::JoinHandle<()>> = OnceCell::new();
-static WS_SENDER: OnceCell<Arc<Mutex<Option<tokio_tungstenite::tungstenite::protocol::WebSocket<tokio_tungstenite::MaybeTlsStream<TcpStream>>>>>> = OnceCell::new();
+static WS_SENDER: OnceCell<
+    Arc<
+        Mutex<
+            Option<tokio_tungstenite::tungstenite::protocol::WebSocket<tokio_tungstenite::MaybeTlsStream<TcpStream>>>,
+        >,
+    >,
+> = OnceCell::new();
 
-// 🔥 全局存储事件处理器，用于访问缓存
+// Global instance of the event handler, used to access the cache from commands.
 static WS_EVENT_HANDLER: OnceCell<Arc<WsEventHandler>> = OnceCell::new();
 
-/// 🔥 获取全局事件处理器（用于访问缓存）
+/// Gets the global event handler instance.
 pub fn get_event_handler() -> Option<Arc<WsEventHandler>> {
     WS_EVENT_HANDLER.get().cloned()
 }
 
-// 辅助函数：确保订阅某个路径（幂等）
+// Helper function to ensure a path is subscribed to, idempotently.
 async fn ensure_subscribed(
     ws_stream: &mut tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>,
     path: &str,
@@ -37,17 +43,17 @@ async fn ensure_subscribed(
         match ws_stream.send(Message::Text(msg)).await {
             Ok(_) => {
                 subscribed.insert(path.to_string());
-                log::info!("[LCU-WS] 成功订阅: {}", path);
+                log::info!("[lcu-ws] Successfully subscribed to: {}", path);
             }
-            Err(e) => log::warn!("[LCU-WS] 订阅 {} 失败: {}", path, e),
+            Err(e) => log::warn!("[lcu-ws] Failed to subscribe to {}: {}", path, e),
         }
     }
 }
 
-// 当 WS 长时间无事件时，做一次 HTTP 回退拉取并发送规范化事件
-// phase_hint: 当前已知阶段的提示，用于裁剪需要拉取的端点，减少无意义的 404
+// When the WebSocket is idle, performs an HTTP fallback fetch to align state.
+// phase_hint: A hint of the current game phase to prune which endpoints to fetch, reducing unnecessary 404s.
 async fn fallback_fetch_and_emit(app: &tauri::AppHandle, phase_hint: Option<&str>) {
-    // 构造一个短超时的 HTTP 客户端
+    // Construct an HTTP client with a short timeout.
     let client = match reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
@@ -55,19 +61,19 @@ async fn fallback_fetch_and_emit(app: &tauri::AppHandle, phase_hint: Option<&str
     {
         Ok(c) => c,
         Err(e) => {
-            log::warn!("[LCU-WS] 回退 HTTP 客户端创建失败: {}", e);
+            log::warn!("[lcu-ws] Fallback HTTP client creation failed: {}", e);
             return;
         }
     };
 
-    // 先尝试获取最新阶段；仅在成功时发送正向数据，避免因为临时失败清空前端状态
+    // First, try to get the latest phase. Only send positive data to avoid clearing frontend state on a temporary failure.
     let mut latest_phase: Option<String> = None;
     if let Ok(phase) = crate::lcu::gameflow::service::get_gameflow_phase(&client).await {
         let _ = app.emit("gameflow-phase-change", &Some(phase.clone()));
         latest_phase = Some(phase);
     }
 
-    // 根据阶段决定是否获取其他数据，减少不必要的 404
+    // Decide whether to fetch other data based on the phase.
     let effective_phase = latest_phase.as_deref().or(phase_hint);
     match effective_phase {
         Some("Lobby") | Some("Matchmaking") | Some("None") => {
@@ -84,45 +90,47 @@ async fn fallback_fetch_and_emit(app: &tauri::AppHandle, phase_hint: Option<&str
             }
         }
         _ => {
-            // 其他阶段（如 None/InProgress）仅同步阶段即可
+            // For other phases (e.g., None, InProgress), just syncing the phase is sufficient.
         }
     }
 }
 
 pub async fn start_ws(app: tauri::AppHandle) {
-    if WS_RUNNING.swap(true, Ordering::SeqCst) { return; }
+    if WS_RUNNING.swap(true, Ordering::SeqCst) {
+        return;
+    }
 
     let handle = tokio::spawn(async move {
-        // 主循环：持续尝试连接和重连
+        // Main loop: continuously attempts to connect and reconnect.
         while WS_RUNNING.load(Ordering::SeqCst) {
-            // 等待认证信息可用
+            // Wait for authentication info to become available.
             let mut retry_count = 0;
             let max_retries = 10;
 
             while retry_count < max_retries && WS_RUNNING.load(Ordering::SeqCst) {
                 if let Some(auth) = ensure_valid_auth_info() {
-                    log::info!("[LCU-WS] 获取到认证信息，尝试连接...");
+                    log::info!("[lcu-ws] Auth info obtained, attempting to connect...");
                     if let Err(e) = connect_and_run_ws(&app, &auth).await {
-                        log::warn!("[LCU-WS] 连接失败: {}, 将在3秒后重试", e);
+                        log::warn!("[lcu-ws] Connection failed: {}, retrying in 3 seconds.", e);
                         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
                     } else {
-                        log::info!("[LCU-WS] 连接正常结束，将在3秒后重连");
+                        log::info!("[lcu-ws] Connection ended gracefully, will reconnect in 3 seconds.");
                         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
                     }
                 } else {
                     retry_count += 1;
-                    log::debug!("[LCU-WS] 等待认证信息... ({}/{})", retry_count, max_retries);
+                    log::debug!("[lcu-ws] Waiting for auth info... ({}/{})", retry_count, max_retries);
                     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
                 }
             }
 
             if retry_count >= max_retries {
-                log::warn!("[LCU-WS] 多次尝试后仍无法获取认证信息，将在5秒后重试");
+                log::warn!("[lcu-ws] Could not get auth info after multiple retries, will try again in 5 seconds.");
                 tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
             }
         }
 
-        log::info!("[LCU-WS] 主循环已退出");
+        log::info!("[lcu-ws] Main loop has exited.");
         WS_RUNNING.store(false, Ordering::SeqCst);
     });
 
@@ -134,144 +142,110 @@ async fn connect_and_run_ws(app: &tauri::AppHandle, auth: &crate::lcu::types::Lc
     let auth_string = format!("riot:{}", auth.remoting_auth_token);
     let auth_b64 = general_purpose::STANDARD.encode(auth_string.as_bytes());
 
-    let mut req = url.into_client_request().map_err(|e| format!("请求构建失败: {}", e))?;
-    req.headers_mut().insert("Authorization", format!("Basic {}", auth_b64).parse().unwrap());
+    let mut req = url
+        .into_client_request()
+        .map_err(|e| format!("Failed to build request: {}", e))?;
+    req.headers_mut()
+        .insert("Authorization", format!("Basic {}", auth_b64).parse().unwrap());
 
-    let config = tokio_tungstenite::Connector::NativeTls(native_tls::TlsConnector::builder()
-        .danger_accept_invalid_certs(true) // 忽略本地自签证书
+    let tls_connector = native_tls::TlsConnector::builder()
+        .danger_accept_invalid_certs(true) // Allow self-signed certificates for local LCU.
         .build()
-        .map_err(|e| format!("TLS配置失败: {}", e))?);
+        .map_err(|e| format!("Failed to build TLS connector: {}", e))?;
+    let connector = tokio_tungstenite::Connector::NativeTls(tls_connector);
 
-    let connect_res = connect_async_tls_with_config(req, None, false, Some(config)).await;
-    let Ok((mut ws_stream, _resp)) = connect_res else {
-        return Err(format!("LCU WS 连接失败: {:?}", connect_res.err()));
+    let connect_res = connect_async_tls_with_config(req, None, false, Some(connector)).await;
+    let (mut ws_stream, _) = match connect_res {
+        Ok(res) => res,
+        Err(e) => return Err(format!("LCU WebSocket connection failed: {}", e)),
     };
 
-    log::info!("[LCU-WS] WebSocket 连接成功");
+    log::info!("[lcu-ws] WebSocket connection successful.");
 
-    // 动态订阅集合：初始仅订阅基础阶段主题，其他按阶段按需订阅
+    // Dynamic subscription set: start with base subscriptions and add more as the game phase changes.
     let mut subscribed: HashSet<String> = HashSet::new();
     let mut current_phase: Option<String> = None;
 
-    // 基础订阅：始终订阅阶段相关
+    // Base subscriptions: always subscribe to gameflow events.
     ensure_subscribed(&mut ws_stream, "/lol-gameflow/v1/gameflow-phase", &mut subscribed).await;
     ensure_subscribed(&mut ws_stream, "/lol-gameflow/v1/session", &mut subscribed).await;
 
-    // 创建事件处理器
+    // Create the event handler.
     let event_handler = Arc::new(WsEventHandler::new(app.clone()));
 
-    // 🔥 保存到全局变量，供 Command 访问
+    // Store in a global variable for access from Tauri commands.
     let _ = WS_EVENT_HANDLER.set(event_handler.clone());
 
-    // 接收循环：处理 WebSocket 事件
+    // Receive loop: process WebSocket events.
     while WS_RUNNING.load(Ordering::SeqCst) {
-        // 使用 select 机制：既响应 WS 消息，也在空闲时做一次回退刷新，不主动断线
+        // Use a select macro to respond to WS messages and perform fallback fetches during idle periods.
         tokio::select! {
-            match_item = ws_stream.next() => {
-                match match_item {
-            Some(Ok(tokio_tungstenite::tungstenite::Message::Text(text))) => {
-                // 先尝试解析事件以获取更多调试信息
-                let event_info = if let Ok(data) = serde_json::from_str::<serde_json::Value>(&text) {
-                    if let Some(event_array) = data.as_array() {
-                        if event_array.len() >= 3 {
-                            if let (Some(8), Some("OnJsonApiEvent"), Some(payload)) = (
-                                event_array[0].as_u64(),
-                                event_array[1].as_str(),
-                                event_array[2].as_object()
-                            ) {
-                                // 动态订阅：根据阶段按需补充订阅主题
-                                if let Some(uri) = payload.get("uri").and_then(|v| v.as_str()) {
-                                    // 调试模式下打印 session 相关的原始数据
-                                    #[cfg(debug_assertions)]
-                                    if uri == "/lol-gameflow/v1/session" {
-                                        log::debug!("[LCU-WS] 收到 gameflow session 原始消息");
-                                        log::trace!("[LCU-WS] 完整数据: {}", text);
-                                    }
-
-                                    // 如果是阶段事件，尝试解析新阶段
-                                    if uri == "/lol-gameflow/v1/gameflow-phase" {
-                                        if let Some(phase_str) = payload.get("data").and_then(|v| v.as_str()) {
-                                            if current_phase.as_deref() != Some(phase_str) {
-                                                log::info!("[LCU-WS] 阶段变化: {:?} -> {} (动态订阅) ", current_phase, phase_str);
-                                                current_phase = Some(phase_str.to_string());
-                                                match phase_str {
-                                                    "Lobby" | "Matchmaking" | "None" => {
-                                                        ensure_subscribed(&mut ws_stream, "/lol-lobby/v2/lobby", &mut subscribed).await;
-                                                        ensure_subscribed(&mut ws_stream, "/lol-matchmaking/v1/search", &mut subscribed).await;
+            biased;
+            Some(msg_result) = ws_stream.next() => {
+                match msg_result {
+                    Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
+                        // Attempt to parse event for richer logging context.
+                        let event_info = if let Ok(data) = serde_json::from_str::<serde_json::Value>(&text) {
+                            if let Some(event_array) = data.as_array() {
+                                if event_array.len() >= 3 {
+                                    if let (Some(8), Some("OnJsonApiEvent"), Some(payload)) = (
+                                        event_array[0].as_u64(),
+                                        event_array[1].as_str(),
+                                        event_array[2].as_object()
+                                    ) {
+                                        if let Some(uri) = payload.get("uri").and_then(|v| v.as_str()) {
+                                            // Dynamic subscription: add more subscriptions based on the current game phase.
+                                            if uri == "/lol-gameflow/v1/gameflow-phase" {
+                                                if let Some(phase_str) = payload.get("data").and_then(|v| v.as_str()) {
+                                                    if current_phase.as_deref() != Some(phase_str) {
+                                                        log::info!("[lcu-ws] Phase changed: {:?} -> {} (triggering dynamic subscription).", current_phase, phase_str);
+                                                        current_phase = Some(phase_str.to_string());
+                                                        match phase_str {
+                                                            "Lobby" | "Matchmaking" | "None" => {
+                                                                ensure_subscribed(&mut ws_stream, "/lol-lobby/v2/lobby", &mut subscribed).await;
+                                                                ensure_subscribed(&mut ws_stream, "/lol-matchmaking/v1/search", &mut subscribed).await;
+                                                            }
+                                                            "ChampSelect" => {
+                                                                ensure_subscribed(&mut ws_stream, "/lol-champ-select/v1/session", &mut subscribed).await;
+                                                            }
+                                                            _ => {}
+                                                        }
                                                     }
-                                                    "ChampSelect" => {
-                                                        ensure_subscribed(&mut ws_stream, "/lol-champ-select/v1/session", &mut subscribed).await;
-                                                    }
-                                                    _ => {}
                                                 }
                                             }
+                                            format!("URI: {}", uri)
+                                        } else {
+                                            "Unknown Event Type".to_string()
                                         }
+                                    } else {
+                                        format!("Non-API Event: {:?}", event_array)
                                     }
-                                    format!("URI: {}", uri)
                                 } else {
-                                    "未知事件类型".to_string()
+                                    format!("Event array too short: {}", event_array.len())
                                 }
                             } else {
-                                format!("非API事件: {:?}", event_array)
+                                "Non-array event".to_string()
                             }
                         } else {
-                            format!("事件数组长度不足: {}", event_array.len())
-                        }
-                    } else {
-                        "非数组事件".to_string()
-                    }
-                } else {
-                    format!("原始文本: {}", if text.len() > 100 { &text[..100] } else { &text })
-                };
+                            format!("Raw text: {}", text.chars().take(100).collect::<String>())
+                        };
 
-                // 使用事件处理器处理事件
-                if let Err(e) = event_handler.handle_event(&text).await {
-                    log::warn!("[LCU-WS] 事件处理失败 [{}]: {}", event_info, e);
-                }
-
-                // 只发送重要事件到前端（减少噪音）
-                if let Ok(data) = serde_json::from_str::<serde_json::Value>(&text) {
-                    if let Some(event_array) = data.as_array() {
-                        if event_array.len() >= 3 {
-                            if let (Some(8), Some("OnJsonApiEvent"), Some(payload)) = (
-                                event_array[0].as_u64(),
-                                event_array[1].as_str(),
-                                event_array[2].as_object()
-                            ) {
-                                if let Some(uri) = payload.get("uri").and_then(|v| v.as_str()) {
-                                    // 只发送重要事件
-                                    if matches!(uri,
-                                        "/lol-gameflow/v1/gameflow-phase" |
-                                        "/lol-gameflow/v1/session" |
-                                        "/lol-champ-select/v1/session" |
-                                        "/lol-lobby/v2/lobby" |
-                                        "/lol-matchmaking/v1/search"
-                                    ) {
-                                        let _ = app.emit("lcu-ws", text.clone());
-                                        log::debug!("[LCU-WS] 重要事件: {}", uri);
-                                    }
-                                }
-                            }
+                        // Process the event using the handler.
+                        if let Err(e) = event_handler.handle_event(&text).await {
+                            log::warn!("[lcu-ws] Event handling failed for [{}]: {}", event_info, e);
                         }
                     }
-                }
-            }
-            Some(Ok(_)) => {}
-            Some(Err(e)) => {
-                log::error!("WS 错误: {}", e);
-                return Err(format!("WebSocket 错误: {}", e));
-            }
-            None => {
-                log::warn!("[LCU-WS] 连接被服务器关闭");
-                return Err("连接被服务器关闭".to_string());
-            }
+                    Ok(_) => { /* Ignore non-text messages */ }
+                    Err(e) => {
+                        log::error!("[lcu-ws] WebSocket read error: {}", e);
+                        return Err(format!("WebSocket read error: {}", e));
+                    }
                 }
             }
             _ = tokio::time::sleep(Duration::from_secs(10)) => {
-                // 空闲 10s：做一次 HTTP 回退刷新，不断开 WS
-                log::debug!("[LCU-WS] 10s 内无 WS 事件，执行一次 HTTP 回退拉取以对齐状态");
+                // If idle for 10s, perform an HTTP fallback fetch to align state.
+                log::debug!("[lcu-ws] No WS events for 10s, performing HTTP fallback fetch.");
                 fallback_fetch_and_emit(app, current_phase.as_deref()).await;
-                // 下次循环继续等待 WS 事件
             }
         }
     }

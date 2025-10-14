@@ -1,0 +1,13 @@
+# rustfmt configuration
+# For a full list of options, see: https://rust-lang.github.io/rustfmt/
+
+# The default line width is 100. It's explicitly set here for clarity.
+# Many projects adjust this value based on team preference.
+max_width = 120
+
+# Automatically reorder imports for consistency.
+# This is a widely recommended practice and is stable.
+reorder_imports = true
+
+# Use Unix-style newlines for consistency across platforms.
+newline_style = "Unix"

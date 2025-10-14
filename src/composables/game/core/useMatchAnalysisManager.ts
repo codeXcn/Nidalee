@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useMatchAnalysisStore } from '@/stores/features/matchAnalysisStore'
-import { usePhaseHandler } from './usePhaseHandler'
+import { useMatchAnalysisStore } from '@/features/match-analysis/store'
+import { usePhaseHandler } from '@/features/match-analysis/composables/usePhaseHandler'
 
 /**
  * 对局分析管理器 - Store 版本

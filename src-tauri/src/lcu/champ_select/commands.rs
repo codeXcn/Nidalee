@@ -2,8 +2,7 @@ use crate::{http_client, lcu};
 use std::collections::HashMap;
 
 #[tauri::command]
-pub async fn get_champselect_team_players_info(
-) -> Result<HashMap<String, lcu::types::MatchStatistics>, String> {
+pub async fn get_champselect_team_players_info() -> Result<HashMap<String, lcu::types::MatchStatistics>, String> {
     let client = http_client::get_lcu_client();
     lcu::champ_select::service::get_champselect_team_players_info(client).await
 }
@@ -21,14 +20,9 @@ pub async fn get_champ_select_session_typed() -> Result<lcu::types::ChampSelectS
 }
 
 #[tauri::command]
-pub async fn pick_champion(
-    action_id: u64,
-    champion_id: u64,
-    completed: bool,
-) -> Result<String, String> {
+pub async fn pick_champion(action_id: u64, champion_id: u64, completed: bool) -> Result<String, String> {
     let client = http_client::get_lcu_client();
-    match lcu::champ_select::service::pick_champion(client, action_id, champion_id, completed).await
-    {
+    match lcu::champ_select::service::pick_champion(client, action_id, champion_id, completed).await {
         Ok(()) => {
             let action_type = if completed { "锁定" } else { "预选" };
             let message = format!(
@@ -52,10 +46,7 @@ pub async fn ban_champion(action_id: u64, champion_id: u64) -> Result<String, St
     let client = http_client::get_lcu_client();
     match lcu::champ_select::service::ban_champion(client, action_id, champion_id).await {
         Ok(()) => {
-            let message = format!(
-                "禁用英雄成功 (ActionID: {}, ChampionID: {})",
-                action_id, champion_id
-            );
+            let message = format!("禁用英雄成功 (ActionID: {}, ChampionID: {})", action_id, champion_id);
             log::info!("[Commands] {}", message);
             Ok(message)
         }

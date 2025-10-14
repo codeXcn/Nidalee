@@ -14,9 +14,7 @@ pub async fn get_connection_state(
 }
 
 #[tauri::command]
-pub async fn force_refresh_connection(
-    manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>,
-) -> Result<(), String> {
+pub async fn force_refresh_connection(manager: tauri::State<'_, Arc<RwLock<ConnectionManager>>>) -> Result<(), String> {
     let manager = manager.read().await;
     manager.force_refresh().await;
     Ok(())

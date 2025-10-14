@@ -28,16 +28,15 @@ pub async fn get_champion_build_raw(
     client.get_champion_build(region, mode, champion_id, &pos, tier).await
 }
 
-pub async fn get_tier_list(
-    region: &str,
-    mode: &str,
-    tier: &str,
-) -> Result<OpggTierList, String> {
+pub async fn get_tier_list(region: &str, mode: &str, tier: &str) -> Result<OpggTierList, String> {
     let client = OpggClient::new();
     let raw_data = client.get_tier_list(region, mode, tier).await?;
     // 解析层级列表数据
     let meta = raw_data.get("meta").ok_or("无法获取元数据")?;
-    let data = raw_data.get("data").and_then(|v| v.as_array()).ok_or("无法获取层级数据")?;
+    let data = raw_data
+        .get("data")
+        .and_then(|v| v.as_array())
+        .ok_or("无法获取层级数据")?;
     let tier_list_data: Vec<OpggTierListItem> = data
         .iter()
         .filter_map(|item| {
@@ -71,11 +70,7 @@ pub async fn get_tier_list(
     })
 }
 
-pub async fn get_champion_positions(
-    region: &str,
-    champion_id: i32,
-    tier: &str,
-) -> Result<Vec<String>, String> {
+pub async fn get_champion_positions(region: &str, champion_id: i32, tier: &str) -> Result<Vec<String>, String> {
     let client = OpggClient::new();
     client.get_champion_positions(region, champion_id, tier).await
 }

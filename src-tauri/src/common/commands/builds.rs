@@ -7,10 +7,7 @@ use serde_json::Value;
 // ===== 英雄出装和符文相关命令 =====
 
 #[tauri::command]
-pub async fn get_champion_builds(
-    source: String,
-    champion_alias: String,
-) -> Result<serde_json::Value, String> {
+pub async fn get_champion_builds(source: String, champion_alias: String) -> Result<serde_json::Value, String> {
     let client = http_client::get_lcu_client();
     lcu::ddragon::get_builds_by_alias(&client, &source, &champion_alias).await
 }
@@ -32,15 +29,8 @@ pub async fn get_all_runes() -> Result<lcu::types::AllRunesResponse, String> {
 
 /// 应用英雄详细（符文配置）
 #[tauri::command]
-pub async fn apply_champion_build(
-    champion_alias: String,
-    build_index: usize,
-) -> Result<String, String> {
-    log::info!(
-        "🚀 开始应用英雄详细: {} (详细索引: {})",
-        champion_alias,
-        build_index
-    );
+pub async fn apply_champion_build(champion_alias: String, build_index: usize) -> Result<String, String> {
+    log::info!("🚀 开始应用英雄详细: {} (详细索引: {})", champion_alias, build_index);
 
     // 获取LCU连接
     let client = http_client::get_lcu_client();
@@ -68,11 +58,7 @@ pub async fn apply_champion_build(
 
     // 检查详细索引是否有效
     if build_index >= runes_array.len() {
-        let msg = format!(
-            "详细索引 {} 超出范围，总共有 {} 个详细",
-            build_index,
-            runes_array.len()
-        );
+        let msg = format!("详细索引 {} 超出范围，总共有 {} 个详细", build_index, runes_array.len());
         log::error!("❌ {}", msg);
         return Err(msg);
     }
@@ -94,11 +80,7 @@ pub async fn apply_champion_build(
     let selected_perk_ids: Vec<i32> = rune_build
         .get("selectedPerkIds")
         .and_then(|v| v.as_array())
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|v| v.as_i64().map(|i| i as i32))
-                .collect()
-        })
+        .map(|arr| arr.iter().filter_map(|v| v.as_i64().map(|i| i as i32)).collect())
         .unwrap_or_default();
 
     log::info!(
@@ -181,10 +163,7 @@ pub async fn get_champion_build_new(
         return Err(format!("API 请求失败: HTTP {}", response.status()));
     }
 
-    let data: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+    let data: Value = response.json().await.map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
     log::info!("✅ 成功获取英雄详细数据");
     Ok(data)
@@ -192,17 +171,8 @@ pub async fn get_champion_build_new(
 
 /// 获取所有英雄列表
 #[tauri::command]
-pub async fn get_champions_list(
-    region: String,
-    mode: String,
-    tier: String,
-) -> Result<Value, String> {
-    log::info!(
-        "🚀 获取英雄列表: 区域={}, 模式={}, 段位={}",
-        region,
-        mode,
-        tier
-    );
+pub async fn get_champions_list(region: String, mode: String, tier: String) -> Result<Value, String> {
+    log::info!("🚀 获取英雄列表: 区域={}, 模式={}, 段位={}", region, mode, tier);
 
     let client = Client::new();
 
@@ -228,10 +198,7 @@ pub async fn get_champions_list(
         return Err(format!("API 请求失败: HTTP {}", response.status()));
     }
 
-    let data: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+    let data: Value = response.json().await.map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
     log::info!("✅ 成功获取英雄列表数据");
     Ok(data)

@@ -8,9 +8,7 @@ pub struct OpggClient {
 
 impl OpggClient {
     pub fn new() -> Self {
-        Self {
-            client: Client::new(),
-        }
+        Self { client: Client::new() }
     }
 
     /// 获取英雄详细数据
@@ -48,22 +46,14 @@ impl OpggClient {
             return Err(format!("API 请求失败: HTTP {}", response.status()));
         }
 
-        let data: Value = response
-            .json()
-            .await
-            .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+        let data: Value = response.json().await.map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
         log::info!("✅ 成功获取OP.GG英雄详细数据");
         Ok(data)
     }
 
     /// 获取英雄层级列表
-    pub async fn get_tier_list(
-        &self,
-        region: &str,
-        mode: &str,
-        tier: &str,
-    ) -> Result<Value, String> {
+    pub async fn get_tier_list(&self, region: &str, mode: &str, tier: &str) -> Result<Value, String> {
         let url = format!(
             "https://lol-api-champion.op.gg/api/{}/champions/{}?tier={}",
             region, mode, tier
@@ -83,10 +73,7 @@ impl OpggClient {
             return Err(format!("API 请求失败: HTTP {}", response.status()));
         }
 
-        let data: Value = response
-            .json()
-            .await
-            .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+        let data: Value = response.json().await.map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
         log::info!("✅ 成功获取OP.GG层级列表");
         Ok(data)
@@ -118,10 +105,7 @@ impl OpggClient {
             return Err(format!("API 请求失败: HTTP {}", response.status()));
         }
 
-        let data: Value = response
-            .json()
-            .await
-            .map_err(|e| format!("解析 JSON 失败: {}", e))?;
+        let data: Value = response.json().await.map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
         let positions = data
             .as_array()

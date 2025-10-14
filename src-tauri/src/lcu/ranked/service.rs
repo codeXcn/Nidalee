@@ -1,4 +1,3 @@
-
 use crate::lcu::request::lcu_get;
 use crate::lcu::types::RankedStats;
 use reqwest::Client;
@@ -11,10 +10,7 @@ pub async fn get_current_ranked_stats(client: &Client) -> Result<RankedStats, St
 
 /// 根据召唤师ID获取段位统计
 #[allow(dead_code)]
-pub async fn get_ranked_stats_by_id(
-    client: &Client,
-    summoner_id: u64,
-) -> Result<RankedStats, String> {
+pub async fn get_ranked_stats_by_id(client: &Client, summoner_id: u64) -> Result<RankedStats, String> {
     let url = format!("/lol-ranked/v1/ranked-stats/{}", summoner_id);
     lcu_get(client, &url).await
 }

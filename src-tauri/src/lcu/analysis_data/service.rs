@@ -1,7 +1,9 @@
-use crate::lcu::types::{PlayerAnalysisData, PlayerMatchStats, TeamAnalysisData, MatchPerformance, AnalysisChampionStats};
-use crate::lcu::summoner::service::get_summoners_by_names;
 use crate::lcu::matches::service::get_recent_matches_by_puuid;
 use crate::lcu::summoner::service::get_summoner_by_id;
+use crate::lcu::summoner::service::get_summoners_by_names;
+use crate::lcu::types::{
+    AnalysisChampionStats, MatchPerformance, PlayerAnalysisData, PlayerMatchStats, TeamAnalysisData,
+};
 
 /// 从 ChampSelect 会话构建完整的分析数据
 ///
@@ -23,7 +25,11 @@ pub async fn build_team_analysis_from_session(
     // 🔍 检查游戏类型
     let queue_id = session["queueId"].as_i64().unwrap_or(0);
     let is_custom_game = session["isCustomGame"].as_bool().unwrap_or(false);
-    log::info!("[AnalysisService] 🎮 游戏类型: queueId={}, isCustomGame={}", queue_id, is_custom_game);
+    log::info!(
+        "[AnalysisService] 🎮 游戏类型: queueId={}, isCustomGame={}",
+        queue_id,
+        is_custom_game
+    );
 
     if is_custom_game {
         log::warn!("[AnalysisService] ⚠️ 这是自定义游戏（人机模式），部分玩家可能是机器人");
@@ -48,13 +54,20 @@ pub async fn build_team_analysis_from_session(
 
             match parse_player_from_session(player, local_player_cell_id).await {
                 Ok(mut player_data) => {
-                    log::info!("[AnalysisService] 解析后基础数据: displayName='{}', isBot={}, puuid={:?}",
-                        player_data.display_name, player_data.is_bot, player_data.puuid);
+                    log::info!(
+                        "[AnalysisService] 解析后基础数据: displayName='{}', isBot={}, puuid={:?}",
+                        player_data.display_name,
+                        player_data.is_bot,
+                        player_data.puuid
+                    );
 
                     match enrich_player_data(&mut player_data, player, http_client).await {
                         Ok(_) => {
-                            log::info!("[AnalysisService] Enrich 后: displayName='{}', tagLine={:?}",
-                                player_data.display_name, player_data.tag_line);
+                            log::info!(
+                                "[AnalysisService] Enrich 后: displayName='{}', tagLine={:?}",
+                                player_data.display_name,
+                                player_data.tag_line
+                            );
                             my_team_players.push(player_data);
                         }
                         Err(e) => {
@@ -88,13 +101,20 @@ pub async fn build_team_analysis_from_session(
 
             match parse_player_from_session(player, local_player_cell_id).await {
                 Ok(mut player_data) => {
-                    log::info!("[AnalysisService] 解析后基础数据: displayName='{}', isBot={}, puuid={:?}",
-                        player_data.display_name, player_data.is_bot, player_data.puuid);
+                    log::info!(
+                        "[AnalysisService] 解析后基础数据: displayName='{}', isBot={}, puuid={:?}",
+                        player_data.display_name,
+                        player_data.is_bot,
+                        player_data.puuid
+                    );
 
                     match enrich_player_data(&mut player_data, player, http_client).await {
                         Ok(_) => {
-                            log::info!("[AnalysisService] Enrich 后: displayName='{}', tagLine={:?}",
-                                player_data.display_name, player_data.tag_line);
+                            log::info!(
+                                "[AnalysisService] Enrich 后: displayName='{}', tagLine={:?}",
+                                player_data.display_name,
+                                player_data.tag_line
+                            );
                             enemy_team_players.push(player_data);
                         }
                         Err(e) => {
@@ -118,13 +138,23 @@ pub async fn build_team_analysis_from_session(
     // 🔍 调试：打印所有玩家的状态（在借用之前）
     log::debug!("[AnalysisService] 我方玩家详情:");
     for (i, player) in my_team_players.iter().enumerate() {
-        log::debug!("  [{}] displayName='{}', isBot={}, puuid={:?}",
-            i, player.display_name, player.is_bot, player.puuid);
+        log::debug!(
+            "  [{}] displayName='{}', isBot={}, puuid={:?}",
+            i,
+            player.display_name,
+            player.is_bot,
+            player.puuid
+        );
     }
     log::debug!("[AnalysisService] 敌方玩家详情:");
     for (i, player) in enemy_team_players.iter().enumerate() {
-        log::debug!("  [{}] displayName='{}', isBot={}, puuid={:?}",
-            i, player.display_name, player.is_bot, player.puuid);
+        log::debug!(
+            "  [{}] displayName='{}', isBot={}, puuid={:?}",
+            i,
+            player.display_name,
+            player.is_bot,
+            player.puuid
+        );
     }
 
     // 🔥 核心：批量获取真实玩家的战绩数据
@@ -150,13 +180,14 @@ pub async fn build_team_analysis_from_session(
     }
 
     // 🔥 提取 actions、bans、timer
-    let actions = session.get("actions")
+    let actions = session
+        .get("actions")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
 
-    let bans = session.get("bans")
-        .and_then(|v| serde_json::from_value(v.clone()).ok());
+    let bans = session.get("bans").and_then(|v| serde_json::from_value(v.clone()).ok());
 
-    let timer = session.get("timer")
+    let timer = session
+        .get("timer")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
 
     Ok(TeamAnalysisData {
@@ -197,9 +228,7 @@ async fn parse_player_from_session(
     let puuid = player["puuid"].as_str().unwrap_or("");
     let name_visibility = player["nameVisibilityType"].as_str().unwrap_or("");
 
-    let is_bot = summoner_id_num == 0
-        || (game_name.is_empty() && name_visibility == "HIDDEN")
-        || puuid.is_empty();
+    let is_bot = summoner_id_num == 0 || (game_name.is_empty() && name_visibility == "HIDDEN") || puuid.is_empty();
 
     if is_bot {
         log::info!("[AnalysisService] [Bot] cellId={}, puuid='{}'", cell_id, puuid);
@@ -244,14 +273,19 @@ async fn enrich_player_data(
     let game_name = raw_player["gameName"].as_str();
     let tag_line = raw_player["tagLine"].as_str();
 
-    log::info!("[AnalysisService] 检查字段: gameName={:?}, tagLine={:?}", game_name, tag_line);
+    log::info!(
+        "[AnalysisService] 检查字段: gameName={:?}, tagLine={:?}",
+        game_name,
+        tag_line
+    );
 
     // 记录是否从 session 获取了显示名称
     let mut has_display_name_from_session = false;
 
     // 如果有 gameName，构建完整的显示名称
     if let Some(name) = game_name {
-        if !name.is_empty() {  // 🔥 额外检查：确保 gameName 不是空字符串
+        if !name.is_empty() {
+            // 🔥 额外检查：确保 gameName 不是空字符串
             if let Some(tag) = tag_line {
                 if !tag.is_empty() {
                     player_data.display_name = format!("{}#{}", name, tag);
@@ -263,7 +297,10 @@ async fn enrich_player_data(
             }
             player_data.tag_line = tag_line.map(|s| s.to_string());
             has_display_name_from_session = true;
-            log::info!("[AnalysisService] ✅ 从 session 中提取到显示名称: {}", player_data.display_name);
+            log::info!(
+                "[AnalysisService] ✅ 从 session 中提取到显示名称: {}",
+                player_data.display_name
+            );
         } else {
             log::warn!("[AnalysisService] ⚠️ gameName 存在但为空字符串");
         }
@@ -278,9 +315,8 @@ async fn enrich_player_data(
     }
 
     // 如果已经有完整信息（显示名称且段位），直接返回
-    if !player_data.display_name.is_empty()
-        && player_data.display_name != "未知召唤师"
-        && player_data.tier.is_some() {
+    if !player_data.display_name.is_empty() && player_data.display_name != "未知召唤师" && player_data.tier.is_some()
+    {
         log::info!("[AnalysisService] ✅ 已有完整信息，跳过 API 查询");
         return Ok(());
     }
@@ -305,8 +341,11 @@ async fn enrich_player_data(
                 player_data.tag_line = summoner_info.tag_line;
                 // 🔥 修复：填充段位信息
                 player_data.tier = summoner_info.solo_rank_tier;
-                log::debug!("[AnalysisService] ✅ 通过 summonerId 查询到显示名称: {}, 段位: {:?}",
-                    player_data.display_name, player_data.tier);
+                log::debug!(
+                    "[AnalysisService] ✅ 通过 summonerId 查询到显示名称: {}, 段位: {:?}",
+                    player_data.display_name,
+                    player_data.tier
+                );
             }
             Err(e) => {
                 log::warn!("[AnalysisService] ⚠️ 获取召唤师信息失败 ({}): {}", summoner_id_u64, e);
@@ -324,7 +363,11 @@ async fn fetch_all_players_match_stats(
     queue_id: i64,
     match_stats_cache: &mut std::collections::HashMap<String, PlayerMatchStats>,
 ) -> Result<usize, Box<dyn std::error::Error + Send + Sync>> {
-    log::info!("[AnalysisService] 🎯 开始批量获取战绩，玩家数: {}，队列ID: {}", players.len(), queue_id);
+    log::info!(
+        "[AnalysisService] 🎯 开始批量获取战绩，玩家数: {}，队列ID: {}",
+        players.len(),
+        queue_id
+    );
 
     // 🔥 第一步：先从缓存恢复已有的战绩数据
     let mut cached_count = 0;
@@ -345,8 +388,12 @@ async fn fetch_all_players_match_stats(
         // 只查战绩，不再兜底查段位，段位应在 enrich_player_data 阶段已补全
     }
 
-    log::info!("[AnalysisService] 📊 缓存命中: {}/{}, 需要获取: {}",
-        cached_count, players.len(), need_fetch_indices.len());
+    log::info!(
+        "[AnalysisService] 📊 缓存命中: {}/{}, 需要获取: {}",
+        cached_count,
+        players.len(),
+        need_fetch_indices.len()
+    );
 
     // 🔥 第二步：只为没有缓存的玩家获取战绩
     if need_fetch_indices.is_empty() {
@@ -359,7 +406,11 @@ async fn fetch_all_players_match_stats(
         .map(|&idx| players[idx].display_name.clone())
         .collect();
 
-    log::info!("[AnalysisService] 批量查询召唤师 (共{}个): {:?}", player_names.len(), player_names);
+    log::info!(
+        "[AnalysisService] 批量查询召唤师 (共{}个): {:?}",
+        player_names.len(),
+        player_names
+    );
 
     // 🚀 使用现有的批量获取召唤师信息功能
     let summoners = match get_summoners_by_names(http_client, player_names.clone()).await {
@@ -374,8 +425,14 @@ async fn fetch_all_players_match_stats(
 
     // 🔍 打印返回的召唤师详情
     for (i, summoner) in summoners.iter().enumerate() {
-        log::info!("  [{}] LCU返回: displayName='{}', gameName={:?}, tagLine={:?}, puuid={}",
-            i, summoner.display_name, summoner.game_name, summoner.tag_line, summoner.puuid);
+        log::info!(
+            "  [{}] LCU返回: displayName='{}', gameName={:?}, tagLine={:?}, puuid={}",
+            i,
+            summoner.display_name,
+            summoner.game_name,
+            summoner.tag_line,
+            summoner.puuid
+        );
     }
 
     // 🔥 第三步：为需要获取战绩的玩家匹配召唤师信息并获取战绩
@@ -384,30 +441,36 @@ async fn fetch_all_players_match_stats(
         // 查找对应的召唤师信息
         log::info!("[AnalysisService] 🔍 尝试匹配玩家: '{}'", player.display_name);
 
-        let summoner = summoners
-            .iter()
-            .find(|s| {
-                // 🔥 修复：LCU返回的displayName可能是空的，需要用gameName#tagLine拼接
-                let summoner_full_name = if let (Some(game_name), Some(tag_line)) = (&s.game_name, &s.tag_line) {
-                    format!("{}#{}", game_name, tag_line)
-                } else {
-                    s.display_name.clone()
-                };
+        let summoner = summoners.iter().find(|s| {
+            // 🔥 修复：LCU返回的displayName可能是空的，需要用gameName#tagLine拼接
+            let summoner_full_name = if let (Some(game_name), Some(tag_line)) = (&s.game_name, &s.tag_line) {
+                format!("{}#{}", game_name, tag_line)
+            } else {
+                s.display_name.clone()
+            };
 
-                let matches = summoner_full_name.to_lowercase() == player.display_name.to_lowercase();
-                log::info!("    比较: '{}' (拼接后) vs '{}' -> {}",
-                    summoner_full_name, player.display_name, matches);
+            let matches = summoner_full_name.to_lowercase() == player.display_name.to_lowercase();
+            log::info!(
+                "    比较: '{}' (拼接后) vs '{}' -> {}",
+                summoner_full_name,
+                player.display_name,
                 matches
-            });
+            );
+            matches
+        });
 
         match summoner {
             Some(summoner_info) => {
-                log::info!("[AnalysisService] ✅ 找到召唤师 {} 信息，获取战绩...", player.display_name);
+                log::info!(
+                    "[AnalysisService] ✅ 找到召唤师 {} 信息，获取战绩...",
+                    player.display_name
+                );
 
                 // 获取战绩
                 match get_recent_matches_by_puuid(http_client, &summoner_info.puuid, 20).await {
                     Ok(match_stats) => {
-                        let player_stats = convert_match_statistics_to_player_stats(match_stats, &player.display_name, queue_id);
+                        let player_stats =
+                            convert_match_statistics_to_player_stats(match_stats, &player.display_name, queue_id);
 
                         // 🔥 保存到缓存
                         match_stats_cache.insert(player.display_name.clone(), player_stats.clone());
@@ -416,7 +479,11 @@ async fn fetch_all_players_match_stats(
                         player.match_stats = Some(player_stats);
                     }
                     Err(e) => {
-                        log::warn!("[AnalysisService] ⚠️ 获取 {} 战绩失败: {}, 跳过", player.display_name, e);
+                        log::warn!(
+                            "[AnalysisService] ⚠️ 获取 {} 战绩失败: {}, 跳过",
+                            player.display_name,
+                            e
+                        );
                         player.match_stats = None; // 🔥 不生成假数据，保持为 None
                     }
                 }
@@ -442,7 +509,8 @@ pub fn convert_match_statistics_to_player_stats(
 
     let filtered_performance: Vec<_> = if is_ranked {
         log::info!("[AnalysisService] 🏆 排位模式检测到，只显示排位战绩 (420/440)");
-        lcu_stats.recent_performance
+        lcu_stats
+            .recent_performance
             .into_iter()
             .filter(|game| game.queue_id == 420 || game.queue_id == 440)
             .collect()
@@ -454,7 +522,11 @@ pub fn convert_match_statistics_to_player_stats(
     let total_games = filtered_performance.len() as u32;
     let wins = filtered_performance.iter().filter(|game| game.win).count() as u32;
     let losses = total_games - wins;
-    let win_rate = if total_games > 0 { (wins as f64 / total_games as f64) * 100.0 } else { 0.0 };
+    let win_rate = if total_games > 0 {
+        (wins as f64 / total_games as f64) * 100.0
+    } else {
+        0.0
+    };
 
     // 转换 recent_performance
     let recent_performance: Vec<MatchPerformance> = filtered_performance
@@ -483,7 +555,8 @@ pub fn convert_match_statistics_to_player_stats(
         .collect();
 
     // 转换 favorite_champions
-    let favorite_champions: Vec<AnalysisChampionStats> = lcu_stats.favorite_champions
+    let favorite_champions: Vec<AnalysisChampionStats> = lcu_stats
+        .favorite_champions
         .into_iter()
         .map(|champ| AnalysisChampionStats {
             champion_id: champ.champion_id,
@@ -516,8 +589,16 @@ pub fn convert_match_statistics_to_player_stats(
         avg_kills + avg_assists
     };
 
-    log::debug!("[AnalysisService] 📊 {} (过滤后) 统计: {}胜{}负 胜率{:.1}%, 平均KDA: {:.1}/{:.1}/{:.1}",
-        player_name, wins, losses, win_rate, avg_kills, avg_deaths, avg_assists);
+    log::debug!(
+        "[AnalysisService] 📊 {} (过滤后) 统计: {}胜{}负 胜率{:.1}%, 平均KDA: {:.1}/{:.1}/{:.1}",
+        player_name,
+        wins,
+        losses,
+        win_rate,
+        avg_kills,
+        avg_deaths,
+        avg_assists
+    );
 
     PlayerMatchStats {
         total_games,

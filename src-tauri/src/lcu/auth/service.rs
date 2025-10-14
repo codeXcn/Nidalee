@@ -22,10 +22,7 @@ pub fn ensure_valid_auth_info() -> Option<LcuAuthInfo> {
         let ts = AUTH_TIMESTAMP.read().unwrap();
         if let (Some(a), Some(t)) = (auth.as_ref(), ts.as_ref()) {
             if t.elapsed() < AUTH_REFRESH_INTERVAL {
-                log::debug!(
-                    "[LCU] 使用缓存的 AuthInfo，距离上次刷新: {:?}秒",
-                    t.elapsed().as_secs()
-                );
+                log::debug!("[LCU] 使用缓存的 AuthInfo，距离上次刷新: {:?}秒", t.elapsed().as_secs());
                 return Some(a.clone());
             } else {
                 // 仅作为调试信息打印，避免在正常空闲期间产生高频噪音
@@ -159,10 +156,7 @@ pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
         Err(_) => return false,
     };
 
-    let url = format!(
-        "https://127.0.0.1:{}/lol-summoner/v1/current-summoner",
-        auth.app_port
-    );
+    let url = format!("https://127.0.0.1:{}/lol-summoner/v1/current-summoner", auth.app_port);
     let response = client
         .get(&url)
         .basic_auth("riot", Some(&auth.remoting_auth_token))
@@ -183,19 +177,14 @@ pub async fn validate_auth_connection(auth: &LcuAuthInfo) -> bool {
 }
 #[cfg(target_os = "windows")]
 fn get_lcu_cmdline_windows() -> Option<String> {
-   let mut system = SYSTEM.lock().unwrap();
-    system
-        .refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
+    let mut system = SYSTEM.lock().unwrap();
+    system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
     let mut ux_cmdline = None;
     let mut client_cmdline = None;
 
     // 寻找所有可能的 LoL 客户端进程
-    let possible_names = [
-        "LeagueClientUx.exe",
-        "LeagueClient.exe",
-        "LeagueOfLegends.exe",
-    ];
+    let possible_names = ["LeagueClientUx.exe", "LeagueClient.exe", "LeagueOfLegends.exe"];
 
     for (_pid, process) in system.processes() {
         let process_name_lower = process.name().to_string_lossy().to_lowercase();
@@ -214,10 +203,7 @@ fn get_lcu_cmdline_windows() -> Option<String> {
             // 优先检查 LeagueClientUx.exe
             if process_name_lower == "leagueclientux.exe" {
                 if cmdline.contains("--remoting-auth-token") && cmdline.contains("--app-port") {
-                    log::debug!(
-                        "[LCU] 找到包含 LCU 参数的 LeagueClientUx.exe 进程, PID: {}",
-                        _pid
-                    );
+                    log::debug!("[LCU] 找到包含 LCU 参数的 LeagueClientUx.exe 进程, PID: {}", _pid);
                     return Some(cmdline); // 找到最理想的目标，直接返回
                 } else {
                     ux_cmdline = Some(cmdline); // 暂存，可能没有参数
@@ -240,7 +226,9 @@ fn get_lcu_cmdline_windows() -> Option<String> {
 
     // 如果 Client 的参数也没有，但 Ux 进程确实存在，则返回它的（不带参数的）命令行
     if let Some(cmd) = ux_cmdline {
-        log::warn!("[LCU] 无法在任何进程的命令行中找到认证参数，将使用无参数的 LeagueClientUx.exe 命令行进行后续尝试。");
+        log::warn!(
+            "[LCU] 无法在任何进程的命令行中找到认证参数，将使用无参数的 LeagueClientUx.exe 命令行进行后续尝试。"
+        );
         return Some(cmd);
     }
 

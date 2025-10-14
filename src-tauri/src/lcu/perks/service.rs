@@ -1,10 +1,7 @@
-
 //! LCU 符文相关 API
 use crate::lcu::request::lcu_request_raw;
 use crate::lcu::request::{lcu_delete, lcu_get, lcu_post, lcu_put};
-use crate::lcu::types::{
-    CreateRunePageRequest, ItemBlock, ItemSet, Perk, RecommendedItem, RunePage, RuneStyle,
-};
+use crate::lcu::types::{CreateRunePageRequest, ItemBlock, ItemSet, Perk, RecommendedItem, RunePage, RuneStyle};
 use reqwest::Client;
 use serde_json::json;
 
@@ -38,10 +35,7 @@ pub async fn get_perk_icon(client: &Client, icon_path: &str) -> Result<Vec<u8>, 
         return Err(format!("获取图标失败，状态码: {}", response.status()));
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|e| format!("读取图片数据失败: {}", e))?;
+    let bytes = response.bytes().await.map_err(|e| format!("读取图片数据失败: {}", e))?;
     Ok(bytes.to_vec())
 }
 
@@ -82,8 +76,7 @@ pub async fn create_rune_page(
         selected_perk_ids,
     };
 
-    let body =
-        serde_json::to_value(request).map_err(|e| format!("序列化创建符文页面请求失败: {}", e))?;
+    let body = serde_json::to_value(request).map_err(|e| format!("序列化创建符文页面请求失败: {}", e))?;
 
     log::info!("🔧 发送创建符文页面请求到: /lol-perks/v1/pages");
     let result: Result<RunePage, String> = lcu_post(client, "/lol-perks/v1/pages", body).await;
@@ -97,8 +90,7 @@ pub async fn create_rune_page(
 /// 删除指定的符文页面
 pub async fn delete_rune_page(client: &Client, page_id: i64) -> Result<(), String> {
     log::info!("🔧 开始删除符文页面: {}", page_id);
-    let result: Result<(), String> =
-        lcu_delete(client, &format!("/lol-perks/v1/pages/{}", page_id)).await;
+    let result: Result<(), String> = lcu_delete(client, &format!("/lol-perks/v1/pages/{}", page_id)).await;
     match &result {
         Ok(_) => log::info!("🔧 成功删除符文页面: {}", page_id),
         Err(e) => log::error!("🔧 删除符文页面失败: {}", e),
@@ -149,14 +141,7 @@ pub async fn apply_rune_build(
 
     // 4. 创建新的符文页面
     let page_name = format!("Nidalee : {}", champion_name);
-    let new_page = create_rune_page(
-        client,
-        &page_name,
-        primary_style_id,
-        sub_style_id,
-        selected_perk_ids,
-    )
-    .await?;
+    let new_page = create_rune_page(client, &page_name, primary_style_id, sub_style_id, selected_perk_ids).await?;
 
     Ok(format!("成功创建符文页面: {}", new_page.name))
 }

@@ -92,13 +92,9 @@ pub async fn lcu_request_json<T: DeserializeOwned>(
                 }
                 if status == reqwest::StatusCode::NO_CONTENT {
                     // 返回默认值
-                    return serde_json::from_str("null")
-                        .map_err(|e| format!("204返回空，解析失败: {}", e));
+                    return serde_json::from_str("null").map_err(|e| format!("204返回空，解析失败: {}", e));
                 }
-                return resp
-                    .json::<T>()
-                    .await
-                    .map_err(|e| format!("解析响应失败: {}", e));
+                return resp.json::<T>().await.map_err(|e| format!("解析响应失败: {}", e));
             }
             Err(e) => {
                 // lcu_request_raw 已有日志
@@ -115,21 +111,13 @@ pub async fn lcu_get<T: DeserializeOwned>(client: &Client, path: &str) -> Result
 }
 
 /// POST 方法，自动反序列化为 T
-pub async fn lcu_post<T: DeserializeOwned>(
-    client: &Client,
-    path: &str,
-    body: Value,
-) -> Result<T, String> {
+pub async fn lcu_post<T: DeserializeOwned>(client: &Client, path: &str, body: Value) -> Result<T, String> {
     lcu_request_json(client, Method::POST, path, Some(body)).await
 }
 
 /// PUT 方法，自动反序列化为 T
 #[allow(dead_code)]
-pub async fn lcu_put<T: DeserializeOwned>(
-    client: &Client,
-    path: &str,
-    body: Value,
-) -> Result<T, String> {
+pub async fn lcu_put<T: DeserializeOwned>(client: &Client, path: &str, body: Value) -> Result<T, String> {
     lcu_request_json(client, Method::PUT, path, Some(body)).await
 }
 
@@ -206,8 +194,5 @@ pub async fn forin_request_json<T: DeserializeOwned>(
         return Err(format!("服务器返回错误: {}", response.status()));
     }
 
-    response
-        .json::<T>()
-        .await
-        .map_err(|e| format!("解析响应失败: {}", e))
+    response.json::<T>().await.map_err(|e| format!("解析响应失败: {}", e))
 }

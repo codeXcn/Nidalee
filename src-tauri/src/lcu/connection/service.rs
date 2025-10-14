@@ -1,9 +1,6 @@
-
-use crate::lcu::auth::service::{
-    ensure_valid_auth_info, invalidate_auth_info, validate_auth_connection,
-};
-use crate::lcu::types::{ConnectionState, LcuAuthInfo};
+use crate::lcu::auth::service::{ensure_valid_auth_info, invalidate_auth_info, validate_auth_connection};
 use crate::lcu::optimized_polling::OptimizedPollingManager;
+use crate::lcu::types::{ConnectionState, LcuAuthInfo};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -178,15 +175,9 @@ impl ConnectionManager {
         use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
         let mut system = System::new();
-        system.refresh_specifics(
-            RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
-        );
+        system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
-        let possible_names = [
-            "LeagueClientUx.exe",
-            "LeagueClient.exe",
-            "LeagueOfLegends.exe",
-        ];
+        let possible_names = ["LeagueClientUx.exe", "LeagueClient.exe", "LeagueOfLegends.exe"];
 
         for (_pid, process) in system.processes() {
             let process_name = process.name().to_string_lossy();
@@ -203,24 +194,15 @@ impl ConnectionManager {
     async fn handle_state_change(&self, old_state: &ConnectionState, new_state: &ConnectionState) {
         let message = match (old_state, new_state) {
             (_, ConnectionState::Disconnected) => "客户端已断开连接",
-            (ConnectionState::Disconnected, ConnectionState::ProcessFound) => {
-                "检测到客户端启动，正在建立连接..."
-            }
+            (ConnectionState::Disconnected, ConnectionState::ProcessFound) => "检测到客户端启动，正在建立连接...",
             (ConnectionState::Unstable, ConnectionState::Connected) => "连接已恢复稳定",
             (_, ConnectionState::Connected) => "客户端连接成功",
-            (ConnectionState::Connected, ConnectionState::Unstable) => {
-                "连接变得不稳定，正在重试..."
-            }
+            (ConnectionState::Connected, ConnectionState::Unstable) => "连接变得不稳定，正在重试...",
             (_, ConnectionState::AuthExpired) => "认证信息已过期，正在重新获取...",
             _ => "连接状态发生变化",
         };
 
-        log::info!(
-            "[连接管理] 状态变化: {:?} -> {:?}, {}",
-            old_state,
-            new_state,
-            message
-        );
+        log::info!("[连接管理] 状态变化: {:?} -> {:?}, {}", old_state, new_state, message);
 
         // 发送状态变化事件到前端
         let info = self.info.read().await;

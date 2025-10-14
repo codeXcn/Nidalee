@@ -19,27 +19,26 @@ static CHAMPION_DATA: OnceCell<HashMap<i32, ChampionInfo>> = OnceCell::new();
 #[serde(rename_all = "camelCase")]
 pub struct ChampionInfo {
     pub id: i32,
-    pub name: String,           // 中文名称，如 "黑暗之女"
-    pub description: String,    // 英雄称号，如 "安妮"
-    pub alias: String,          // 英文别名，如 "Annie"
-    pub content_id: String,     // 内容ID
+    pub name: String,                 // 中文名称，如 "黑暗之女"
+    pub description: String,          // 英雄称号，如 "安妮"
+    pub alias: String,                // 英文别名，如 "Annie"
+    pub content_id: String,           // 内容ID
     pub square_portrait_path: String, // 头像路径
-    pub roles: Vec<String>,     // 英雄定位，如 ["mage", "support"]
+    pub roles: Vec<String>,           // 英雄定位，如 ["mage", "support"]
 }
 
 /// 从 Community Dragon 获取英雄摘要数据并构建映射
 pub async fn load_champion_data() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // 检查是否已加载
-    if CHAMPION_ALIAS_TO_ID.get().is_some()
-        && CHAMPION_NAME_TO_ID.get().is_some()
-        && CHAMPION_DATA.get().is_some() {
+    if CHAMPION_ALIAS_TO_ID.get().is_some() && CHAMPION_NAME_TO_ID.get().is_some() && CHAMPION_DATA.get().is_some() {
         log::info!("[ChampionData] ✅ 英雄数据已加载，跳过重复加载");
         return Ok(());
     }
 
     log::info!("[ChampionData] 🌐 正在从 Community Dragon 加载英雄摘要数据...");
 
-    let url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/v1/champion-summary.json";
+    let url =
+        "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/v1/champion-summary.json";
 
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
@@ -84,9 +83,7 @@ pub async fn load_champion_data() -> Result<(), Box<dyn std::error::Error + Send
     CHAMPION_NAME_TO_ID
         .set(name_map)
         .map_err(|_| "无法设置 CHAMPION_NAME_TO_ID")?;
-    CHAMPION_DATA
-        .set(data_map)
-        .map_err(|_| "无法设置 CHAMPION_DATA")?;
+    CHAMPION_DATA.set(data_map).map_err(|_| "无法设置 CHAMPION_DATA")?;
 
     Ok(())
 }
@@ -128,9 +125,7 @@ pub fn get_all_champions() -> Option<Vec<ChampionInfo>> {
 
 /// 检查数据是否已加载
 pub fn is_loaded() -> bool {
-    CHAMPION_ALIAS_TO_ID.get().is_some()
-        && CHAMPION_NAME_TO_ID.get().is_some()
-        && CHAMPION_DATA.get().is_some()
+    CHAMPION_ALIAS_TO_ID.get().is_some() && CHAMPION_NAME_TO_ID.get().is_some() && CHAMPION_DATA.get().is_some()
 }
 
 /// 获取英雄总数
@@ -174,4 +169,3 @@ mod tests {
         assert!(all_champions.unwrap().len() > 100); // LOL 有超过 100 个英雄
     }
 }
-
