@@ -1,7 +1,7 @@
 <template>
-  <MatchSearch />
+  <div>
+    <MatchSearch />
+  </div>
 </template>
 
-<script setup lang="ts">
-import MatchSearch from '@/features/match-search/MatchSearch.vue'
-</script>
+<script setup lang="ts"></script>

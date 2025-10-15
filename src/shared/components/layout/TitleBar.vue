@@ -1,7 +1,7 @@
 <template>
   <div data-tauri-drag-region class="titlebar">
     <div class="titlebar-left">
-      <img src="../../assets/logo.svg" alt="logo" class="logo" />
+      <img src="@/assets/logo.svg" alt="logo" class="logo" />
       <span class="title">Nidalee - Made by <span class="animate-pulse"> ❤️ </span> CodexLin </span>
     </div>
     <div class="titlebar-right">

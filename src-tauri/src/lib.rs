@@ -2,6 +2,7 @@
 mod app;
 mod common;
 mod http_client;
+mod initialization;
 mod lcu;
 mod tray;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -63,6 +64,19 @@ pub fn run() {
             lcu::champion_data::commands::get_champion_by_name,
             lcu::champion_data::commands::is_champion_data_loaded,
             lcu::champion_data::commands::get_champion_count_cmd,
+
+            // 召唤师技能数据命令
+            lcu::summoner_spells::commands::init_summoner_spell_data,
+            lcu::summoner_spells::commands::get_all_summoner_spell_data,
+            lcu::summoner_spells::commands::get_summoner_spell_by_id,
+            lcu::summoner_spells::commands::get_summoner_spell_by_name,
+            lcu::summoner_spells::commands::is_summoner_spell_data_loaded,
+            lcu::summoner_spells::commands::get_summoner_spell_count,
+
+            // 房间和聊天命令
+            lcu::lobby::commands::get_current_lobby,
+            lcu::lobby::commands::send_lobby_chat_message,
+            lcu::lobby::commands::send_lobby_formatted_message,
             common::commands::machine::get_machine_hash,
             common::commands::builds::get_champions_list,
             common::commands::builds::get_champion_builds,

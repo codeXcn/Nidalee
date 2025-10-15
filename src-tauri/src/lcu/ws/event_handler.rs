@@ -1,6 +1,7 @@
 // Handles converting raw WebSocket messages into application-specific events.
 use crate::lcu::analysis_data;
 use crate::lcu::champion_data;
+use crate::lcu::summoner_spells;
 use crate::lcu::summoner::service::get_summoner_by_id;
 use crate::lcu::types::{ChampSelectSession, LobbyInfo, MatchmakingState, SummonerInfo};
 use reqwest::Client;
@@ -48,6 +49,23 @@ impl WsEventHandler {
     pub async fn get_cached_team_analysis_data(&self) -> Option<crate::lcu::types::TeamAnalysisData> {
         let cache = self.cache.read().await;
         cache.team_analysis_data.clone()
+    }
+
+    /// Restores team analysis data to cache (from external sources).
+    pub async fn restore_team_analysis_data(&self, data: crate::lcu::types::TeamAnalysisData) {
+        let mut cache = self.cache.write().await;
+        cache.team_analysis_data = Some(data);
+    }
+
+    /// 🔥 主动构建队伍分析数据并返回（用于前端手动调用）
+    pub async fn build_and_get_team_data(&self) -> Result<crate::lcu::types::TeamAnalysisData, String> {
+        // 调用 build_team_data_from_scratch 构建数据
+        self.build_team_data_from_scratch().await?;
+
+        // 从缓存中获取刚构建的数据
+        let cache = self.cache.read().await;
+        cache.team_analysis_data.clone()
+            .ok_or_else(|| "Failed to get team data from cache after building".to_string())
     }
 
     /// Gets cache status for debugging purposes.
@@ -144,28 +162,37 @@ impl WsEventHandler {
             if let Some(phase) = data.as_str() {
                 let mut cache = self.cache.write().await;
                 if cache.gameflow_phase.as_ref() != Some(&phase.to_string()) {
-                    // When entering 'InProgress', trigger backfill logic instead of clearing the cache.
+                    // When entering 'InProgress', trigger backfill or build logic.
                     if phase == "InProgress" {
-                        if cache.team_analysis_data.is_some() {
-                            log::info!("[ws-event] InProgress phase detected, triggering enemy data backfill.");
-                            // Clone required fields to satisfy the 'static lifetime for the new task.
-                            let app_clone = self.app.clone();
-                            let cache_clone = Arc::clone(&self.cache);
-                            let client_clone = self.client.clone();
+                        let has_cache = cache.team_analysis_data.is_some();
 
-                            tokio::spawn(async move {
-                                // Reconstruct the handler in the new task to avoid lifetime issues.
-                                let temp_handler = WsEventHandler {
-                                    app: app_clone,
-                                    cache: cache_clone,
-                                    client: client_clone,
-                                };
+                        // Clone required fields to satisfy the 'static lifetime for the new task.
+                        let app_clone = self.app.clone();
+                        let cache_clone = Arc::clone(&self.cache);
+                        let client_clone = self.client.clone();
 
+                        tokio::spawn(async move {
+                            // Reconstruct the handler in the new task to avoid lifetime issues.
+                            let temp_handler = WsEventHandler {
+                                app: app_clone,
+                                cache: cache_clone,
+                                client: client_clone,
+                            };
+
+                            if has_cache {
+                                // 🔥 有缓存数据（正常流程：选人→游戏），只回填敌方队伍
+                                log::info!("[ws-event] Cache available, starting enemy team backfill...");
                                 if let Err(e) = temp_handler.backfill_enemy_team_data().await {
                                     log::error!("[ws-event-backfill] Failed to backfill enemy team data: {}", e);
                                 }
-                            });
-                        }
+                            } else {
+                                // 🔥 没有缓存数据（应用重启或游戏中打开），主动构建完整数据
+                                log::info!("[ws-event] No cache, building team data from scratch...");
+                                if let Err(e) = temp_handler.build_team_data_from_scratch().await {
+                                    log::error!("[ws-event-scratch] Failed to build team data from scratch: {}", e);
+                                }
+                            }
+                        });
                     } else if phase != "ChampSelect"
                         && phase != "ReadyCheck"
                         && phase != "Matchmaking"
@@ -343,6 +370,29 @@ impl WsEventHandler {
             enemy_player.champion_id = Some(champion_id);
             enemy_player.champion_name = Some(live_player.champion_name.clone());
 
+            // 5.3.1 解析并转换召唤师技能（从中文名转为 ID）
+            if let Some(spells) = live_player.summoner_spells.as_object() {
+                // 技能1
+                if let Some(spell_one) = spells.get("summonerSpellOne") {
+                    if let Some(spell_name) = spell_one.get("displayName").and_then(|v| v.as_str()) {
+                        if let Some(spell_id) = summoner_spells::get_spell_id_by_name(spell_name) {
+                            enemy_player.spell1_id = Some(spell_id);
+                            log::debug!("[ws-event-backfill] 转换召唤师技能1: '{}' -> ID {}", spell_name, spell_id);
+                        }
+                    }
+                }
+
+                // 技能2
+                if let Some(spell_two) = spells.get("summonerSpellTwo") {
+                    if let Some(spell_name) = spell_two.get("displayName").and_then(|v| v.as_str()) {
+                        if let Some(spell_id) = summoner_spells::get_spell_id_by_name(spell_name) {
+                            enemy_player.spell2_id = Some(spell_id);
+                            log::debug!("[ws-event-backfill] 转换召唤师技能2: '{}' -> ID {}", spell_name, spell_id);
+                        }
+                    }
+                }
+            }
+
             // 5.4 Find the corresponding summoner info.
             let summoner_info = summoners_info.iter().find(|s| {
                 let full_name = if let (Some(game_name), Some(tag_line)) = (&s.game_name, &s.tag_line) {
@@ -374,6 +424,11 @@ impl WsEventHandler {
                         stats_to_cache.push((live_player.summoner_name.clone(), player_stats.clone()));
 
                         enemy_player.match_stats = Some(player_stats);
+
+                        if enemy_player.is_bot {
+                            enemy_player.is_bot = false;
+                        }
+
                         log::info!(
                             "[ws-event-backfill] Successfully backfilled full data for player '{}'.",
                             live_player.summoner_name
@@ -411,6 +466,304 @@ impl WsEventHandler {
         log::info!("[ws-event-backfill] Backfill task completed.");
 
         Ok(())
+    }
+
+    /// 从头构建队伍分析数据（应用重启后没有缓存时使用）
+    /// 同时处理我方和敌方队伍的数据
+    async fn build_team_data_from_scratch(&self) -> Result<(), String> {
+        log::info!("[ws-event-scratch] Starting to build team data from scratch...");
+
+        // 1. 获取 LiveClient 玩家列表（带重试）
+        let live_players = {
+            let mut attempts = 0;
+            let max_attempts = 30;
+            loop {
+                attempts += 1;
+                match crate::lcu::liveclient::service::get_live_player_list().await {
+                    Ok(players) if !players.is_empty() => {
+                        log::info!("[ws-event-scratch] Successfully fetched player list from LiveClient.");
+                        break players;
+                    }
+                    Ok(_) => {
+                        if attempts >= max_attempts {
+                            return Err(
+                                "Failed to get player list from LiveClient after multiple attempts: returned an empty list (game loading?).".to_string(),
+                            );
+                        }
+                        log::warn!(
+                            "[ws-event-scratch] LiveClient returned an empty list (game loading?), attempt {}/{}...",
+                            attempts,
+                            max_attempts
+                        );
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    }
+                    Err(e) => {
+                        if attempts >= max_attempts {
+                            return Err(format!(
+                                "Failed to get player list from LiveClient after {} attempts: {}",
+                                max_attempts, e
+                            ));
+                        }
+                        log::warn!(
+                            "[ws-event-scratch] Failed to fetch LiveClient player list (attempt {}/{}), retrying in 2s: {}",
+                            attempts,
+                            max_attempts,
+                            e
+                        );
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    }
+                }
+            }
+        };
+
+        log::info!(
+            "[ws-event-scratch] Found {} players in LiveClient data.",
+            live_players.len()
+        );
+
+        // 2. 分离我方（ORDER）和敌方（CHAOS）队伍
+        let my_team_players: Vec<_> = live_players
+            .iter()
+            .filter(|p| p.team == "ORDER" && !p.is_bot && !p.summoner_name.is_empty())
+            .collect();
+
+        let enemy_team_players: Vec<_> = live_players
+            .iter()
+            .filter(|p| p.team == "CHAOS" && !p.is_bot && !p.summoner_name.is_empty())
+            .collect();
+
+        log::info!(
+            "[ws-event-scratch] Team split: {} my team players, {} enemy team players",
+            my_team_players.len(),
+            enemy_team_players.len()
+        );
+
+        // 3. 收集所有玩家名称用于批量获取召唤师信息
+        let all_player_names: Vec<String> = live_players
+            .iter()
+            .filter(|p| !p.is_bot && !p.summoner_name.is_empty())
+            .map(|p| p.summoner_name.clone())
+            .collect();
+
+        let summoners_info = match crate::lcu::summoner::service::get_summoners_by_names(&self.client, all_player_names.clone()).await {
+            Ok(info) => {
+                log::info!(
+                    "[ws-event-scratch] Successfully fetched details for {} summoners.",
+                    info.len()
+                );
+                info
+            }
+            Err(e) => {
+                log::error!(
+                    "[ws-event-scratch] Batch fetch for summoner info failed: {}. Proceeding without this data.",
+                    e
+                );
+                return Err(format!("Failed to fetch summoner info: {}", e));
+            }
+        };
+
+        // 4. 构建我方队伍数据
+        let mut my_team_data = Vec::new();
+        let mut stats_to_cache = Vec::new();
+
+        for (cell_id, live_player) in my_team_players.iter().enumerate() {
+            match self.build_player_data(live_player, cell_id as i32, &summoners_info, &mut stats_to_cache).await {
+                Ok(player_data) => my_team_data.push(player_data),
+                Err(e) => {
+                    log::warn!("[ws-event-scratch] Failed to build data for my team player '{}': {}", live_player.summoner_name, e);
+                }
+            }
+        }
+
+        // 5. 构建敌方队伍数据
+        let mut enemy_team_data = Vec::new();
+
+        for (cell_id, live_player) in enemy_team_players.iter().enumerate() {
+            match self.build_player_data(live_player, cell_id as i32 + 5, &summoners_info, &mut stats_to_cache).await {
+                Ok(player_data) => enemy_team_data.push(player_data),
+                Err(e) => {
+                    log::warn!("[ws-event-scratch] Failed to build data for enemy team player '{}': {}", live_player.summoner_name, e);
+                }
+            }
+        }
+
+        // 6. 🔥 从 gameflow session 获取准确的游戏信息
+        let (queue_id, is_custom_game) = match crate::lcu::gameflow::service::get_gameflow_session(&self.client).await {
+            Ok(session) => {
+                let queue_id = session["gameData"]["queue"]["id"].as_i64().unwrap_or(420);
+                let is_custom = session["gameData"]["isCustomGame"].as_bool().unwrap_or(false);
+                log::info!("[ws-event-scratch] Got accurate game info from API: queue_id={}, is_custom={}", queue_id, is_custom);
+                (queue_id, is_custom)
+            }
+            Err(e) => {
+                log::warn!("[ws-event-scratch] Failed to get gameflow session: {}, using defaults", e);
+                (420, false)
+            }
+        };
+
+        // 7. 🔥 识别本地玩家的 cell_id
+        let local_player_cell_id = match crate::lcu::summoner::service::get_current_summoner(&self.client).await {
+            Ok(summoner) => {
+                // 构建完整召唤师名称（GameName#TagLine 或 DisplayName）
+                let local_name = if let (Some(game_name), Some(tag_line)) = (&summoner.game_name, &summoner.tag_line) {
+                    format!("{}#{}", game_name, tag_line)
+                } else {
+                    summoner.display_name.clone()
+                };
+
+                // 在我方队伍中查找本地玩家
+                my_team_data.iter()
+                    .find(|p| p.display_name.to_lowercase() == local_name.to_lowercase())
+                    .map(|p| {
+                        log::info!("[ws-event-scratch] Found local player at cell_id={}", p.cell_id);
+                        p.cell_id
+                    })
+                    .unwrap_or_else(|| {
+                        log::warn!("[ws-event-scratch] Could not find local player, using default cell_id=0");
+                        0
+                    })
+            }
+            Err(e) => {
+                log::warn!("[ws-event-scratch] Failed to get current summoner: {}, using default cell_id=0", e);
+                0
+            }
+        };
+
+        // 8. 创建 TeamAnalysisData
+        let team_analysis_data = crate::lcu::types::TeamAnalysisData {
+            my_team: my_team_data,
+            enemy_team: enemy_team_data,
+            local_player_cell_id,
+            game_phase: "InProgress".to_string(),
+            queue_id,
+            is_custom_game,
+            actions: None,
+            bans: None,
+            timer: None,
+        };
+
+        // 9. 缓存数据
+        let mut cache = self.cache.write().await;
+
+        // 批量插入战绩缓存
+        for (summoner_name, stats) in stats_to_cache {
+            cache.match_stats_cache.insert(summoner_name, stats);
+        }
+
+        cache.team_analysis_data = Some(team_analysis_data.clone());
+        log::info!("[ws-event-scratch] TeamAnalysisData has been cached.");
+
+        drop(cache);
+
+        // 10. 发送到前端
+        log::info!("[ws-event-scratch] Emitting complete team analysis data to frontend.");
+        let _ = self.app.emit("team-analysis-data", &team_analysis_data);
+        log::info!("[ws-event-scratch] Build from scratch completed successfully with accurate data.");
+
+        Ok(())
+    }
+
+    /// 辅助方法：从 LiveClient 玩家数据构建 PlayerAnalysisData
+    async fn build_player_data(
+        &self,
+        live_player: &crate::lcu::types::LiveClientPlayer,
+        cell_id: i32,
+        summoners_info: &[crate::lcu::types::SummonerInfo],
+        stats_to_cache: &mut Vec<(String, crate::lcu::types::PlayerMatchStats)>,
+    ) -> Result<crate::lcu::types::PlayerAnalysisData, String> {
+        // 获取英雄 ID
+        let champion_id = champion_data::get_champion_id_by_name(&live_player.champion_name)
+            .ok_or_else(|| format!("Could not find champion ID for '{}'", live_player.champion_name))?;
+
+        // 查找召唤师信息
+        let summoner_info = summoners_info.iter().find(|s| {
+            let full_name = if let (Some(game_name), Some(tag_line)) = (&s.game_name, &s.tag_line) {
+                format!("{}#{}", game_name, tag_line)
+            } else {
+                s.display_name.clone()
+            };
+            full_name.to_lowercase() == live_player.summoner_name.to_lowercase()
+        });
+
+        let mut player_data = crate::lcu::types::PlayerAnalysisData {
+            cell_id,
+            display_name: live_player.summoner_name.clone(),
+            summoner_id: None,
+            puuid: None,
+            is_local: false,
+            is_bot: false,
+            champion_id: Some(champion_id),
+            champion_name: Some(live_player.champion_name.clone()),
+            champion_pick_intent: None,
+            position: None,
+            tier: None,
+            profile_icon_id: None,
+            tag_line: None,
+            spell1_id: None,
+            spell2_id: None,
+            match_stats: None,
+        };
+
+        // 解析召唤师技能
+        if let Some(spells) = live_player.summoner_spells.as_object() {
+            if let Some(spell_one) = spells.get("summonerSpellOne") {
+                if let Some(spell_name) = spell_one.get("displayName").and_then(|v| v.as_str()) {
+                    if let Some(spell_id) = summoner_spells::get_spell_id_by_name(spell_name) {
+                        player_data.spell1_id = Some(spell_id);
+                    }
+                }
+            }
+
+            if let Some(spell_two) = spells.get("summonerSpellTwo") {
+                if let Some(spell_name) = spell_two.get("displayName").and_then(|v| v.as_str()) {
+                    if let Some(spell_id) = summoner_spells::get_spell_id_by_name(spell_name) {
+                        player_data.spell2_id = Some(spell_id);
+                    }
+                }
+            }
+        }
+
+        // 填充召唤师详细信息
+        if let Some(info) = summoner_info {
+            player_data.puuid = Some(info.puuid.clone());
+            player_data.tier = info.solo_rank_tier.clone();
+            player_data.profile_icon_id = Some(info.profile_icon_id as i32);
+            player_data.tag_line = info.tag_line.clone();
+
+            // 获取战绩数据
+            match crate::lcu::matches::service::get_recent_matches_by_puuid(&self.client, &info.puuid, 20).await {
+                Ok(match_stats) => {
+                    let queue_id = 420; // 默认队列 ID
+                    let player_stats = analysis_data::service::convert_match_statistics_to_player_stats(
+                        match_stats,
+                        &live_player.summoner_name,
+                        queue_id,
+                    );
+
+                    stats_to_cache.push((live_player.summoner_name.clone(), player_stats.clone()));
+                    player_data.match_stats = Some(player_stats);
+
+                    log::info!(
+                        "[ws-event-scratch] Successfully fetched match data for player '{}'.",
+                        live_player.summoner_name
+                    );
+                }
+                Err(e) => {
+                    log::warn!(
+                        "[ws-event-scratch] Failed to get match history for player '{}': {}",
+                        live_player.summoner_name,
+                        e
+                    );
+                }
+            }
+        } else {
+            log::warn!(
+                "[ws-event-scratch] Could not find detailed summoner info for '{}'.",
+                live_player.summoner_name
+            );
+        }
+
+        Ok(player_data)
     }
 
     async fn handle_gameflow_session_change(&self, data: &Value, event_type: &str) -> Result<(), String> {
@@ -501,6 +854,7 @@ impl WsEventHandler {
 
                         // Drop the lock before emitting.
                         drop(cache);
+
                         // Send enriched data (this will update the UI with match stats).
                         let _ = app.emit("team-analysis-data", &enriched_data);
                     }
@@ -530,6 +884,7 @@ impl WsEventHandler {
     }
 
     async fn handle_lobby_change(&self, data: &Value, event_type: &str) -> Result<(), String> {
+        log::info!("[ws-event] Lobby info event received, data: {}", data);
         if event_type == "Create" || event_type == "Update" {
             if let Ok(lobby) = serde_json::from_value::<LobbyInfo>(data.clone()) {
                 let mut cache = self.cache.write().await;

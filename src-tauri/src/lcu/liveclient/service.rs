@@ -55,7 +55,6 @@ async fn test_liveclient_port(port: u16) -> bool {
 pub async fn get_live_player_list() -> Result<Vec<crate::lcu::types::LiveClientPlayer>, String> {
     // 确保 LCU 认证信息可用（虽然 LiveClient 不需要认证，但确保游戏正在运行）
     let _auth = ensure_valid_auth_info().ok_or("无法获取 LCU 认证信息，请确保游戏正在运行")?;
-
     // LiveClient 通常使用固定端口 2999，但我们可以尝试动态检测
     let liveclient_port = detect_liveclient_port().await.unwrap_or(2999);
 
@@ -83,13 +82,10 @@ pub async fn get_live_player_list() -> Result<Vec<crate::lcu::types::LiveClientP
 
     let text = resp.text().await.map_err(|e| e.to_string())?;
 
-    // 先打印原始数据以便调试
-    log::debug!("[LiveClient] 原始 API 响应: {}", text);
-
     // 尝试解析为 JSON 值来查看实际结构
     let json_value: serde_json::Value = serde_json::from_str(&text).map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
-    log::debug!(
+    log::info!(
         "[LiveClient] 解析后的 JSON: {}",
         serde_json::to_string_pretty(&json_value).unwrap_or_default()
     );

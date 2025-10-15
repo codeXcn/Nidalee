@@ -11,6 +11,9 @@
       />
     </div>
   </Card>
+  <div class="mt-4 text-center text-xs text-muted-foreground" v-if="teamType === 'enemy'">
+    <p>💡 敌方完整信息将在游戏开始后获取</p>
+  </div>
 </template>
 
 <script setup lang="ts">

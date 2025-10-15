@@ -46,21 +46,29 @@
       </div>
 
       <!-- 数据状态 -->
-      <div class="flex items-center gap-1 text-xs" :class="dataStatusClass">
+      <!-- <div class="flex items-center gap-1 text-xs" :class="dataStatusClass">
         <div class="w-1.5 h-1.5 rounded-full" :class="dataIndicatorClass" />
         <span>{{ dataStatusText }}</span>
-      </div>
+      </div> -->
+      <Tooltip v-if="teamType === 'enemy'">
+        <TooltipTrigger as-child>
+          <span class="text-center text-xs text-muted-foreground"> <Info /></span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div class="text-center text-xs text-muted-foreground">
+            <p>💡 敌方完整信息将在游戏开始后获取</p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
     </div>
 
     <!-- 右侧：操作按钮 -->
-    <div class="flex items-center gap-2">
-      <!-- 加载状态 -->
+    <!-- <div class="flex items-center gap-2">
       <div v-if="loading" class="flex items-center gap-2 text-xs text-muted-foreground">
         <div class="w-3 h-3 border border-primary/30 border-t-primary rounded-full animate-spin" />
         <span>加载中</span>
       </div>
 
-      <!-- 刷新按钮 -->
       <button
         v-else
         type="button"
@@ -77,14 +85,14 @@
         </svg>
         <span>刷新</span>
       </button>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import type { GamePhase } from '@/types/match-analysis'
 import { useMatchAnalysisStore } from '@/features/match-analysis/store'
-
+import { Info } from 'lucide-vue-next'
 interface Props {
   teamType: 'ally' | 'enemy'
   phase: GamePhase

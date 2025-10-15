@@ -278,17 +278,34 @@ pub struct GameflowPhase {
     pub phase: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/LobbyInfo.ts",
-    rename_all = "camelCase"
-)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+
 #[serde(rename_all = "camelCase")]
 pub struct LobbyInfo {
-    pub id: String,
-    pub party_type: String,
+    #[serde(default)]
+    pub can_start_activity: bool,
+    #[serde(default)]
+    pub game_config: serde_json::Value,  // 使用 Value 因为结构复杂
+    #[serde(default)]
+    pub invitations: Vec<serde_json::Value>,
+    #[serde(default)]
+    pub local_member: Option<LobbyMember>,
+    #[serde(default)]
     pub members: Vec<LobbyMember>,
+    #[serde(default)]
+    pub muc_jwt_dto: Option<serde_json::Value>,
+    #[serde(default)]
+    pub multi_user_chat_id: String,
+    #[serde(default)]
+    pub multi_user_chat_password: String,
+    #[serde(default)]
+    pub party_id: String,
+    #[serde(default)]
+    pub party_type: String,
+    #[serde(default)]
+    pub restrictions: Vec<serde_json::Value>,
+    #[serde(default)]
+    pub warnings: Vec<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
@@ -299,10 +316,59 @@ pub struct LobbyInfo {
 )]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyMember {
+    // 基本信息
     #[ts(type = "string")]
     #[serde(deserialize_with = "crate::lcu::types::string_or_number")]
     pub summoner_id: String,
+    #[serde(default)]
     pub display_name: String,
+    #[serde(default)]
+    pub puuid: String,
+    #[serde(default)]
+    pub summoner_name: String,
+    #[ts(type = "number")]
+    #[serde(default)]
+    pub summoner_level: i64,
+    #[ts(type = "number")]
+    #[serde(default)]
+    pub summoner_icon_id: i64,
+
+    // 权限
+    #[serde(default)]
+    pub is_bot: bool,
+    #[serde(default)]
+    pub is_leader: bool,
+    #[serde(default)]
+    pub is_spectator: bool,
+    #[serde(default)]
+    pub ready: bool,
+
+    // 机器人相关
+    #[ts(type = "number")]
+    #[serde(default)]
+    pub bot_champion_id: i32,
+    #[serde(default)]
+    pub bot_difficulty: String,
+    #[serde(default)]
+    pub bot_id: String,
+    #[serde(default)]
+    pub bot_position: String,
+
+    // 位置偏好
+    #[serde(default)]
+    pub first_position_preference: String,
+    #[serde(default)]
+    pub second_position_preference: String,
+
+    // 其他字段（使用 default 避免解析失败）
+    #[serde(default)]
+    pub allowed_change_activity: bool,
+    #[serde(default)]
+    pub allowed_invite_others: bool,
+    #[serde(default)]
+    pub allowed_kick_others: bool,
+    #[serde(default)]
+    pub allowed_start_activity: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
@@ -1126,8 +1192,8 @@ pub struct PlayerAnalysisData {
     pub tier: Option<String>,
     pub profile_icon_id: Option<i32>,
     pub tag_line: Option<String>,
-    pub spell1_id: Option<i32>,
-    pub spell2_id: Option<i32>,
+    pub spell1_id: Option<i64>,  // 改为 i64 以支持大数值
+    pub spell2_id: Option<i64>,  // 改为 i64 以支持大数值
 
     // 战绩数据（只有真实玩家才有）
     pub match_stats: Option<PlayerMatchStats>,

@@ -2,7 +2,7 @@
   <div class="flex items-center justify-center h-screen bg-background">
     <div class="w-full max-w-2xl mx-auto px-6">
       <!-- Matchmaking View -->
-      <div v-if="currentPhase === 'Matchmaking'">
+      <div v-if="['Matchmaking'].includes(currentPhase)">
         <Card class="p-6 rounded-lg shadow-sm">
           <div class="space-y-6">
             <div class="flex items-center justify-between">
@@ -44,7 +44,7 @@
       </div>
 
       <!-- ChampSelect Loading View -->
-      <div v-else-if="currentPhase === 'ChampSelect'">
+      <div v-else-if="['ChampSelect', 'ReadyCheck', 'Found'].includes(currentPhase)">
         <div class="flex flex-col items-center justify-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-6"></div>
           <h2 class="text-2xl font-semibold text-foreground">正在分析对局...</h2>
@@ -165,6 +165,7 @@ watch(
         statusTitle.value = '等待所有玩家确认'
         statusDescription.value = '对局已找到，请在客户端中接受对局。'
         break
+
       case 'EndOfGame':
         statusIcon.value = Gamepad2
         statusTitle.value = '对局结束'

@@ -3,6 +3,7 @@ pub mod auth;
 pub mod champ_select;
 pub mod champion_data;
 pub mod connection;
+pub mod summoner_spells;
 pub mod ddragon;
 pub mod gameflow;
 pub mod liveclient;

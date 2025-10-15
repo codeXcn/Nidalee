@@ -102,6 +102,7 @@ declare module 'vue' {
     Label: typeof import('./../src/shared/components/ui/label/Label.vue')['default']
     Loading: typeof import('./../src/shared/components/common/Loading.vue')['default']
     LoadingOverlay: typeof import('./../src/shared/components/common/LoadingOverlay.vue')['default']
+    LobbyTest: typeof import('./../src/features/lobby-test/LobbyTest.vue')['default']
     MainView: typeof import('./../src/shared/components/layout/MainView.vue')['default']
     MatchAnalysis: typeof import('./../src/features/match-analysis/MatchAnalysis.vue')['default']
     MatchFilterDialog: typeof import('./../src/features/match-search/components/MatchFilterDialog.vue')['default']

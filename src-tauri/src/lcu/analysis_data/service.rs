@@ -231,6 +231,7 @@ async fn parse_player_from_session(
     // 1. summonerId 为 0 表示机器人
     // 2. gameName 为空字符串且隐藏名称
     // 3. puuid 为空字符串
+    // 注意：敌方玩家在选人阶段 puuid 可能为空，这是正常的，会在后续获取战绩时修正
     let summoner_id_num = player["summonerId"].as_i64().unwrap_or(0);
     let game_name = player["gameName"].as_str().unwrap_or("");
     let puuid = player["puuid"].as_str().unwrap_or("");
@@ -240,9 +241,12 @@ async fn parse_player_from_session(
 
     log::debug!(
         target: "analysis_data::service",
-        "Parsed player: cellId={}, displayName='{}', isBot={}, puuid='{}'",
+        "Parsed player: cellId={}, displayName='{}', gameName='{}', tagLine='{}', summonerId={}, isBot={}, puuid='{}'",
         cell_id,
         display_name,
+        game_name,
+        player["tagLine"].as_str().unwrap_or(""),
+        summoner_id_num,
         is_bot,
         puuid
     );
@@ -263,8 +267,8 @@ async fn parse_player_from_session(
         tier: player["tier"].as_str().map(|s| s.to_string()),
         profile_icon_id: player["profileIconId"].as_i64().map(|id| id as i32),
         tag_line: player["tagLine"].as_str().map(|s| s.to_string()),
-        spell1_id: player["spell1Id"].as_i64().map(|id| id as i32),
-        spell2_id: player["spell2Id"].as_i64().map(|id| id as i32),
+        spell1_id: player["spell1Id"].as_i64(),
+        spell2_id: player["spell2Id"].as_i64(),
 
         match_stats: None, // 后续填充
     })
@@ -374,6 +378,11 @@ async fn fetch_all_players_match_stats(
                 player.display_name
             );
             player.match_stats = Some(cached_stats.clone());
+
+            if player.is_bot {
+                player.is_bot = false;
+            }
+
             cached_count += 1;
         } else {
             log::debug!(

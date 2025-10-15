@@ -33,6 +33,11 @@ const router = createRouter({
       name: 'security',
       component: () => import('../views/TestView.vue')
     },
+    {
+      path: '/champ-select-test',
+      name: 'champ-select-test',
+      component: () => import('../views/TestView.vue')
+    },
 
     {
       path: '/settings',
