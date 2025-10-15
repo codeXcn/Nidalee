@@ -31,12 +31,7 @@ export default defineConfig({
       imports: ['vue', 'vue-router', 'pinia'],
       dts: 'types/auto-imports.d.ts',
       // 使用 ** 递归扫描所有嵌套模块
-      dirs: ['./src/shared/composables/**', './src/shared/stores/**'],
-      // 扫描选项：过滤掉 index.ts 避免重复导出问题
-      dirsScanOptions: {
-        filePatterns: ['*.ts'],
-        fileFilter: (file: string) => !file.endsWith('index.ts')
-      }
+      dirs: ['./src/shared/composables/**', './src/shared/stores/**']
     }),
     Components({
       // 组件的有效文件扩展名。

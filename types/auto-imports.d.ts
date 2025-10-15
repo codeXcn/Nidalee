@@ -19,8 +19,6 @@ declare global {
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
-  const getPlayerBasicInfo: typeof import('../src/shared/composables/game/core/useBackendDataAdapter')['getPlayerBasicInfo']
-  const getPlayerSpells: typeof import('../src/shared/composables/game/core/useBackendDataAdapter')['getPlayerSpells']
   const h: typeof import('vue')['h']
   const inject: typeof import('vue')['inject']
   const isProxy: typeof import('vue')['isProxy']
@@ -61,6 +59,7 @@ declare global {
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
   const storeToRefs: typeof import('pinia')['storeToRefs']
+  const stores: typeof import('../src/shared/stores/index')['default']
   const toRaw: typeof import('vue')['toRaw']
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
@@ -76,9 +75,8 @@ declare global {
   const useAppInitialization: typeof import('../src/shared/composables/app/useAppInitialization')['useAppInitialization']
   const useAttrs: typeof import('vue')['useAttrs']
   const useAutoFunctionManager: typeof import('../src/shared/composables/game/useAutoFunctionManager')['useAutoFunctionManager']
-  const useAutoFunctionStore: typeof import('../src/shared/stores/autoFunctionStore')['useAutoFunctionStore']
+  const useAutoFunctionStore: typeof import('../src/shared/stores/features/autoFunctionStore')['useAutoFunctionStore']
   const useAutoPerformanceMonitor: typeof import('../src/shared/composables/utils/usePerformanceMonitor')['useAutoPerformanceMonitor']
-  const useBackendDataAdapter: typeof import('../src/shared/composables/game/core/useBackendDataAdapter')['useBackendDataAdapter']
   const useBuildsByAliasQuery: typeof import('../src/shared/composables/useLolApiQuery')['useBuildsByAliasQuery']
   const useChampSelect: typeof import('../src/shared/composables/game/useChampSelect')['useChampSelect']
   const useChampSelectManager: typeof import('../src/shared/composables/game/useChampSelectManager')['useChampSelectManager']
@@ -108,8 +106,6 @@ declare global {
   const useId: typeof import('vue')['useId']
   const useItemsQuery: typeof import('../src/shared/composables/useLolApiQuery')['useItemsQuery']
   const useLink: typeof import('vue-router')['useLink']
-  const useLiveClient: typeof import('../src/shared/composables/game/useLiveClient')['useLiveClient']
-  const useLiveClientManager: typeof import('../src/shared/composables/game/useLiveClientManager')['useLiveClientManager']
   const useMapsQuery: typeof import('../src/shared/composables/useLolApiQuery')['useMapsQuery']
   const useMatchFilter: typeof import('../src/shared/composables/game/useMatchFilter')['useMatchFilter']
   const useMatchHistoryFetcher: typeof import('../src/shared/composables/game/useMatchHistoryFetcher')['useMatchHistoryFetcher']
@@ -129,7 +125,6 @@ declare global {
   const useSkinsQuery: typeof import('../src/shared/composables/useLolApiQuery')['useSkinsQuery']
   const useSlots: typeof import('vue')['useSlots']
   const useSummonerAndMatchUpdater: typeof import('../src/shared/composables/game/useSummonerAndMatchUpdater')['useSummonerAndMatchUpdater']
-  const useTeamAnalysisData: typeof import('../src/shared/composables/game/core/useBackendDataAdapter')['useTeamAnalysisData']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
   const watch: typeof import('vue')['watch']
   const watchEffect: typeof import('vue')['watchEffect']
@@ -145,6 +140,6 @@ declare global {
   export type { ErrorInfo, RetryConfig } from '../src/shared/composables/utils/useErrorHandler'
   import('../src/shared/composables/utils/useErrorHandler')
   // @ts-ignore
-  export type { AutoFunctions, AutoFunctionConfig, AutoSelectConfig, AutoBanConfig } from '../src/shared/stores/autoFunctionStore'
-  import('../src/shared/stores/autoFunctionStore')
+  export type { AutoFunctions, AutoFunctionConfig, AutoSelectConfig, AutoBanConfig } from '../src/shared/stores/features/autoFunctionStore'
+  import('../src/shared/stores/features/autoFunctionStore')
 }
