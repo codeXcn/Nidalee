@@ -69,7 +69,7 @@ export async function retryWithExponentialBackoff<T>(
 
       console.log(`[Retry] 尝试 ${attempt + 1} 失败，${delay}ms 后重试:`, error)
 
-      await new Promise(resolve => setTimeout(resolve, delay))
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
 
@@ -129,15 +129,9 @@ function calculateDelay(attempt: number, config: RetryConfig): number {
 /**
  * 网络请求重试装饰器
  */
-export function withRetry<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  config: Partial<RetryConfig> = {}
-): T {
+export function withRetry<T extends (...args: any[]) => Promise<any>>(fn: T, config: Partial<RetryConfig> = {}): T {
   return (async (...args: Parameters<T>) => {
-    const result = await retryWithExponentialBackoff(
-      () => fn(...args),
-      config
-    )
+    const result = await retryWithExponentialBackoff(() => fn(...args), config)
 
     if (!result.success) {
       throw result.error
@@ -248,4 +242,3 @@ export class RetryManager {
 
 // 全局重试管理器实例
 export const retryManager = new RetryManager()
-

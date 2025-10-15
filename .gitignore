@@ -25,3 +25,12 @@ dist-ssr
 .env.*
 types/components.d.ts
 types/auto-imports.d.ts
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
+# Vite generated files
+vite.config.js
+vite.config.d.ts

@@ -30,13 +30,19 @@ export default defineConfig({
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
       dts: 'types/auto-imports.d.ts',
-      dirs: ['./src/composables']
+      // 使用 ** 递归扫描所有嵌套模块
+      dirs: ['./src/shared/composables/**', './src/shared/stores/**'],
+      // 扫描选项：过滤掉 index.ts 避免重复导出问题
+      dirsScanOptions: {
+        filePatterns: ['*.ts'],
+        fileFilter: (file: string) => !file.endsWith('index.ts')
+      }
     }),
     Components({
       // 组件的有效文件扩展名。
       extensions: ['vue', 'tsx', 'jsx'],
       // 相对路径，用于搜索组件的目录。
-      dirs: ['src/components', 'src/components/features', 'src/components/layout', 'src/components/ui'],
+      dirs: ['src/shared/components', 'src/features'],
       // 用于转换目标的过滤器。
       include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/],
       dts: 'types/components.d.ts'

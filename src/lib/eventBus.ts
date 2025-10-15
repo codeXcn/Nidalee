@@ -65,7 +65,7 @@ class EventBus {
     // 触发普通监听器
     const listeners = this.listeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => {
+      listeners.forEach((callback) => {
         try {
           callback(data)
         } catch (error) {
@@ -77,7 +77,7 @@ class EventBus {
     // 触发一次性监听器并移除
     const onceListeners = this.onceListeners.get(event)
     if (onceListeners) {
-      onceListeners.forEach(callback => {
+      onceListeners.forEach((callback) => {
         try {
           callback(data)
         } catch (error) {
@@ -148,7 +148,7 @@ export const GameEvents = {
 } as const
 
 // 类型定义
-export type GameEventType = typeof GameEvents[keyof typeof GameEvents]
+export type GameEventType = (typeof GameEvents)[keyof typeof GameEvents]
 
 // 导出类型
 export type { EventCallback }

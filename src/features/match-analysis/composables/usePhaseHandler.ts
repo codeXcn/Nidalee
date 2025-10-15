@@ -1,8 +1,4 @@
-import { ref, watch, watchEffect, onBeforeUnmount } from 'vue'
-import { useGameStore } from '@/stores/features/gameStore'
-import { useErrorHandler } from '@/composables/utils/useErrorHandler'
 import { useMatchAnalysis } from './useMatchAnalysis'
-import { useTeamDataManager } from './useTeamDataManager'
 
 /**
  * 游戏阶段处理器
@@ -12,7 +8,6 @@ export function usePhaseHandler() {
   const gameStore = useGameStore()
   const errorHandler = useErrorHandler()
   const matchAnalysis = useMatchAnalysis()
-  // const teamDataManager = useTeamDataManager(matchAnalysis)
 
   // 控制状态
   const currentOperation = ref<AbortController | null>(null)

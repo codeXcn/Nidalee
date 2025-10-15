@@ -1,4 +1,4 @@
-import pinia from '@/stores'
+import pinia from '@/shared/stores'
 import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
 import App from './App.vue'
 import router from './router'

@@ -1,6 +1,3 @@
-import { ref, computed, onBeforeUnmount } from 'vue'
-import { useGameStore } from '@/stores/features/gameStore'
-import { useConnectionStore } from '@/stores/core/connectionStore'
 import type { GamePhase, TeamData } from '@/types/match-analysis'
 
 // 使用全局类型 MatchStatistics，添加显示名称的扩展类型

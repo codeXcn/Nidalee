@@ -143,12 +143,15 @@ class PerformanceMonitor {
   /**
    * 获取所有指标
    */
-  getAllMetrics(): Record<string, {
-    average: number
-    max: number
-    min: number
-    count: number
-  }> {
+  getAllMetrics(): Record<
+    string,
+    {
+      average: number
+      max: number
+      min: number
+      count: number
+    }
+  > {
     const result: Record<string, any> = {}
 
     this.metrics.forEach((times, label) => {
@@ -216,7 +219,7 @@ class PerformanceMonitor {
     // 慢操作
     if (slowOps.length > 0) {
       report += '🐌 最近慢操作:\n'
-      slowOps.forEach(op => {
+      slowOps.forEach((op) => {
         report += `  ${op.operation}: ${op.duration.toFixed(2)}ms (阈值: ${op.threshold}ms)\n`
       })
     }
