@@ -439,10 +439,8 @@ import {
   getQueueName,
   getRankIconUrl
 } from '@/lib'
-import { useDataStore } from '@/shared/stores'
 import { invoke } from '@tauri-apps/api/core'
 import { useClipboard } from '@vueuse/core'
-import { ref, watch, defineModel } from 'vue'
 import { toast } from 'vue-sonner'
 import { Info, X } from 'lucide-vue-next'
 

@@ -4,10 +4,9 @@
     <div
       class="p-6 text-white"
       :style="{
-        background:
-          $colorMode === 'dark'
-            ? 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #312e81 100%)'
-            : 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #7c3aed 100%)'
+        background: isDark
+          ? 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #312e81 100%)'
+          : 'linear-gradient(135deg, var(--color-primary, #f59e42) 0%, #7c3aed 100%)'
       }"
     >
       <div class="flex items-center justify-between">
@@ -305,6 +304,7 @@ defineProps<{
   summonerInfo: any
   isDashboard?: boolean
 }>()
+const { isDark } = useApp()
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
 const sessionStore = useSessionStore()

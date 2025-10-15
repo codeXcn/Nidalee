@@ -14,8 +14,6 @@ static CHAMPION_DATA: OnceCell<HashMap<i32, ChampionInfo>> = OnceCell::new();
 
 /// 英雄信息结构（根据实际 API 返回结构定义）
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "ts-rs", derive(ts_rs::TS))]
-#[cfg_attr(feature = "ts-rs", ts(export))]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionInfo {
     pub id: i32,

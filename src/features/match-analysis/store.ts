@@ -104,7 +104,7 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
   // === Actions（数据操作方法） ===
   const setTeamAnalysisData = (data: TeamAnalysisData | null) => {
     if (data) {
-      console.log('[MatchAnalysisStore] ⚛️ 原子更新开始... data:', data)
+      console.log('[MatchAnalysisStore] 更新战绩分析数据... data:', data)
 
       // 1. 转换并更新队伍数据和战绩统计
       myTeamData.value = {
@@ -135,7 +135,7 @@ export const useMatchAnalysisStore = defineStore('matchAnalysis', () => {
       queueId.value = Number(data.queueId)
       isCustomGame.value = data.isCustomGame
 
-      console.log('[MatchAnalysisStore] ✅ 原子更新完成')
+      console.log('[MatchAnalysisStore] ✅ 战绩分析数据更新完成')
     } else {
       // 如果数据为 null，则清空所有数据
       clearAllData()

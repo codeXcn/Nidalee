@@ -464,67 +464,55 @@ impl WsEventHandler {
         log::info!("[ws-event] Champ select event received, type: {}", event_type);
 
         if event_type == "Create" || event_type == "Update" {
-            // Log the raw session data at debug level for inspection.
-            if let Ok(pretty_json) = serde_json::to_string_pretty(data) {
-                log::debug!("[ws-event] Received raw champ select session data:\n{}", pretty_json);
-            }
+            // Step 1: Immediately send raw session data for fast auto-pick response.
+            log::info!("[ws-event] Sending raw champ-select-session-changed event (immediate)");
+            let _ = self.app.emit("champ-select-session-changed", data);
 
-            // Generate full analysis data via the service layer, using the cache.
-            let mut cache = self.cache.write().await;
-            match analysis_data::service::build_team_analysis_from_session(
-                data,
-                &self.client,
-                &mut cache.match_stats_cache, // Pass the match stats cache.
-            )
-            .await
-            {
-                Ok(analysis_data) => {
-                    log::info!("[ws-event] Successfully generated team analysis data.");
-                    log::debug!(
-                        "[ws-event] My team size: {}, Enemy team size: {}",
-                        analysis_data.my_team.len(),
-                        analysis_data.enemy_team.len()
-                    );
-                    log::info!(
-                        "[ws-event] Current cached match stats count: {}",
-                        cache.match_stats_cache.len()
-                    );
+            // Step 2: Asynchronously generate full analysis data with match stats.
+            let app = self.app.clone();
+            let client = self.client.clone();
+            let cache_clone = self.cache.clone();
+            let data_clone = data.clone();
 
-                    // Cache the new analysis data.
-                    cache.team_analysis_data = Some(analysis_data.clone());
-                    log::info!("[ws-event] TeamAnalysisData has been cached.");
+            tokio::spawn(async move {
+                let mut cache = cache_clone.write().await;
+                match analysis_data::service::build_team_analysis_from_session(
+                    &data_clone,
+                    &client,
+                    &mut cache.match_stats_cache,
+                )
+                .await
+                {
+                    Ok(enriched_data) => {
+                        log::info!("[ws-event] Successfully generated enriched team analysis data (with match stats).");
+                        log::debug!(
+                            "[ws-event] My team size: {}, Enemy team size: {}",
+                            enriched_data.my_team.len(),
+                            enriched_data.enemy_team.len()
+                        );
+                        log::info!(
+                            "[ws-event] Current cached match stats count: {}",
+                            cache.match_stats_cache.len()
+                        );
 
-                    // Drop the lock before emitting.
-                    drop(cache);
-                    let _ = self.app.emit("team-analysis-data", &analysis_data);
-                }
-                Err(e) => {
-                    log::error!("[ws-event] Failed to generate team analysis data: {}", e);
-                    if let Some(source) = e.source() {
-                        log::error!("[ws-event] Caused by: {}", source);
+                        // Cache the enriched analysis data.
+                        cache.team_analysis_data = Some(enriched_data.clone());
+                        log::info!("[ws-event] Enriched TeamAnalysisData has been cached.");
+
+                        // Drop the lock before emitting.
+                        drop(cache);
+                        // Send enriched data (this will update the UI with match stats).
+                        let _ = app.emit("team-analysis-data", &enriched_data);
                     }
-
-                    // Fallback: Send the original champ-select-session data directly.
-                    log::warn!("[ws-event] Attempting fallback: sending raw session data.");
-                    match serde_json::from_value::<ChampSelectSession>(data.clone()) {
-                        Ok(mut session) => {
-                            log::debug!("[ws-event] Fallback successful, sending enriched raw session data.");
-                            self.enrich_champ_select_session(&mut session).await;
-                            let _ = self.app.emit("champ-select-session-changed", &Some(session));
+                    Err(e) => {
+                        log::error!("[ws-event] Failed to generate enriched team analysis data: {}", e);
+                        if let Some(source) = e.source() {
+                            log::error!("[ws-event] Caused by: {}", source);
                         }
-                        Err(parse_err) => {
-                            log::error!(
-                                "[ws-event] Fallback failed: could not parse champ select session data: {}",
-                                parse_err
-                            );
-                            log::error!(
-                                "[ws-event] Session data preview: {}",
-                                serde_json::to_string(data).unwrap_or_else(|_| "(unserializable)".to_string())
-                            );
-                        }
+                        log::warn!("[ws-event] Session data already sent, match stats will be unavailable");
                     }
                 }
-            }
+            });
         } else if event_type == "Delete" {
             log::info!("[ws-event] Champ select session cleared, but preserving analysis data for backfill.");
 
@@ -535,8 +523,8 @@ impl WsEventHandler {
             // Cleanup is handled by handle_gameflow_phase_change after the game ends.
             drop(cache);
 
-            // Note: We no longer send an empty analysis to the frontend, as we expect
-            // the InProgress phase to make use of the existing data.
+            // Send session deletion event to frontend.
+            let _ = self.app.emit("champ-select-session-changed", &None::<Value>);
         }
         Ok(())
     }

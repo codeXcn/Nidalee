@@ -60,7 +60,6 @@
 
 <script setup lang="ts">
 import { useMatchAnalysisStore } from './store'
-import { useMatchAnalysisInit } from './composables/useMatchAnalysisInit'
 
 console.log('[MatchAnalysisViewV2] 🎬 组件正在创建...')
 
@@ -79,15 +78,16 @@ const {
   hasEnemyTeamData
 } = storeToRefs(matchAnalysisStore)
 
-// Initialize the analysis system
-useMatchAnalysisInit()
+// 注释：敌方英雄选择现在由 team-analysis-data 事件自动更新
+// 不再需要手动监听 gameStore.champSelectSession
 
 onMounted(() => {
   console.log('[MatchAnalysisViewV2] ✅ 组件已挂载')
 })
 
 onBeforeUnmount(() => {
-  console.log('[MatchAnalysisViewV2] 🔴 组件即将卸载')
+  console.log('[MatchAnalysisViewV2] 🔴 组件即将卸载，清理数据')
+  matchAnalysisStore.clearAllData()
 })
 
 // Summoner details logic

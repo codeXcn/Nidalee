@@ -19,7 +19,7 @@ export function useAppEvents() {
   const matchAnalysisStore = useMatchAnalysisStore()
 
   const { handleGamePhaseChange } = gamePhaseManager
-  const { handleChampSelectChange, handleLobbyChange } = champSelectManager
+  const { handleLobbyChange, handleChampSelectChange } = champSelectManager
 
   // 事件处理函数
   const handleGameFlowPhaseChange = (event: any) => {
@@ -39,8 +39,8 @@ export function useAppEvents() {
   }
 
   const handleChampSelectSessionChanged = (event: any) => {
-    console.log('[AppEvents] 英雄选择会话变化:', event.payload)
-    handleChampSelectChange(event.payload as ChampSelectSession | null)
+    console.log('[AppEvents] 英雄选择 Session 变化:', event.payload)
+    handleChampSelectChange(event.payload)
   }
 
   const handleMatchmakingStateChanged = (event: any) => {
@@ -48,9 +48,9 @@ export function useAppEvents() {
     matchmakingStore.updateState(event.payload)
   }
 
-  // 🔥 核心重构：直接将完整数据传递给 store 的原子 action
+  // 战绩分析数据（异步到达）
   const handleTeamAnalysisData = (event: { payload: TeamAnalysisData | null }) => {
-    console.log('[AppEvents] === 收到后端团队分析数据, 调用 store action ===')
+    console.log('[AppEvents] 收到战绩分析数据，更新 UI')
     matchAnalysisStore.setTeamAnalysisData(event.payload)
   }
 

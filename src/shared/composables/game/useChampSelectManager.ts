@@ -1,17 +1,12 @@
-// 专门处理选人和房间逻辑
+/**
+ * 选人与房间管理 Composable
+ * 职责：
+ * - 处理房间（Lobby）相关的事件和日志
+ * - 处理选人会话（ChampSelect）并触发自动选人
+ */
 export function useChampSelectManager() {
   const gameStore = useGameStore()
   const activityLogger = useActivityLogger()
-
-  // 选人阶段变更处理
-  const handleChampSelectChange = async (session: ChampSelectSession | null) => {
-    await gameStore.updateChampSelectSession(session)
-    if (session) {
-      activityLogger.logGame.champSelect()
-    } else {
-      activityLogger.log.info('离开英雄选择阶段', 'game')
-    }
-  }
 
   // 房间变更处理
   const handleLobbyChange = (lobby: LobbyInfo | null) => {
@@ -23,8 +18,20 @@ export function useChampSelectManager() {
     }
   }
 
+  // 选人会话变更处理（触发自动选人）
+  const handleChampSelectChange = (session: any) => {
+    if (!session) {
+      console.log('[ChampSelectManager] 选人会话已清空')
+      gameStore.updateChampSelectSession(null)
+      return
+    }
+
+    console.log('[ChampSelectManager] 选人会话更新，触发自动选人检查')
+    gameStore.updateChampSelectSession(session)
+  }
+
   return {
-    handleChampSelectChange,
-    handleLobbyChange
+    handleLobbyChange,
+    handleChampSelectChange
   }
 }
