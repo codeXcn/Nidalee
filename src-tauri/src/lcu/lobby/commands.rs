@@ -25,11 +25,7 @@ pub async fn send_lobby_chat_message(chat_id: String, message: String) -> Result
 /// `send_lobby_formatted_message(chat_id, "Nidalee", "推荐选择亚索")`
 /// → 发送: `[Nidalee] 推荐选择亚索`
 #[tauri::command]
-pub async fn send_lobby_formatted_message(
-    chat_id: String,
-    prefix: String,
-    content: String,
-) -> Result<(), String> {
+pub async fn send_lobby_formatted_message(chat_id: String, prefix: String, content: String) -> Result<(), String> {
     let client = http_client::get_lcu_client();
     service::send_formatted_message(client, &chat_id, &prefix, &content).await
 }

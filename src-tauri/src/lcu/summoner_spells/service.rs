@@ -13,11 +13,11 @@ static SUMMONER_SPELL_NAME_TO_ID: OnceCell<HashMap<String, i64>> = OnceCell::new
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SummonerSpellInfo {
-    pub id: i64,  // 改为 i64 以支持大数值（API 可能返回 4294967295）
+    pub id: i64, // 改为 i64 以支持大数值（API 可能返回 4294967295）
     pub name: String,
     pub description: String,
-    pub summoner_level: i64,  // 改为 i64
-    pub cooldown: i64,  // 改为 i64
+    pub summoner_level: i64, // 改为 i64
+    pub cooldown: i64,       // 改为 i64
     pub game_modes: Vec<String>,
     pub icon_path: String,
 }
@@ -32,7 +32,8 @@ pub async fn load_summoner_spell_data() -> Result<(), Box<dyn std::error::Error 
 
     log::info!("[SummonerSpells] 🌐 正在从 Community Dragon 加载召唤师技能数据...");
 
-    let url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/v1/summoner-spells.json";
+    let url =
+        "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/v1/summoner-spells.json";
 
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
@@ -139,4 +140,3 @@ mod tests {
         assert!(all_spells.unwrap().len() > 10);
     }
 }
-

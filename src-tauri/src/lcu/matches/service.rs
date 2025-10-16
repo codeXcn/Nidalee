@@ -1,6 +1,7 @@
+use crate::lcu::player_stats_analyzer::{analyze_player_stats, analyze_traits, AnalysisContext};
 use crate::lcu::request::{lcu_get, lcu_request_json};
 use crate::lcu::types::{
-    ChampionStats, GameDetail, MatchStatistics, ParticipantInfo, ParticipantStats, RecentGame, TeamInfo, TeamStats,
+    GameDetail, ParticipantInfo, ParticipantStats, PlayerMatchStats, TeamInfo, TeamStats,
 };
 use reqwest::{Client, Method};
 use serde::Deserialize;
@@ -92,8 +93,20 @@ struct ApiPlayer {
 }
 
 /// 获取当前玩家历史战绩统计（自动认证、统一请求、日志耗时）
-pub async fn get_match_history(client: &Client, end_count: usize) -> Result<MatchStatistics, String> {
+///
+/// # 参数
+/// - `client`: HTTP 客户端
+/// - `end_count`: 获取对局数量
+/// - `queue_id`: 可选的队列ID过滤（如 420=单排, 440=灵活排, 450=大乱斗）
+pub async fn get_match_history(
+    client: &Client,
+    end_count: usize,
+    queue_id: Option<i64>,
+) -> Result<PlayerMatchStats, String> {
     println!("\n🔍 ===== 开始获取我的战绩 =====");
+    if let Some(qid) = queue_id {
+        println!("🎯 队列过滤: queueId={}", qid);
+    }
 
     // 第1步：获取当前召唤师信息来得到PUUID
     println!("\n📍 第1步：获取当前召唤师信息");
@@ -122,7 +135,7 @@ pub async fn get_match_history(client: &Client, end_count: usize) -> Result<Matc
 
     // 第3步：直接分析对局列表数据
     println!("\n📍 第3步：分析对局列表数据");
-    let statistics = analyze_match_list_data(match_list_data, puuid)?;
+    let statistics = analyze_match_list_data(match_list_data, puuid, queue_id)?;
 
     println!("\n✅ ===== 我的战绩查询完成 =====");
     println!("📊 最终统计结果:");
@@ -258,11 +271,18 @@ pub async fn get_game_detail_logic(client: &Client, game_id: u64) -> Result<Game
 }
 
 /// 获取指定召唤师最近几场简单战绩
+///
+/// # 参数
+/// - `client`: HTTP 客户端
+/// - `puuid`: 玩家 PUUID
+/// - `count`: 获取对局数量
+/// - `queue_id`: 可选的队列ID，用于过滤（如 420=单排, 440=灵活排）
 pub async fn get_recent_matches_by_puuid(
     client: &Client,
     puuid: &str,
     count: usize,
-) -> Result<MatchStatistics, String> {
+    queue_id: Option<i64>,
+) -> Result<PlayerMatchStats, String> {
     let url = format!(
         "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
         puuid, count
@@ -270,12 +290,16 @@ pub async fn get_recent_matches_by_puuid(
     let match_list_data: Value = lcu_get(client, &url).await?;
     // log::info!("match_list_data (查询到的战绩): {:#}", match_list_data);
     // 第3步：直接分析对局列表数据
-    let statistics = analyze_match_list_data(match_list_data, puuid)?;
+    let statistics = analyze_match_list_data(match_list_data, puuid, queue_id)?;
     Ok(statistics)
 }
 
-fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Result<MatchStatistics, String> {
-    println!("📊 开始分析对局列表数据");
+fn analyze_match_list_data(
+    match_list_data: Value,
+    current_puuid: &str,
+    queue_id: Option<i64>,
+) -> Result<PlayerMatchStats, String> {
+    println!("📊 开始分析对局列表数据 (使用通用分析器)");
     println!("👤 目标玩家PUUID: {}", current_puuid);
 
     let empty_games = vec![];
@@ -287,176 +311,30 @@ fn analyze_match_list_data(match_list_data: Value, current_puuid: &str) -> Resul
 
     println!("📊 找到 {} 场对局记录", games.len());
 
-    let mut total_games = 0;
-    let mut wins = 0;
-    let mut total_kills = 0;
-    let mut total_deaths = 0;
-    let mut total_assists = 0;
-    let mut champion_stats = std::collections::HashMap::new();
-    let mut recent_performance = Vec::new();
+    // ===使用通用分析器进行数据计算===
+    let mut context = AnalysisContext::new();
 
-    // 分析所有获取到的游戏
-    let games_to_analyze = games.iter();
-
-    for (_index, game) in games_to_analyze.enumerate() {
-        // println!("\n🎮 分析第 {} 场游戏", index + 1);
-        total_games += 1;
-
-        // 查找当前玩家的参与者信息
-        if let Some(participant_identities) = game.get("participantIdentities").and_then(|pi| pi.as_array()) {
-            // 在participantIdentities中找到匹配PUUID的玩家
-            let current_identity = participant_identities.iter().find(|identity| {
-                let player_puuid = identity
-                    .get("player")
-                    .and_then(|player| player.get("puuid"))
-                    .and_then(|puuid| puuid.as_str());
-                player_puuid == Some(current_puuid)
-            });
-
-            if let Some(identity) = current_identity {
-                let participant_id = identity.get("participantId").and_then(|id| id.as_u64()).unwrap_or(0);
-
-                // 在participants中找到对应participantId的参与者
-                if let Some(participants) = game.get("participants").and_then(|p| p.as_array()) {
-                    let current_participant = participants.iter().find(|p| {
-                        let p_id = p.get("participantId").and_then(|id| id.as_u64()).unwrap_or(0);
-                        p_id == participant_id
-                    });
-
-                    if let Some(participant) = current_participant {
-                        let stats = &participant["stats"];
-                        let champion_id = participant.get("championId").and_then(|id| id.as_u64()).unwrap_or(0);
-                        let is_win = stats.get("win").and_then(|w| w.as_bool()).unwrap_or(false);
-                        let kills = stats.get("kills").and_then(|k| k.as_i64()).unwrap_or(0) as i32;
-                        let deaths = stats.get("deaths").and_then(|d| d.as_i64()).unwrap_or(0) as i32;
-                        let assists = stats.get("assists").and_then(|a| a.as_i64()).unwrap_or(0) as i32;
-
-                        // println!("🏆 英雄: {}", champion_id);
-                        // println!("🎯 结果: {}", if is_win { "胜利" } else { "失败" });
-                        // println!("⚔️  KDA: {}/{}/{}", kills, deaths, assists);
-
-                        if is_win {
-                            wins += 1;
-                        }
-
-                        total_kills += kills;
-                        total_deaths += deaths;
-                        total_assists += assists;
-
-                        // 统计英雄数据
-                        let entry = champion_stats.entry(champion_id.to_string()).or_insert((0, 0));
-                        entry.0 += 1; // 游戏数
-                        if is_win {
-                            entry.1 += 1; // 胜场数
-                        }
-
-                        // 添加到最近游戏
-                        let penta_kills = stats.get("pentaKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                        let quadra_kills = stats.get("quadraKills").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
-                        let performance_rating =
-                            get_performance_rating(kills, deaths, assists, penta_kills, quadra_kills);
-                        recent_performance.push(RecentGame {
-                            game_id: game.get("gameId").and_then(|id| id.as_u64()).unwrap_or(0),
-                            champion_id: champion_id as i32,
-                            queue_id: game.get("queueId").and_then(|id| id.as_i64()).unwrap_or(0),
-                            game_mode: game
-                                .get("gameMode")
-                                .and_then(|gm| gm.as_str())
-                                .unwrap_or("Unknown")
-                                .to_string(),
-                            win: is_win,
-                            kills,
-                            deaths,
-                            assists,
-                            game_duration: game.get("gameDuration").and_then(|gd| gd.as_i64()).unwrap_or(0) as i32,
-                            game_creation: game.get("gameCreation").and_then(|gc| gc.as_i64()).unwrap_or(0),
-                            performance_rating: performance_rating.clone(),
-                        });
-                    }
-                }
-            }
+    // 根据队列ID设置分析上下文
+    if let Some(qid) = queue_id {
+        context = context.with_queue_id(qid);
+        println!("🎯 队列过滤: queueId={}", qid);
+        // 如果是排位模式，只统计排位战绩
+        if qid == 420 || qid == 440 {
+            context = context.ranked_only();
+            println!("🏆 只统计排位战绩 (420/440)");
         }
     }
 
-    // 计算统计数据
-    let win_rate = if total_games > 0 {
-        (wins as f32 / total_games as f32) * 100.0
-    } else {
-        0.0
-    };
+    let mut player_stats = analyze_player_stats(games, current_puuid, context);
 
-    let avg_kills = if total_games > 0 {
-        total_kills as f32 / total_games as f32
-    } else {
-        0.0
-    };
+    // 添加特征分析
+    let traits = analyze_traits(&player_stats);
+    player_stats.traits = traits;
 
-    let avg_deaths = if total_games > 0 {
-        total_deaths as f32 / total_games as f32
-    } else {
-        0.0
-    };
+    println!("✅ 分析完成: 总对局={}, 胜场={}, 胜率={:.1}%",
+        player_stats.total_games, player_stats.wins, player_stats.win_rate);
+    println!("📊 今日对局: {}/{}", player_stats.today_wins, player_stats.today_games);
+    println!("🏷️  识别特征: {}个", player_stats.traits.len());
 
-    let avg_assists = if total_games > 0 {
-        total_assists as f32 / total_games as f32
-    } else {
-        0.0
-    };
-
-    let avg_kda = (avg_kills + avg_assists) / avg_deaths.max(1.0);
-
-    // 转换英雄统计
-    let mut favorite_champions: Vec<ChampionStats> = champion_stats
-        .into_iter()
-        .map(|(name, (games, wins))| ChampionStats {
-            champion_id: name.parse::<i32>().unwrap(),
-            games_played: games,
-            wins,
-            win_rate: if games > 0 {
-                (wins as f32 / games as f32) * 100.0
-            } else {
-                0.0
-            },
-        })
-        .collect();
-
-    // 按游戏数排序
-    favorite_champions.sort_by(|a, b| b.games_played.cmp(&a.games_played));
-    favorite_champions.truncate(6); // 只保留前6个
-
-    Ok(MatchStatistics {
-        total_games,
-        wins,
-        losses: total_games - wins,
-        win_rate,
-        avg_kills,
-        avg_deaths,
-        avg_assists,
-        avg_kda,
-        favorite_champions,
-        recent_performance,
-    })
-}
-
-fn get_performance_rating(kills: i32, deaths: i32, assists: i32, penta_kills: i32, quadra_kills: i32) -> String {
-    let kda = (kills + assists) as f32 / deaths.max(1) as f32;
-    if penta_kills > 0 {
-        return "五杀超神！".to_string();
-    }
-    if quadra_kills > 0 {
-        return "四杀爆发！".to_string();
-    }
-    if kda >= 8.0 {
-        return "超神表现！".to_string();
-    }
-    if kda >= 5.0 {
-        return "表现亮眼".to_string();
-    }
-    if kda >= 3.0 {
-        return "发挥不错".to_string();
-    }
-    if kda >= 1.5 {
-        return "发挥一般".to_string();
-    }
-    "需要加油".to_string()
+    Ok(player_stats)
 }

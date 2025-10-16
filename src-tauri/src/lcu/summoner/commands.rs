@@ -4,10 +4,11 @@ use crate::{http_client, lcu};
 pub async fn get_recent_matches_by_puuid(
     puuid: String,
     count: Option<usize>,
-) -> Result<lcu::types::MatchStatistics, String> {
+) -> Result<lcu::types::PlayerMatchStats, String> {
     let client = http_client::get_lcu_client();
     let count = count.unwrap_or(20);
-    lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count).await
+    // 用户主动查询，不过滤队列类型
+    lcu::matches::service::get_recent_matches_by_puuid(&client, &puuid, count, None).await
 }
 
 #[tauri::command]
@@ -46,7 +47,8 @@ pub async fn get_summoners_and_histories(
         let puuid = summoner.puuid.clone();
         if !puuid.is_empty() {
             fill_summoner_extra_info(client, summoner).await;
-            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, count.unwrap_or(20)).await {
+            // 用户主动查询，不过滤队列类型
+            match lcu::matches::service::get_recent_matches_by_puuid(client, &puuid, count.unwrap_or(20), None).await {
                 Ok(matches) => {
                     result.push(lcu::types::SummonerWithMatches {
                         display_name: summoner.display_name.clone(),
@@ -55,21 +57,11 @@ pub async fn get_summoners_and_histories(
                     });
                 }
                 Err(e) => {
+                    log::warn!("Failed to fetch matches for {}: {}", summoner.display_name, e);
                     result.push(lcu::types::SummonerWithMatches {
                         display_name: summoner.display_name.clone(),
                         summoner_info: summoner.clone(),
-                        matches: lcu::types::MatchStatistics {
-                            total_games: 0,
-                            wins: 0,
-                            losses: 0,
-                            win_rate: 0.0,
-                            avg_kills: 0.0,
-                            avg_deaths: 0.0,
-                            avg_assists: 0.0,
-                            avg_kda: 0.0,
-                            favorite_champions: Vec::new(),
-                            recent_performance: Vec::new(),
-                        },
+                        matches: lcu::types::PlayerMatchStats::default(), // 使用 Default trait
                     });
                 }
             }

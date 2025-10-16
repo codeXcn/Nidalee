@@ -10,15 +10,21 @@
           <p class="text-sm text-muted-foreground">近期游戏数据概览</p>
         </div>
         <div class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            @click="showFilterDialog = true"
-            v-if="matchStatistics && matchStatistics.recentPerformance?.length > 0"
-          >
-            <Filter class="h-4 w-4 mr-2" />
-            过滤
-          </Button>
+          <!-- 队列选择器 -->
+          <Select :model-value="selectedQueueId?.toString() || 'all'" @update:model-value="handleQueueSelect">
+            <SelectTrigger class="w-[140px] h-9">
+              <SelectValue placeholder="选择队列" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部模式</SelectItem>
+              <SelectItem value="420">单双排位</SelectItem>
+              <SelectItem value="440">灵活组排</SelectItem>
+              <SelectItem value="450">极地大乱斗</SelectItem>
+              <SelectItem value="1700">斗魂竞技场</SelectItem>
+              <SelectItem value="900">无限火力</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Button
             :disabled="!isConnected || matchHistoryLoading"
             variant="outline"
@@ -50,7 +56,7 @@
       </div>
 
       <!-- 无数据状态 -->
-      <div v-else-if="!filteredMatchStatistics" class="flex items-center justify-center py-16">
+      <div v-else-if="!matchStatistics" class="flex items-center justify-center py-16">
         <div class="text-center">
           <BarChart class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p class="text-lg font-medium text-muted-foreground">暂无统计数据</p>
@@ -64,27 +70,27 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="text-center p-4 rounded-lg bg-muted/30">
             <Trophy class="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p class="text-2xl font-bold text-foreground">{{ filteredMatchStatistics?.totalGames || 0 }}</p>
+            <p class="text-2xl font-bold text-foreground">{{ matchStatistics?.totalGames || 0 }}</p>
             <p class="text-sm text-muted-foreground">总对局</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-green-500/10">
             <Award class="h-8 w-8 text-green-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-              {{ filteredMatchStatistics?.wins || 0 }}
+              {{ matchStatistics?.wins || 0 }}
             </p>
             <p class="text-sm text-muted-foreground">胜场</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-red-500/10">
             <Target class="h-8 w-8 text-red-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-              {{ filteredMatchStatistics?.losses || 0 }}
+              {{ matchStatistics?.losses || 0 }}
             </p>
             <p class="text-sm text-muted-foreground">负场</p>
           </div>
           <div class="text-center p-4 rounded-lg bg-blue-500/10">
             <TrendingUp class="h-8 w-8 text-blue-500 mx-auto mb-2" />
             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {{ (filteredMatchStatistics?.winRate || 0).toFixed(1) }}%
+              {{ (matchStatistics?.winRate || 0).toFixed(1) }}%
             </p>
             <p class="text-sm text-muted-foreground">胜率</p>
           </div>
@@ -100,31 +106,31 @@
             <div class="grid grid-cols-3 gap-4">
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ (filteredMatchStatistics?.avgKills || 0).toFixed(1) }}
+                  {{ (matchStatistics?.avgKills || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均击杀</p>
               </div>
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ (filteredMatchStatistics?.avgDeaths || 0).toFixed(1) }}
+                  {{ (matchStatistics?.avgDeaths || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均死亡</p>
               </div>
               <div class="text-center p-3 rounded-lg border">
                 <p class="text-lg font-bold text-foreground">
-                  {{ (filteredMatchStatistics?.avgAssists || 0).toFixed(1) }}
+                  {{ (matchStatistics?.avgAssists || 0).toFixed(1) }}
                 </p>
                 <p class="text-xs text-muted-foreground">平均助攻</p>
               </div>
             </div>
             <div class="text-center p-3 rounded-lg bg-purple-500/10">
               <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
-                {{ (filteredMatchStatistics?.avgKda || 0).toFixed(2) }}
+                {{ (matchStatistics?.avgKda || 0).toFixed(2) }}
               </p>
               <p class="text-sm text-muted-foreground">平均KDA</p>
             </div>
             <!-- 召唤师特征分析 -->
-            <SummonerTraits :match-statistics="filteredMatchStatistics" />
+            <SummonerTraits :match-statistics="matchStatistics" />
           </div>
 
           <!-- 常用英雄 -->
@@ -135,7 +141,7 @@
             </h4>
             <div class="space-y-2">
               <div
-                v-for="champion in (filteredMatchStatistics?.favoriteChampions || []).slice(0, 5)"
+                v-for="champion in (matchStatistics?.favoriteChampions || []).slice(0, 5)"
                 :key="champion.championId"
                 class="flex items-center justify-between p-2 rounded-lg border"
               >
@@ -152,7 +158,7 @@
                   </div>
                   <div>
                     <p class="font-medium text-sm">{{ getChampionName(champion.championId) }}</p>
-                    <p class="text-xs text-muted-foreground">{{ champion.gamesPlayed }}场</p>
+                    <p class="text-xs text-muted-foreground">{{ champion.games }}场</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -176,14 +182,14 @@
         </div>
 
         <!-- 最近对局 -->
-        <div class="space-y-4" v-if="filteredMatchStatistics?.recentPerformance?.length > 0">
+        <div class="space-y-4" v-if="matchStatistics?.recentPerformance?.length > 0">
           <h4 class="font-semibold flex items-center">
             <Calendar class="h-4 w-4 mr-2 text-blue-500" />
             最近对局
           </h4>
           <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))">
             <div
-              v-for="game in (filteredMatchStatistics?.recentPerformance || []).slice(0, showCount)"
+              v-for="game in (matchStatistics?.recentPerformance || []).slice(0, showCount)"
               :key="game.gameCreation"
               class="group relative flex bg-gradient-to-br from-card/80 to-muted/60 rounded-xl shadow-sm cursor-pointer transition-transform duration-150 will-change-transform hover:-translate-y-1 hover:shadow-lg backdrop-blur-sm"
               @click="openGameDetail(game)"
@@ -260,10 +266,7 @@
               </div>
             </div>
           </div>
-          <div
-            v-if="(filteredMatchStatistics?.recentPerformance?.length || 0) > showCount"
-            class="flex justify-center mt-4"
-          >
+          <div v-if="(matchStatistics?.recentPerformance?.length || 0) > showCount" class="flex justify-center mt-4">
             <Button @click="loadMore" variant="outline" size="sm"> 加载更多 </Button>
           </div>
         </div>
@@ -276,26 +279,6 @@
   </Card>
 
   <GameDetailDialog v-model:visible="dialogOpen" :selectedGame="selectedGame" />
-
-  <!-- 类型过滤对话框 -->
-  <Dialog v-model:open="showFilterDialog">
-    <DialogContent class="!max-w-[90vw] w-[60vw] max-h-[85vh]">
-      <DialogHeader>
-        <DialogTitle>游戏类型过滤</DialogTitle>
-        <DialogDescription class="text-slate-600 dark:text-slate-300">
-          选择要显示的游戏类型，过滤后的战绩将只显示选中类型的对局
-        </DialogDescription>
-      </DialogHeader>
-
-      <GameTypeSelector v-model:selected-types="selectedFilterTypes" />
-
-      <DialogFooter class="flex gap-2 text-foreground">
-        <Button variant="outline" @click="showFilterDialog = false"> 取消 </Button>
-        <Button variant="outline" @click="clearAllFilters"> 清空过滤 </Button>
-        <Button @click="applyFilters"> 应用过滤 </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -307,7 +290,6 @@ import {
   Calendar,
   Clock,
   Flame,
-  Filter,
   Loader2,
   Meh,
   RefreshCw,
@@ -319,77 +301,38 @@ import {
   Trophy,
   Wifi
 } from 'lucide-vue-next'
-import GameTypeSelector from '@/shared/components/ui/GameTypeSelector.vue'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/shared/components/ui/dialog'
-import { useMatchFilter } from '@/shared/composables/game/useMatchFilter'
-import { useSettingsStore } from '@/shared/stores/ui/settingsStore'
-import { storeToRefs } from 'pinia'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+
 const dialogOpen = ref(false)
 const selectedGame = ref(null)
-
-// 过滤相关状态
-const showFilterDialog = ref(false)
-const selectedFilterTypes = ref<number[]>([])
-const { filterMatchesByQueueTypes } = useMatchFilter()
-// 系统默认过滤配置（仅用于初始化当前组件的局部筛选）
-const settingsStore = useSettingsStore()
-const { defaultQueueTypes, applyDefaultFilterOnSearch } = storeToRefs(settingsStore)
 
 const props = defineProps<{
   isConnected: boolean
   matchHistoryLoading: boolean
   matchStatistics: any
+  selectedQueueId?: number | null
 }>()
-
-// 计算过滤后的统计数据
-const filteredMatchStatistics = computed(() => {
-  if (!props.matchStatistics) return null
-  if (selectedFilterTypes.value.length === 0) return props.matchStatistics
-  return filterMatchesByQueueTypes(props.matchStatistics, selectedFilterTypes.value)
-})
-
-// 在数据到达或设置变化时，若开启默认过滤且当前未选择，则用系统默认初始化
-watch(
-  () => [props.matchStatistics, applyDefaultFilterOnSearch.value, defaultQueueTypes.value],
-  () => {
-    if (
-      applyDefaultFilterOnSearch.value &&
-      selectedFilterTypes.value.length === 0 &&
-      Array.isArray(defaultQueueTypes.value) &&
-      defaultQueueTypes.value.length > 0
-    ) {
-      selectedFilterTypes.value = [...defaultQueueTypes.value]
-    }
-  },
-  { immediate: true }
-)
 
 const openGameDetail = (game: any) => {
   selectedGame.value = game
   console.log(game)
   dialogOpen.value = true
 }
-
-// 过滤相关方法
-const applyFilters = () => {
-  showFilterDialog.value = false
-}
-
-const clearAllFilters = () => {
-  selectedFilterTypes.value = []
-  showFilterDialog.value = false
-}
-defineEmits<{
+const emit = defineEmits<{
   (e: 'fetch-match-history'): void
   (e: 'open-game-detail', game: any): void
+  (e: 'queue-change', queueId: number | null): void
 }>()
+
+// 处理队列选择
+const handleQueueSelect = (value: any) => {
+  if (!value || value === 'all') {
+    emit('queue-change', null)
+  } else {
+    const queueId = typeof value === 'string' ? parseInt(value) : Number(value)
+    emit('queue-change', queueId)
+  }
+}
 
 const { formatGameTime, formatRelativeTime } = useFormatters()
 

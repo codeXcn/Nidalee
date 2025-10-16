@@ -1,9 +1,7 @@
 use crate::lcu::matches::service::get_recent_matches_by_puuid;
 use crate::lcu::summoner::service::get_summoner_by_id;
 use crate::lcu::summoner::service::get_summoners_by_names;
-use crate::lcu::types::{
-    AnalysisChampionStats, MatchPerformance, PlayerAnalysisData, PlayerMatchStats, TeamAnalysisData,
-};
+use crate::lcu::types::{PlayerAnalysisData, PlayerMatchStats, TeamAnalysisData};
 
 /// 从 ChampSelect 会话构建完整的分析数据
 ///
@@ -285,7 +283,6 @@ async fn enrich_player_data(
     let game_name = raw_player["gameName"].as_str();
     let tag_line = raw_player["tagLine"].as_str();
 
-
     // 如果有 gameName，构建完整的显示名称
     if let Some(name) = game_name {
         if !name.is_empty() {
@@ -464,10 +461,11 @@ async fn fetch_all_players_match_stats(
                     player.display_name
                 );
 
-                match get_recent_matches_by_puuid(http_client, &summoner_info.puuid, 20).await {
-                    Ok(match_stats) => {
-                        let player_stats =
-                            convert_match_statistics_to_player_stats(match_stats, &player.display_name, queue_id);
+                match get_recent_matches_by_puuid(http_client, &summoner_info.puuid, 20, Some(queue_id)).await {
+                    Ok(player_stats) => {
+                        // 注意：get_recent_matches_by_puuid 已经返回完整的 PlayerMatchStats
+                        // 包含了 traits, today_games 等所有增强字段
+                        // 在排位模式下，会自动过滤只显示排位战绩
 
                         match_stats_cache.insert(player.display_name.clone(), player_stats.clone());
                         log::debug!(
@@ -503,125 +501,6 @@ async fn fetch_all_players_match_stats(
     Ok(cached_count)
 }
 
-/// 将 LCU API 的 MatchStatistics 转换为我们的 PlayerMatchStats
-pub fn convert_match_statistics_to_player_stats(
-    lcu_stats: crate::lcu::types::MatchStatistics,
-    player_name: &str,
-    current_queue_id: i64,
-) -> PlayerMatchStats {
-    // 排位模式过滤：只显示排位战绩
-    let is_ranked = current_queue_id == 420 || current_queue_id == 440;
-
-    let filtered_performance: Vec<_> = if is_ranked {
-        log::debug!(
-            target: "analysis_data::service",
-            "Ranked mode detected, filtering ranked games only (420/440)"
-        );
-        lcu_stats
-            .recent_performance
-            .into_iter()
-            .filter(|game| game.queue_id == 420 || game.queue_id == 440)
-            .collect()
-    } else {
-        log::debug!(
-            target: "analysis_data::service",
-            "Non-ranked mode, showing all game history"
-        );
-        lcu_stats.recent_performance
-    };
-
-    let total_games = filtered_performance.len() as u32;
-    let wins = filtered_performance.iter().filter(|game| game.win).count() as u32;
-    let losses = total_games - wins;
-    let win_rate = if total_games > 0 {
-        (wins as f64 / total_games as f64) * 100.0
-    } else {
-        0.0
-    };
-
-    // 转换 recent_performance
-    let recent_performance: Vec<MatchPerformance> = filtered_performance
-        .into_iter()
-        .map(|game| {
-            let kda = if game.deaths > 0 {
-                (game.kills + game.assists) as f64 / game.deaths as f64
-            } else {
-                (game.kills + game.assists) as f64
-            };
-
-            MatchPerformance {
-                game_id: Some(game.game_id),
-                win: game.win,
-                champion_id: game.champion_id,
-                champion_name: format!("Champion_{}", game.champion_id),
-                kills: game.kills,
-                deaths: game.deaths,
-                assists: game.assists,
-                kda,
-                game_duration: Some(game.game_duration),
-                queue_id: Some(game.queue_id),
-                game_mode: Some(game.game_mode),
-            }
-        })
-        .collect();
-
-    // 转换 favorite_champions
-    let favorite_champions: Vec<AnalysisChampionStats> = lcu_stats
-        .favorite_champions
-        .into_iter()
-        .map(|champ| AnalysisChampionStats {
-            champion_id: champ.champion_id,
-            champion_name: format!("Champion_{}", champ.champion_id),
-            games: champ.games_played as u32,
-            wins: champ.wins as u32,
-            win_rate: champ.win_rate as f64,
-        })
-        .collect();
-
-    // 🔥 重新计算平均KDA（基于过滤后的数据）
-    let avg_kills = if total_games > 0 {
-        recent_performance.iter().map(|g| g.kills as f64).sum::<f64>() / total_games as f64
-    } else {
-        0.0
-    };
-    let avg_deaths = if total_games > 0 {
-        recent_performance.iter().map(|g| g.deaths as f64).sum::<f64>() / total_games as f64
-    } else {
-        0.0
-    };
-    let avg_assists = if total_games > 0 {
-        recent_performance.iter().map(|g| g.assists as f64).sum::<f64>() / total_games as f64
-    } else {
-        0.0
-    };
-    let avg_kda = if avg_deaths > 0.0 {
-        (avg_kills + avg_assists) / avg_deaths
-    } else {
-        avg_kills + avg_assists
-    };
-
-    log::debug!(
-        target: "analysis_data::service",
-        "Player '{}' stats: {}W/{}L ({:.1}% WR), KDA: {:.1}/{:.1}/{:.1}",
-        player_name,
-        wins,
-        losses,
-        win_rate,
-        avg_kills,
-        avg_deaths,
-        avg_assists
-    );
-
-    PlayerMatchStats {
-        total_games,
-        wins,
-        losses,
-        win_rate,
-        avg_kills,
-        avg_deaths,
-        avg_assists,
-        avg_kda,
-        favorite_champions,
-        recent_performance,
-    }
-}
+// 注意：convert_match_statistics_to_player_stats 函数已被移除
+// 原因：PlayerMatchStats 已经在 get_recent_matches_by_puuid 中由通用分析器完整计算
+// 包含所有增强字段（traits, today_games, dpm, cspm, vspm 等）

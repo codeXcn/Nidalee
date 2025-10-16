@@ -2,7 +2,7 @@ use crate::{http_client, lcu};
 use std::collections::HashMap;
 
 #[tauri::command]
-pub async fn get_champselect_team_players_info() -> Result<HashMap<String, lcu::types::MatchStatistics>, String> {
+pub async fn get_champselect_team_players_info() -> Result<HashMap<String, lcu::types::PlayerMatchStats>, String> {
     let client = http_client::get_lcu_client();
     lcu::champ_select::service::get_champselect_team_players_info(client).await
 }

@@ -15,7 +15,7 @@ pub async fn init_game_data() {
     // 并行加载英雄和召唤师技能数据
     let (champion_result, spell_result): (
         Result<(), Box<dyn std::error::Error + Send + Sync>>,
-        Result<(), Box<dyn std::error::Error + Send + Sync>>
+        Result<(), Box<dyn std::error::Error + Send + Sync>>,
     ) = tokio::join!(
         lcu::champion_data::load_champion_data(),
         lcu::summoner_spells::load_summoner_spell_data()
@@ -51,4 +51,3 @@ pub fn start_game_data_initialization() {
         init_game_data().await;
     });
 }
-

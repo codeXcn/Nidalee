@@ -3,7 +3,6 @@ pub mod auth;
 pub mod champ_select;
 pub mod champion_data;
 pub mod connection;
-pub mod summoner_spells;
 pub mod ddragon;
 pub mod gameflow;
 pub mod liveclient;
@@ -13,9 +12,11 @@ pub mod matchmaking;
 pub mod opgg;
 pub mod optimized_polling;
 pub mod perks;
+pub mod player_stats_analyzer; // 通用玩家战绩分析器
 pub mod ranked;
 pub mod request;
 pub mod summoner;
+pub mod summoner_spells;
 pub mod types;
 pub mod ws;
 

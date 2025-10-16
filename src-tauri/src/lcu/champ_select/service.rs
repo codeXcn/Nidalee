@@ -1,7 +1,7 @@
 use crate::lcu::matches::service::get_recent_matches_by_puuid;
 use crate::lcu::request::{lcu_get, lcu_patch_no_content};
 use crate::lcu::summoner::service::get_summoner_by_id;
-use crate::lcu::types::{ChampSelectPlayer, ChampSelectSession, MatchStatistics, SummonerInfo};
+use crate::lcu::types::{ChampSelectPlayer, ChampSelectSession, PlayerMatchStats, SummonerInfo};
 use reqwest::Client;
 use serde_json::{Number, Value};
 use std::collections::HashMap;
@@ -164,7 +164,7 @@ pub async fn get_champ_select_session(client: &Client) -> Result<ChampSelectSess
 }
 
 // 主函数：批量获取队友和对手信息（无缓存，简洁版）
-pub async fn get_champselect_team_players_info(client: &Client) -> Result<HashMap<String, MatchStatistics>, String> {
+pub async fn get_champselect_team_players_info(client: &Client) -> Result<HashMap<String, PlayerMatchStats>, String> {
     // 1. 获取当前选人会话
     let session: serde_json::Value = lcu_get(client, "/lol-champ-select/v1/session").await?;
     let my_team = session
@@ -207,7 +207,8 @@ pub async fn get_champselect_team_players_info(client: &Client) -> Result<HashMa
     log::info!("准备批量查最近10场战绩, 总人数: {}", info_map.len());
     for (sid, info) in &info_map {
         log::info!("查找召唤师 {} recent matches", sid);
-        if let Ok(matches) = get_recent_matches_by_puuid(client, &info.puuid, 20).await {
+        // 选人阶段，不过滤队列类型
+        if let Ok(matches) = get_recent_matches_by_puuid(client, &info.puuid, 20, None).await {
             log::info!("查到 {:?} 场", matches);
             match_map.insert(sid.clone(), matches);
         } else {

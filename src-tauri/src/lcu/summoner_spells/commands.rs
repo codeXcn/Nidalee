@@ -1,12 +1,7 @@
 /// 召唤师技能数据命令层 - Tauri 命令接口
 use super::service::{
-    SummonerSpellInfo,
-    get_all_summoner_spells,
-    get_summoner_spell_info,
-    get_spell_by_name,
-    is_loaded,
-    load_summoner_spell_data,
-    get_spell_count
+    get_all_summoner_spells, get_spell_by_name, get_spell_count, get_summoner_spell_info, is_loaded,
+    load_summoner_spell_data, SummonerSpellInfo,
 };
 
 /// 🌐 初始化召唤师技能数据（应用启动时调用）
@@ -14,7 +9,10 @@ use super::service::{
 pub async fn init_summoner_spell_data() -> Result<(), String> {
     match load_summoner_spell_data().await {
         Ok(_) => {
-            log::info!("[SummonerSpells] ✅ 召唤师技能数据初始化成功，共 {} 个技能", get_spell_count());
+            log::info!(
+                "[SummonerSpells] ✅ 召唤师技能数据初始化成功，共 {} 个技能",
+                get_spell_count()
+            );
             Ok(())
         }
         Err(e) => {
@@ -65,4 +63,3 @@ pub fn is_summoner_spell_data_loaded() -> bool {
 pub fn get_summoner_spell_count() -> usize {
     get_spell_count()
 }
-

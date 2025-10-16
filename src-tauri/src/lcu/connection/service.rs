@@ -63,8 +63,18 @@ impl ConnectionManager {
             manager.monitor_loop().await;
         });
 
-        // 启动统一轮询管理器
-        self.polling_manager.start().await;
+        // ❌ 禁用 OptimizedPollingManager（功能已被 WebSocket 完全覆盖）
+        // 原因：
+        // 1. 它发送的 summoner-change 事件前端不监听
+        // 2. 它的连接检查与 ConnectionManager 重复
+        // 3. 召唤师信息由前端主动调用 invoke('get_current_summoner') 获取
+        // 预期效果：CPU 降低 2-3%，内存降低 20-30MB
+        // self.polling_manager.start().await;
+
+        log::info!(
+            target: "connection::service",
+            "Connection monitoring started (OptimizedPollingManager disabled, using WebSocket + manual fetch)"
+        );
     }
 
     async fn monitor_loop(&mut self) {
@@ -115,7 +125,25 @@ impl ConnectionManager {
         let auth = auth_info.unwrap();
 
         // 2. 验证连接是否真正可用
-        let connection_valid = validate_auth_connection(&auth).await;
+        // ✅ 优化：如果上次连接成功且时间不长，跳过验证（WebSocket 已在监控）
+        let should_validate = {
+            let info = self.info.read().await;
+            info.state != ConnectionState::Connected
+                || info
+                    .last_successful_connection
+                    .map_or(true, |last| last.elapsed() > Duration::from_secs(60))
+        };
+
+        let connection_valid = if should_validate {
+            validate_auth_connection(&auth).await
+        } else {
+            // 跳过验证，信任 WebSocket 的监控
+            log::debug!(
+                target: "connection::service",
+                "Skipping validation (recently verified, WebSocket active)"
+            );
+            true
+        };
 
         if connection_valid {
             self.update_info(|info| {
@@ -126,9 +154,6 @@ impl ConnectionManager {
                 info.error_message = None;
             })
             .await;
-
-            // 连接成功时立即发送数据刷新事件
-            let _ = self.app.emit("refresh-data", ());
 
             ConnectionState::Connected
         } else {
@@ -172,9 +197,15 @@ impl ConnectionManager {
     }
 
     async fn has_lol_process(&self) -> bool {
+        use once_cell::sync::Lazy;
+        use std::sync::Mutex;
         use sysinfo::{ProcessRefreshKind, RefreshKind, System};
 
-        let mut system = System::new();
+        // ✅ 优化：使用静态 System 实例，避免每次都创建新实例
+        static PROCESS_SYSTEM: Lazy<Mutex<System>> = Lazy::new(|| Mutex::new(System::new()));
+
+        let mut system = PROCESS_SYSTEM.lock().unwrap();
+        // ✅ 优化：只刷新进程列表，不刷新其他系统信息
         system.refresh_specifics(RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()));
 
         let possible_names = ["LeagueClientUx.exe", "LeagueClient.exe", "LeagueOfLegends.exe"];
@@ -210,19 +241,13 @@ impl ConnectionManager {
 
         // 根据状态变化触发相应的处理
         match new_state {
-            ConnectionState::Connected => {
-                // 连接成功时触发数据刷新
-                let _ = self.app.emit("connection-established", ());
-            }
-            ConnectionState::Disconnected => {
-                // 断开连接时清理相关数据
-                let _ = self.app.emit("connection-lost", ());
-            }
             ConnectionState::AuthExpired => {
-                // 认证过期时清除缓存
+                // 认证过期时清除缓存，强制重新获取
                 invalidate_auth_info();
             }
-            _ => {}
+            _ => {
+                // 其他状态变化已通过 connection-state-changed 事件通知前端
+            }
         }
     }
 
@@ -230,17 +255,18 @@ impl ConnectionManager {
         let info = self.info.read().await;
 
         match state {
-            ConnectionState::Connected => Duration::from_secs(3), // 连接正常时也保持较快检查，以便及时发现断连
+            // ✅ 优化：连接正常时降低频率（WebSocket 已提供实时监控 + 10s fallback）
+            ConnectionState::Connected => Duration::from_secs(10),
             ConnectionState::Disconnected => {
                 if info.consecutive_failures > 20 {
-                    Duration::from_secs(10) // 长期断开时降低频率，但不要太慢
+                    Duration::from_secs(20) // ✅ 优化：长期断开时进一步降低频率
                 } else {
-                    Duration::from_secs(2) // 初期断开时保持快速检查
+                    Duration::from_secs(5) // ✅ 优化：初期断开时适度检查
                 }
             }
-            ConnectionState::ProcessFound => Duration::from_secs(1), // 进程存在时快速检查
-            ConnectionState::Unstable => Duration::from_secs(2),     // 不稳定时快速检查
-            ConnectionState::AuthExpired => Duration::from_secs(3),  // 认证过期时快速检查
+            ConnectionState::ProcessFound => Duration::from_secs(3), // ✅ 优化：进程存在时等待认证就绪
+            ConnectionState::Unstable => Duration::from_secs(5),     // ✅ 优化：不稳定时降低频率
+            ConnectionState::AuthExpired => Duration::from_secs(5),  // ✅ 优化：认证过期时降低频率
         }
     }
 

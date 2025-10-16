@@ -170,6 +170,9 @@ async fn connect_and_run_ws(app: &tauri::AppHandle, auth: &crate::lcu::types::Lc
     ensure_subscribed(&mut ws_stream, "/lol-gameflow/v1/gameflow-phase", &mut subscribed).await;
     ensure_subscribed(&mut ws_stream, "/lol-gameflow/v1/session", &mut subscribed).await;
 
+    // 🧪 实验：尝试订阅召唤师信息变化（测试 LCU 是否支持）
+    ensure_subscribed(&mut ws_stream, "/lol-summoner/v1/current-summoner", &mut subscribed).await;
+
     // Create the event handler.
     let event_handler = Arc::new(WsEventHandler::new(app.clone()));
 

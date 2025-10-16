@@ -11,7 +11,9 @@
       :is-connected="isConnected"
       :match-history-loading="matchHistoryLoading"
       :match-statistics="matchStatistics"
+      :selected-queue-id="selectedQueueId"
       @fetch-match-history="handleFetchMatchHistory"
+      @queue-change="handleQueueChange"
     />
   </div>
 </template>
@@ -19,39 +21,38 @@
 <script setup lang="ts">
 import { appContextKey } from '@/types'
 
-const { fetchMatchHistory } = inject(appContextKey) as { fetchMatchHistory: () => void }
+const { fetchMatchHistory } = inject(appContextKey) as { fetchMatchHistory: (queueId?: number | null) => void }
 const dataStore = useDataStore()
 const connectionStore = useConnectionStore()
 const activityLogger = useActivityLogger()
 const autoFunctionStore = useAutoFunctionStore()
 
-const { summonerInfo, matchHistory, matchStatistics, isDataLoading } = storeToRefs(dataStore)
+const { summonerInfo, matchStatistics, isDataLoading } = storeToRefs(dataStore)
 const { isConnected } = storeToRefs(connectionStore)
 const { enabledFunctionsCount } = storeToRefs(autoFunctionStore)
 
-const todayMatches = computed(() => {
-  const today = new Date().toDateString()
-  const todayMatches = matchHistory.value.filter((match) => new Date(match.gameCreation).toDateString() === today)
-  const wins = todayMatches.filter((match) => match.win).length
-  const losses = todayMatches.length - wins
+// 当前选中的队列ID（null = 全部模式）
+const selectedQueueId = ref<number | null>(null)
 
-  return {
-    total: todayMatches.length,
-    wins,
-    losses
-  }
-})
+// ✅ 直接从后端获取已计算好的数据
+const todayMatches = computed(() => ({
+  total: matchStatistics.value?.todayGames || 0,
+  wins: matchStatistics.value?.todayWins || 0,
+  losses: (matchStatistics.value?.todayGames || 0) - (matchStatistics.value?.todayWins || 0)
+}))
+
+const winRate = computed(() => matchStatistics.value?.winRate || 0)
 
 const handleFetchMatchHistory = () => {
   activityLogger.log.info('手动刷新对局历史', 'data')
-  fetchMatchHistory()
+  fetchMatchHistory(selectedQueueId.value)
 }
 
-const winRate = computed(() => {
-  if (matchHistory.value.length === 0) return 0
-  const wins = matchHistory.value.filter((match) => match.win).length
-  return Math.round((wins / matchHistory.value.length) * 100)
-})
+const handleQueueChange = (queueId: number | null) => {
+  selectedQueueId.value = queueId
+  activityLogger.log.info(`切换队列类型: ${queueId || '全部'}`, 'data')
+  fetchMatchHistory(queueId)
+}
 
 const matchHistoryLoading = computed(() => isDataLoading.value)
 </script>

@@ -279,13 +279,12 @@ pub struct GameflowPhase {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-
 #[serde(rename_all = "camelCase")]
 pub struct LobbyInfo {
     #[serde(default)]
     pub can_start_activity: bool,
     #[serde(default)]
-    pub game_config: serde_json::Value,  // 使用 Value 因为结构复杂
+    pub game_config: serde_json::Value, // 使用 Value 因为结构复杂
     #[serde(default)]
     pub invitations: Vec<serde_json::Value>,
     #[serde(default)]
@@ -786,26 +785,13 @@ pub struct SimpleMatchInfo {
     pub game_creation: i64,
 }
 
-/// 对局统计信息
-#[derive(Debug, Serialize, Clone, Deserialize, TS)]
-#[ts(
-    export,
-    export_to = "../../src/types/generated/MatchStatistics.ts",
-    rename_all = "camelCase"
+/// 对局统计信息 (已废弃，请使用 PlayerMatchStats)
+/// 保留此类型别名仅为向后兼容
+#[deprecated(
+    since = "2.0.0",
+    note = "请使用 PlayerMatchStats 代替，它包含更完整的分析数据"
 )]
-#[serde(rename_all = "camelCase")]
-pub struct MatchStatistics {
-    pub total_games: i32,
-    pub wins: i32,
-    pub losses: i32,
-    pub win_rate: f32,
-    pub avg_kills: f32,
-    pub avg_deaths: f32,
-    pub avg_assists: f32,
-    pub avg_kda: f32,
-    pub favorite_champions: Vec<ChampionStats>,
-    pub recent_performance: Vec<RecentGame>,
-}
+pub type MatchStatistics = PlayerMatchStats;
 
 /// 英雄统计信息
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
@@ -1192,15 +1178,31 @@ pub struct PlayerAnalysisData {
     pub tier: Option<String>,
     pub profile_icon_id: Option<i32>,
     pub tag_line: Option<String>,
-    pub spell1_id: Option<i64>,  // 改为 i64 以支持大数值
-    pub spell2_id: Option<i64>,  // 改为 i64 以支持大数值
+    pub spell1_id: Option<i64>, // 改为 i64 以支持大数值
+    pub spell2_id: Option<i64>, // 改为 i64 以支持大数值
 
     // 战绩数据（只有真实玩家才有）
     pub match_stats: Option<PlayerMatchStats>,
 }
 
-/// 玩家战绩统计
+/// 召唤师特征标签
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(
+    export,
+    export_to = "../../src/types/generated/SummonerTrait.ts",
+    rename_all = "camelCase"
+)]
+#[serde(rename_all = "camelCase")]
+pub struct SummonerTrait {
+    pub name: String,
+    pub description: String,
+    pub score: i32,
+    #[serde(rename = "type")]
+    pub trait_type: String, // "good" or "bad"
+}
+
+/// 玩家战绩统计（完整版 - 包含所有分析数据）
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
 #[ts(
     export,
     export_to = "../../src/types/generated/PlayerMatchStats.ts",
@@ -1208,21 +1210,34 @@ pub struct PlayerAnalysisData {
 )]
 #[serde(rename_all = "camelCase")]
 pub struct PlayerMatchStats {
+    // === 基础统计 ===
     pub total_games: u32,
     pub wins: u32,
     pub losses: u32,
     pub win_rate: f64,
 
-    // KDA统计
+    // === KDA 统计 ===
     pub avg_kills: f64,
     pub avg_deaths: f64,
     pub avg_assists: f64,
     pub avg_kda: f64,
 
-    // 常用英雄
+    // === 今日统计 ===
+    pub today_games: u32,
+    pub today_wins: u32,
+
+    // === 衍生量化指标 ===
+    pub dpm: f64,   // 每分钟伤害
+    pub cspm: f64,  // 每分钟补刀
+    pub vspm: f64,  // 每分钟视野得分
+
+    // === 定性特征标签 ===
+    pub traits: Vec<SummonerTrait>,
+
+    // === 常用英雄 ===
     pub favorite_champions: Vec<AnalysisChampionStats>,
 
-    // 最近战绩
+    // === 最近战绩 ===
     pub recent_performance: Vec<MatchPerformance>,
 }
 
@@ -1246,6 +1261,9 @@ pub struct MatchPerformance {
     pub kda: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_duration: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number")]
+    pub game_creation: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub queue_id: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]

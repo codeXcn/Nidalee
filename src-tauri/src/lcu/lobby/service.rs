@@ -14,11 +14,7 @@ pub async fn get_lobby_info(client: &Client) -> Result<LobbyInfo, String> {
 /// * `client` - HTTP 客户端
 /// * `chat_id` - 聊天室 ID（从 LobbyInfo.multi_user_chat_id 获取）
 /// * `message` - 消息内容
-pub async fn send_chat_message(
-    client: &Client,
-    chat_id: &str,
-    message: &str,
-) -> Result<(), String> {
+pub async fn send_chat_message(client: &Client, chat_id: &str, message: &str) -> Result<(), String> {
     let url = format!("/lol-chat/v1/conversations/{}/messages", chat_id);
     let payload = json!({
         "body": message,
@@ -46,12 +42,7 @@ pub fn get_chat_id_from_lobby(lobby: &LobbyInfo) -> Option<String> {
 }
 
 /// 发送房间系统通知（带格式的消息）
-pub async fn send_formatted_message(
-    client: &Client,
-    chat_id: &str,
-    prefix: &str,
-    content: &str,
-) -> Result<(), String> {
+pub async fn send_formatted_message(client: &Client, chat_id: &str, prefix: &str, content: &str) -> Result<(), String> {
     let message = format!("[{}] {}", prefix, content);
     send_chat_message(client, chat_id, &message).await
 }

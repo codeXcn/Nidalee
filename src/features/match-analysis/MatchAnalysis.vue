@@ -105,24 +105,25 @@ watch(
 )
 
 onMounted(async () => {
-  if (currentPhase.value === 'ChampSelect' || currentPhase.value === 'InProgress') {
-    console.log('[MatchAnalysisView] 🔄 尝试从缓存恢复对局分析数据...')
+  console.log('[MatchAnalysis] Component mounted')
+
+  // 如果 store 中没有数据，尝试从后端缓存恢复
+  if (!matchAnalysisStore.hasMyTeamData && !matchAnalysisStore.hasEnemyTeamData) {
+    console.log('[MatchAnalysis] Store empty, attempting to restore from backend cache')
 
     try {
       const cachedData = await invoke<TeamAnalysisData | null>('get_cached_analysis_data')
-
       if (cachedData) {
-        console.log('[MatchAnalysisViewV2] ✅ 成功恢复缓存数据')
+        console.log('[MatchAnalysis] Successfully restored cached data')
         matchAnalysisStore.setTeamAnalysisData(cachedData)
-        // 注意：不要手动设置 isDataReady，让 watch 自动处理
-        // watch 会在数据更新后自动触发，并添加 150ms 延迟
       } else {
-        console.log('[MatchAnalysisViewV2] ⚠️ 缓存中没有数据，等待 WebSocket 事件')
+        console.log('[MatchAnalysis] No cached data, waiting for WebSocket events')
       }
     } catch (error) {
-      console.error('[MatchAnalysisViewV2] ❌ 恢复缓存数据失败:', error)
-      // 失败不影响正常流程，等待 WebSocket 事件即可
+      console.error('[MatchAnalysis] Failed to restore cached data:', error)
     }
+  } else {
+    console.log('[MatchAnalysis] Store already has data, skipping restore')
   }
 })
 

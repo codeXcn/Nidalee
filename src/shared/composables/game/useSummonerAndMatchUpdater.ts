@@ -23,12 +23,13 @@ export function useSummonerAndMatchUpdater() {
   }
 
   // 单独：更新战绩信息
-  const updateMatchHistory = async () => {
+  const updateMatchHistory = async (queueId?: number | null) => {
     try {
       dataStore.startLoadingMatchHistory()
       const settingsStore = useSettingsStore()
-      const matchHistory = await invoke<MatchStatistics>('get_match_history', {
-        count: settingsStore.defaultMatchCount
+      const matchHistory = await invoke<PlayerMatchStats>('get_match_history', {
+        count: settingsStore.defaultMatchCount,
+        queue_id: queueId ?? null
       })
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
