@@ -1,27 +1,33 @@
 <template>
-  <div class="flex flex-col gap-4">
-    <SummonerCard v-if="isConnected" :summoner-info="summonerInfo" is-dashboard />
-    <StatisticsCards
-      :is-connected="isConnected"
-      :today-matches="todayMatches"
-      :win-rate="winRate"
-      :enabled-functions-count="enabledFunctionsCount"
-    />
-    <GameStats
-      :is-connected="isConnected"
-      :match-history-loading="matchHistoryLoading"
-      :match-statistics="matchStatistics"
-      :selected-queue-id="selectedQueueId"
-      @fetch-match-history="handleFetchMatchHistory"
-      @queue-change="handleQueueChange"
-    />
+  <div class="flex flex-col gap-4" v-if="isConnected">
+    <div v-if="loading" className="flex w-auto min-h-screen items-center justify-center gap-6">
+      <Spinner class="size-6 text-primary" />
+    </div>
+    <template v-else>
+      <SummonerCard :summoner-info="summonerInfo" is-dashboard />
+      <StatisticsCards
+        :is-connected="isConnected"
+        :today-matches="todayMatches"
+        :win-rate="winRate"
+        :enabled-functions-count="enabledFunctionsCount"
+      />
+
+      <GameStats
+        :is-connected="isConnected"
+        :match-history-loading="matchHistoryLoading"
+        :match-statistics="matchStatistics"
+        :selected-queue-id="selectedQueueId"
+        @fetch-match-history="handleFetchMatchHistory"
+        @queue-change="handleQueueChange"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { appContextKey } from '@/types'
+const { loading, toggle } = useLoading()
+const { updateMatchHistory } = useSummonerAndMatchUpdater()
 
-const { fetchMatchHistory } = inject(appContextKey) as { fetchMatchHistory: (queueId?: number | null) => void }
 const dataStore = useDataStore()
 const connectionStore = useConnectionStore()
 const activityLogger = useActivityLogger()
@@ -43,16 +49,19 @@ const todayMatches = computed(() => ({
 
 const winRate = computed(() => matchStatistics.value?.winRate || 0)
 
-const handleFetchMatchHistory = () => {
+const handleFetchMatchHistory = async () => {
+  toggle()
   activityLogger.log.info('手动刷新对局历史', 'data')
-  fetchMatchHistory(selectedQueueId.value)
+  await updateMatchHistory(selectedQueueId.value)
+  toggle()
 }
 
-const handleQueueChange = (queueId: number | null) => {
+const handleQueueChange = async (queueId: number | null) => {
+  toggle()
   selectedQueueId.value = queueId
   activityLogger.log.info(`切换队列类型: ${queueId || '全部'}`, 'data')
-  fetchMatchHistory(queueId)
+  await updateMatchHistory(queueId)
+  toggle()
 }
-
 const matchHistoryLoading = computed(() => isDataLoading.value)
 </script>

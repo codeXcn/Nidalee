@@ -101,7 +101,7 @@ struct ApiPlayer {
 pub async fn get_match_history(
     client: &Client,
     end_count: usize,
-    queue_id: Option<i64>,
+    queue_id: Option<i32>,
 ) -> Result<PlayerMatchStats, String> {
     println!("\n🔍 ===== 开始获取我的战绩 =====");
     if let Some(qid) = queue_id {
@@ -281,7 +281,7 @@ pub async fn get_recent_matches_by_puuid(
     client: &Client,
     puuid: &str,
     count: usize,
-    queue_id: Option<i64>,
+    queue_id: Option<i32>,
 ) -> Result<PlayerMatchStats, String> {
     let url = format!(
         "/lol-match-history/v1/products/lol/{}/matches?begIndex=0&endIndex={}",
@@ -297,7 +297,7 @@ pub async fn get_recent_matches_by_puuid(
 fn analyze_match_list_data(
     match_list_data: Value,
     current_puuid: &str,
-    queue_id: Option<i64>,
+    queue_id: Option<i32>,
 ) -> Result<PlayerMatchStats, String> {
     println!("📊 开始分析对局列表数据 (使用通用分析器)");
     println!("👤 目标玩家PUUID: {}", current_puuid);
@@ -314,15 +314,12 @@ fn analyze_match_list_data(
     // ===使用通用分析器进行数据计算===
     let mut context = AnalysisContext::new();
 
-    // 根据队列ID设置分析上下文
+    // 根据队列ID设置分析上下文（精确匹配）
     if let Some(qid) = queue_id {
         context = context.with_queue_id(qid);
-        println!("🎯 队列过滤: queueId={}", qid);
-        // 如果是排位模式，只统计排位战绩
-        if qid == 420 || qid == 440 {
-            context = context.ranked_only();
-            println!("🏆 只统计排位战绩 (420/440)");
-        }
+        println!("🎯 队列过滤: 精确匹配 queueId={}", qid);
+    } else {
+        println!("🎯 队列过滤: 无过滤，显示所有对局");
     }
 
     let mut player_stats = analyze_player_stats(games, current_puuid, context);

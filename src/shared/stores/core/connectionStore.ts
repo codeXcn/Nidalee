@@ -33,6 +33,12 @@ export const useConnectionStore = defineStore('connection', () => {
 
   async function updateConnectionState(state: ConnectionState, errorMsg: string | null = null) {
     console.log(`[ConnectionStore] Updating connection state: ${state}`, errorMsg || '')
+    // 如果状态没有变化，避免重复触发副作用（如重复拉取战绩）
+    if (state === connectionState.value) {
+      connectionError.value = errorMsg
+      return
+    }
+
     connectionState.value = state
     connectionError.value = errorMsg
 

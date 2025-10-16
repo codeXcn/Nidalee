@@ -461,7 +461,7 @@ async fn fetch_all_players_match_stats(
                     player.display_name
                 );
 
-                match get_recent_matches_by_puuid(http_client, &summoner_info.puuid, 20, Some(queue_id)).await {
+                match get_recent_matches_by_puuid(http_client, &summoner_info.puuid, 20, Some(queue_id as i32)).await {
                     Ok(player_stats) => {
                         // 注意：get_recent_matches_by_puuid 已经返回完整的 PlayerMatchStats
                         // 包含了 traits, today_games 等所有增强字段

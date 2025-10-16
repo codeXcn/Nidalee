@@ -97,9 +97,6 @@ where
     deserializer.deserialize_option(OptionStringOrNumberVisitor)
 }
 
-fn empty_rune_type() -> String {
-    "rune".to_string()
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(

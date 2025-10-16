@@ -9,7 +9,8 @@ const theme = computed(() => (isDark.value ? 'dark' : 'light'))
 provide(appContextKey, {
   checkConnection,
   fetchMatchHistory,
-  isConnected
+  isConnected,
+  isDark
 })
 const transitions = ['fade', 'slide-fade', 'scale', 'slide-up']
 const currentTransition = ref(transitions[0])

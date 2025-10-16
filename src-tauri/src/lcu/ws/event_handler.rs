@@ -411,7 +411,7 @@ impl WsEventHandler {
 
                 // 5.6 Fetch recent matches.
                 let queue_id = Some(team_analysis.queue_id);
-                match crate::lcu::matches::service::get_recent_matches_by_puuid(&self.client, &info.puuid, 20, queue_id).await {
+                match crate::lcu::matches::service::get_recent_matches_by_puuid(&self.client, &info.puuid, 20, queue_id.map(|v| v as i32)).await {
                     Ok(player_stats) => {
                         // 注意：get_recent_matches_by_puuid 已经返回完整的 PlayerMatchStats
                         // 包含所有增强字段（traits, today_games, dpm, cspm, vspm 等）
@@ -797,7 +797,7 @@ impl WsEventHandler {
             player_data.tag_line = info.tag_line.clone();
 
             // 获取战绩数据
-            match crate::lcu::matches::service::get_recent_matches_by_puuid(&self.client, &info.puuid, 20, Some(queue_id)).await {
+            match crate::lcu::matches::service::get_recent_matches_by_puuid(&self.client, &info.puuid, 20, Some(queue_id as i32)).await {
                 Ok(player_stats) => {
                     // 注意：get_recent_matches_by_puuid 已经返回完整的 PlayerMatchStats
                     // 在排位模式下会自动过滤只显示排位战绩

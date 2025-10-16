@@ -106,6 +106,7 @@ declare global {
   const useId: typeof import('vue')['useId']
   const useItemsQuery: typeof import('../src/shared/composables/useLolApiQuery')['useItemsQuery']
   const useLink: typeof import('vue-router')['useLink']
+  const useLoading: typeof import('../src/shared/composables/utils/useLoading')['useLoading']
   const useLobbyManager: typeof import('../src/shared/composables/game/useChampSelectManager')['useLobbyManager']
   const useMapsQuery: typeof import('../src/shared/composables/useLolApiQuery')['useMapsQuery']
   const useMatchFilter: typeof import('../src/shared/composables/game/useMatchFilter')['useMatchFilter']

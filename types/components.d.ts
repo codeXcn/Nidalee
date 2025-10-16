@@ -185,6 +185,7 @@ declare module 'vue' {
     SkillsCard: typeof import('./../src/features/opgg/components/SkillsCard.vue')['default']
     Slider: typeof import('./../src/shared/components/ui/slider/Slider.vue')['default']
     Sonner: typeof import('./../src/shared/components/ui/sonner/Sonner.vue')['default']
+    Spinner: typeof import('./../src/shared/components/ui/spinner/Spinner.vue')['default']
     StatisticsCards: typeof import('./../src/features/dashboard/components/StatisticsCards.vue')['default']
     SummonerCard: typeof import('./../src/features/dashboard/components/SummonerCard.vue')['default']
     SummonerDetailsDialog: typeof import('./../src/features/match-search/components/SummonerDetailsDialog.vue')['default']

@@ -299,12 +299,12 @@
 <script setup lang="ts">
 import { getTierIconUrl } from '@/lib'
 import { Shield, Trophy, User, Users } from 'lucide-vue-next'
-
+import { appContextKey, type AppContext } from '@/types'
+const { isDark } = inject(appContextKey) as AppContext
 defineProps<{
   summonerInfo: any
   isDashboard?: boolean
 }>()
-const { isDark } = useApp()
 const { getProfileIconUrl } = useGameAssets()
 const { formatChallengePoints } = useFormatters()
 const sessionStore = useSessionStore()

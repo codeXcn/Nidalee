@@ -27,10 +27,8 @@ export function useSummonerAndMatchUpdater() {
     try {
       dataStore.startLoadingMatchHistory()
       const settingsStore = useSettingsStore()
-      const matchHistory = await invoke<PlayerMatchStats>('get_match_history', {
-        count: settingsStore.defaultMatchCount,
-        queue_id: queueId ?? null
-      })
+      const count = settingsStore.defaultMatchCount
+      const matchHistory = await invoke<PlayerMatchStats>('get_match_history', { count, queueId })
       if (matchHistory) {
         dataStore.setMatchStatistics(matchHistory)
         activityStore.addActivity('success', '对局历史记录已更新', 'data')

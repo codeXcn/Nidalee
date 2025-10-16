@@ -9,8 +9,8 @@ export function useAppInitialization() {
   const dataStore = useDataStore()
   const settingsStore = useSettingsStore()
   const activityStore = useActivityStore()
-  const { isConnected } = useConnection()
-  const { updateSummonerAndMatches } = useSummonerAndMatchUpdater()
+  const { isConnected: _isConnected } = useConnection()
+  const { updateSummonerAndMatches: _updateSummonerAndMatches } = useSummonerAndMatchUpdater()
   const connectionStore = useConnectionStore()
 
   const isInitialized = ref(false)
@@ -37,15 +37,7 @@ export function useAppInitialization() {
       // 启动时强制检查一次连接，以更新持久化的陈旧状态
       await connectionStore.checkConnection()
 
-      if (isConnected.value && dataStore.summonerInfo === null) {
-        try {
-          await updateSummonerAndMatches()
-        } catch (error) {
-          console.error('[AppInit] 获取召唤师信息或战绩失败:', error)
-          dataStore.clearSummonerInfo()
-          dataStore.clearMatchHistory()
-        }
-      }
+      // 连接成功后的数据更新统一由 connectionStore.updateConnectionState('Connected') 触发，避免重复调用
     } catch (error) {
       console.error('[AppInit] 初始化连接状态失败:', error)
     }

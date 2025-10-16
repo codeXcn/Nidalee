@@ -1,12 +1,5 @@
 use crate::lcu::types::TeamAnalysisData;
 
-/// 获取当前缓存的分析数据
-///
-/// 逻辑：
-/// 1. 从内存缓存获取数据
-/// 2. 如果没有缓存，返回 None（由 WebSocket phase-change 事件自动构建）
-///
-/// 注意：不在这里主动构建数据，避免与 WebSocket 事件重复触发
 #[tauri::command]
 pub async fn get_cached_analysis_data() -> Result<Option<TeamAnalysisData>, String> {
     log::info!(

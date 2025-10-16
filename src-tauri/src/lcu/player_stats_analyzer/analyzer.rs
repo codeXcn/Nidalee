@@ -1,13 +1,13 @@
 use crate::lcu::types::{AnalysisChampionStats, MatchPerformance, PlayerMatchStats};
 use serde_json::Value;
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// 分析上下文
 #[derive(Debug, Clone)]
 pub struct AnalysisContext {
     /// 当前队列ID（用于过滤相关对局）
-    pub current_queue_id: Option<i64>,
+    pub current_queue_id: Option<i32>,
     /// 是否只分析排位赛（420=单双排，440=灵活组排）
     pub ranked_only: bool,
 }
@@ -26,11 +26,12 @@ impl AnalysisContext {
         Self::default()
     }
 
-    pub fn with_queue_id(mut self, queue_id: i64) -> Self {
+    pub fn with_queue_id(mut self, queue_id: i32) -> Self {
         self.current_queue_id = Some(queue_id);
         self
     }
 
+    #[allow(dead_code)]
     pub fn ranked_only(mut self) -> Self {
         self.ranked_only = true;
         self
@@ -57,21 +58,17 @@ pub fn analyze_player_stats(
     let relevant_games: Vec<&Value> = games
         .iter()
         .filter(|game| {
-            let queue_id = game["queueId"].as_i64().unwrap_or(0);
+            let queue_id = game["queueId"].as_i64().unwrap_or(0) as i32;
 
             // 根据上下文过滤
-            if context.ranked_only {
-                // 只统计排位赛
+            if let Some(current_queue) = context.current_queue_id {
+                // 精确匹配队列ID
+                queue_id == current_queue
+            } else if context.ranked_only {
+                // 只统计排位赛（无具体队列时使用）
                 queue_id == 420 || queue_id == 440
-            } else if let Some(current_queue) = context.current_queue_id {
-                // 如果指定了队列，优先匹配相同队列，但排位赛互通
-                if current_queue == 420 || current_queue == 440 {
-                    queue_id == 420 || queue_id == 440
-                } else {
-                    true // 其他模式不过滤
-                }
             } else {
-                true // 无限制
+                true // 无限制，显示所有对局
             }
         })
         .collect();
