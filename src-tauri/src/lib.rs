@@ -5,6 +5,12 @@ mod http_client;
 mod initialization;
 mod lcu;
 mod tray;
+
+// 新架构模块
+mod domains;
+mod infrastructure;
+mod application;
+mod shared;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -34,6 +40,7 @@ pub fn run() {
             // 比赛记录
             lcu::matches::commands::get_match_history,
             lcu::matches::commands::get_game_detail,
+            lcu::matches::commands::get_player_tactical_advice,
             // 召唤师
             lcu::summoner::commands::get_current_summoner,
             lcu::summoner::commands::get_summoner_by_id,

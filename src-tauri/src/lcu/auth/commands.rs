@@ -1,8 +1,0 @@
-use crate::lcu::auth::service::AUTH_INFO;
-use crate::lcu::types::LcuAuthInfo;
-
-#[tauri::command]
-pub fn get_auth_info() -> Option<LcuAuthInfo> {
-    let auth = AUTH_INFO.read().unwrap();
-    auth.as_ref().cloned()
-}

@@ -1,7 +1,7 @@
-use crate::lcu::request::forin_request_json;
+use crate::shared::utils::forin_request_json;
 use reqwest::{Client, Method};
 
-pub async fn get_all_runes(client: &Client) -> Result<crate::lcu::types::AllRunesResponse, String> {
+pub async fn get_all_runes(client: &Client) -> Result<crate::shared::types::AllRunesResponse, String> {
     let path = "/api/data-dragon/runes";
     forin_request_json(client, Method::GET, path, None).await
 }

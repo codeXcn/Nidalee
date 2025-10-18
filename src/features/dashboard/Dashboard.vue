@@ -20,6 +20,16 @@
         @fetch-match-history="handleFetchMatchHistory"
         @queue-change="handleQueueChange"
       />
+
+      <!-- ⭐ v3.0: 智能建议面板 -->
+      <AdvicePanel
+        v-if="matchStatistics && !matchHistoryLoading"
+        :advice="filteredAdvice"
+        :perspective="selectedPerspective"
+        :title="advicePanelTitle"
+        :subtitle="advicePanelSubtitle"
+        @perspective-change="handlePerspectiveChange"
+      />
     </template>
   </div>
 </template>
@@ -39,6 +49,9 @@ const { enabledFunctionsCount } = storeToRefs(autoFunctionStore)
 
 // 当前选中的队列ID（null = 全部模式）
 const selectedQueueId = ref<number | null>(null)
+
+// 当前选中的建议视角
+const selectedPerspective = ref<'self-improvement' | 'targeting' | 'collaboration'>('self-improvement')
 
 // ✅ 直接从后端获取已计算好的数据
 const todayMatches = computed(() => ({
@@ -63,5 +76,55 @@ const handleQueueChange = async (queueId: number | null) => {
   await updateMatchHistory(queueId)
   toggle()
 }
+
+const handlePerspectiveChange = (perspective: 'self-improvement' | 'targeting' | 'collaboration') => {
+  selectedPerspective.value = perspective
+  activityLogger.log.info(`切换建议视角: ${perspective}`, 'data')
+}
+
 const matchHistoryLoading = computed(() => isDataLoading.value)
+
+// 根据视角过滤建议
+const filteredAdvice = computed(() => {
+  if (!matchStatistics.value?.advice) return []
+
+  // 目前后端只生成self-improvement视角的建议
+  // 这里只是前端准备好了切换逻辑，后端需要扩展支持
+  return matchStatistics.value.advice.filter(
+    (advice: any) =>
+      advice.perspective ===
+      (selectedPerspective.value === 'self-improvement'
+        ? 'SelfImprovement'
+        : selectedPerspective.value === 'targeting'
+          ? 'Targeting'
+          : 'Collaboration')
+  )
+})
+
+// 动态标题和副标题
+const advicePanelTitle = computed(() => {
+  switch (selectedPerspective.value) {
+    case 'self-improvement':
+      return '💡 提升建议'
+    case 'targeting':
+      return '🎯 战术建议'
+    case 'collaboration':
+      return '🤝 协作建议'
+    default:
+      return '💡 智能建议'
+  }
+})
+
+const advicePanelSubtitle = computed(() => {
+  switch (selectedPerspective.value) {
+    case 'self-improvement':
+      return '基于你的近20场数据分析，帮助你变得更强'
+    case 'targeting':
+      return '识别对手弱点，制定针对性战术'
+    case 'collaboration':
+      return '了解队友特点，优化团队配合'
+    default:
+      return '基于你的近期数据分析'
+  }
+})
 </script>

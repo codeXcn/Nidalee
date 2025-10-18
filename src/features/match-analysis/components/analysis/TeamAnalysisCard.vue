@@ -7,6 +7,7 @@
         :player="player"
         :player-stats="getPlayerStats(index)"
         :is-local="player.cellId === teamData.localPlayerCellId"
+        :is-ally="teamType === 'ally'"
         @select="$emit('select-player', player, getPlayerStats(index))"
       />
     </div>

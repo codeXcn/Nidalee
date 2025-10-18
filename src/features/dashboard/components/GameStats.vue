@@ -301,7 +301,7 @@ import {
   Trophy,
   Wifi
 } from 'lucide-vue-next'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const dialogOpen = ref(false)
 const selectedGame = ref(null)
